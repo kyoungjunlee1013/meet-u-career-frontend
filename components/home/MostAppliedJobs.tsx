@@ -2,20 +2,20 @@ import type { JobProps } from "@/types/job";
 import { calculateDday } from "@/common/dateUtils";
 import { JobCard } from "./JobCard"
 
-interface LatestJobProps {
-  latest: JobProps[];
+interface MostAppliedJobProps {
+  mostApplied: JobProps[];
 }
 
-export const LatestJobs = ({ latest }: LatestJobProps) => {
+export const MostAppliedJobs = ({ mostApplied }: MostAppliedJobProps) => {
   return (
     <section className="mb-12">
       <div className="flex justify-between items-center mb-4">
         <strong className="text-lg font-normal block text-[#292e41]">
-          최근에 올라온 공고
+          지원수 많은 공고
         </strong>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        {latest.map((job, index) => (
+        {mostApplied.map((job, index) => (
           <JobCard
             key={index}
             index={job.id}
