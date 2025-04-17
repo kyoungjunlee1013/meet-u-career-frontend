@@ -1,0 +1,421 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
+import { ScheduleModal } from "./ScheduleModal"
+
+export type ScheduleType = "interview" | "deadline" | "personal"
+
+export interface ScheduleItem {
+  id: string
+  title: string
+  date: string
+  type: ScheduleType
+  description?: string
+  day?: number
+}
+
+interface CalendarProps {
+  activeFilters: ScheduleType[]
+  onScheduleUpdate: (schedules: ScheduleItem[]) => void
+}
+
+export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => {
+  const [view, setView] = useState<"month" | "week" | "day">("month")
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth())
+  const [currentYear, setCurrentYear] = useState(currentDate.getFullYear())
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedSchedule, setSelectedSchedule] = useState<ScheduleItem | undefined>(undefined)
+  const [isEditing, setIsEditing] = useState(false)
+  const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([
+    {
+      id: "1",
+      title: "카카오 프론트엔드 면접",
+      date: "2025-04-04",
+      type: "interview",
+      day: 4,
+    },
+    {
+      id: "2",
+      title: "라인 자기소개서 제출",
+      date: "2025-04-06",
+      type: "personal",
+      day: 6,
+    },
+    {
+      id: "3",
+      title: "라인 인턴십 마감",
+      date: "2025-04-10",
+      type: "deadline",
+      day: 10,
+    },
+    {
+      id: "4",
+      title: "토플 시험접수 마감",
+      date: "2025-04-12",
+      type: "personal",
+      day: 12,
+    },
+    {
+      id: "5",
+      title: "삼성 테크인턴 지원",
+      date: "2025-04-15",
+      type: "interview",
+      day: 15,
+    },
+    {
+      id: "6",
+      title: "네이버 서류 합격자 발표",
+      date: "2025-04-20",
+      type: "interview",
+      day: 20,
+    },
+  ])
+
+  useEffect(() => {
+    onScheduleUpdate(schedules)
+  }, [schedules, onScheduleUpdate])
+
+  const getCalendarData = () => {
+    // Get the first day of the month (0-6, where 0 is Sunday)
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay()
+
+    // Convert from Sunday-based (0-6) to Monday-based (0-6)
+    const firstDayIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1
+
+    // Get the last day of the month
+    const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
+
+    // Get the last day of the previous month
+    const lastDayOfPrevMonth = new Date(currentYear, currentMonth, 0).getDate()
+
+    // Calculate days from previous month to display
+    const daysFromPrevMonth = firstDayIndex
+
+    // Calculate total days needed to fill the calendar (typically 42 - a 6x7 grid)
+    const totalDays = 42 // 6 rows of 7 days
+
+    const calendarData = []
+
+    // Add days from previous month
+    for (let i = daysFromPrevMonth - 1; i >= 0; i--) {
+      const day = lastDayOfPrevMonth - i
+      calendarData.push({
+        day,
+        month: "prev",
+        date: new Date(currentYear, currentMonth - 1, day),
+        events: [],
+      })
+    }
+
+    // Add days from current month
+    for (let day = 1; day <= lastDayOfMonth; day++) {
+      calendarData.push({
+        day,
+        month: "current",
+        date: new Date(currentYear, currentMonth, day),
+        events: [],
+      })
+    }
+
+    // Add days from next month to fill the grid
+    const remainingDays = totalDays - calendarData.length
+    for (let day = 1; day <= remainingDays; day++) {
+      calendarData.push({
+        day,
+        month: "next",
+        date: new Date(currentYear, currentMonth + 1, day),
+        events: [],
+      })
+    }
+
+    return calendarData
+  }
+
+  const calendarData = getCalendarData()
+
+  const weekdays = ["월", "화", "수", "목", "금", "토", "일"]
+
+  const goToPreviousMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11)
+      setCurrentYear(currentYear - 1)
+    } else {
+      setCurrentMonth(currentMonth - 1)
+    }
+  }
+
+  const goToNextMonth = () => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0)
+      setCurrentYear(currentYear + 1)
+    } else {
+      setCurrentMonth(currentMonth + 1)
+    }
+  }
+
+  const goToToday = () => {
+    const today = new Date()
+    setCurrentMonth(today.getMonth())
+    setCurrentYear(today.getFullYear())
+    setView("month")
+  }
+
+  const goToThisWeek = () => {
+    const today = new Date()
+    setCurrentMonth(today.getMonth())
+    setCurrentYear(today.getFullYear())
+    setView("week")
+  }
+
+  const goToNextWeek = () => {
+    const today = new Date()
+    const nextWeek = new Date(today)
+    nextWeek.setDate(today.getDate() + 7)
+    setCurrentMonth(nextWeek.getMonth())
+    setCurrentYear(nextWeek.getFullYear())
+    setView("day")
+  }
+
+  const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"]
+
+  // Helper function to format a date as YYYY-MM-DD
+  const formatDateString = (date: Date): string => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0") // +1 because months are 0-indexed
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
+  }
+
+  // Helper function to create a valid date with proper month handling
+  const createValidDate = (year: number, month: number, day: number): Date => {
+    // Handle month overflow/underflow
+    let adjustedYear = year
+    let adjustedMonth = month
+
+    if (month < 0) {
+      adjustedMonth = 11 // December
+      adjustedYear = year - 1
+    } else if (month > 11) {
+      adjustedMonth = 0 // January
+      adjustedYear = year + 1
+    }
+
+    return new Date(adjustedYear, adjustedMonth, day)
+  }
+
+  const openAddModal = (day?: number) => {
+    if (day) {
+      setSelectedDay(day)
+
+      // Use today as default
+      const today = new Date()
+      let formattedDate = formatDateString(today)
+
+      try {
+        // Create a valid date for the selected day
+        const selectedDate = createValidDate(currentYear, currentMonth, day)
+
+        // Verify the date is valid
+        if (!isNaN(selectedDate.getTime())) {
+          formattedDate = formatDateString(selectedDate)
+        }
+      } catch (error) {
+        console.error("Error creating date:", error)
+        // Continue with today's date as fallback
+      }
+
+      // Create a new schedule with the formatted date
+      setSelectedSchedule({
+        id: "",
+        title: "",
+        date: formattedDate,
+        type: "interview",
+        day: day,
+      })
+    } else {
+      setSelectedDay(null)
+      // When no day is selected, create a schedule for today
+      const today = new Date()
+      setSelectedSchedule({
+        id: "",
+        title: "",
+        date: formatDateString(today),
+        type: "interview",
+        day: today.getDate(),
+      })
+    }
+
+    setIsEditing(false)
+    setIsModalOpen(true)
+  }
+
+  const openEditModal = (schedule: ScheduleItem) => {
+    setSelectedSchedule(schedule)
+    setIsEditing(true)
+    setIsModalOpen(true)
+  }
+
+  const handleSaveSchedule = (schedule: ScheduleItem) => {
+    try {
+      const scheduleDate = new Date(schedule.date)
+
+      // Verify the date is valid
+      if (isNaN(scheduleDate.getTime())) {
+        throw new Error("Invalid date")
+      }
+
+      const updatedSchedule = {
+        ...schedule,
+        day: scheduleDate.getDate(),
+      }
+
+      if (isEditing) {
+        setSchedules(schedules.map((s) => (s.id === schedule.id ? updatedSchedule : s)))
+      } else {
+        // Generate a unique ID for new schedules
+        const newId = Date.now().toString()
+        setSchedules([...schedules, { ...updatedSchedule, id: newId }])
+      }
+    } catch (error) {
+      console.error("Error saving schedule:", error)
+      // Could add user feedback here
+    }
+  }
+
+  const getFilteredSchedules = (day: number, month: string) => {
+    if (month !== "current") return []
+
+    // For current month events
+    return schedules.filter((schedule) => {
+      try {
+        const scheduleDate = new Date(schedule.date)
+
+        // Skip invalid dates
+        if (isNaN(scheduleDate.getTime())) return false
+
+        const isMatchingDay = scheduleDate.getDate() === day
+        const isMatchingMonth = scheduleDate.getMonth() === currentMonth
+        const isMatchingYear = scheduleDate.getFullYear() === currentYear
+        const isMatchingDate = isMatchingDay && isMatchingMonth && isMatchingYear
+
+        return isMatchingDate && (activeFilters.length === 0 || activeFilters.includes(schedule.type))
+      } catch (error) {
+        return false
+      }
+    })
+  }
+
+  return (
+    <div className="bg-white border rounded-md p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-2">
+          <button
+            className={`px-3 py-1 text-sm rounded-md ${view === "month" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+            onClick={goToToday}
+          >
+            오늘
+          </button>
+          <button
+            className={`px-3 py-1 text-sm rounded-md ${view === "week" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+            onClick={goToThisWeek}
+          >
+            이번
+          </button>
+          <button
+            className={`px-3 py-1 text-sm rounded-md ${view === "day" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+            onClick={goToNextWeek}
+          >
+            다음
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="p-1 rounded-md hover:bg-gray-100" onClick={goToPreviousMonth}>
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <h2 className="text-lg font-medium">
+            {monthNames[currentMonth]} {currentYear}
+          </h2>
+          <button className="p-1 rounded-md hover:bg-gray-100" onClick={goToNextMonth}>
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+        <button
+          className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700"
+          onClick={() => openAddModal()}
+        >
+          <Plus className="h-4 w-4" />
+          <span className="text-sm">일정 추가</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-7 gap-0 border-t border-l">
+        {weekdays.map((day, index) => (
+          <div key={day} className="py-2 text-center text-sm font-medium border-r border-b bg-gray-50">
+            {day}
+          </div>
+        ))}
+
+        {calendarData.map((day, index) => {
+          const isToday =
+            day.month === "current" &&
+            day.day === new Date().getDate() &&
+            currentMonth === new Date().getMonth() &&
+            currentYear === new Date().getFullYear()
+
+          return (
+            <div
+              key={index}
+              className={`min-h-[100px] p-2 border-r border-b relative 
+              ${day.month !== "current" ? "bg-gray-100" : ""} 
+              ${isToday ? "bg-blue-50" : ""}`}
+              onClick={() => day.month === "current" && openAddModal(day.day)}
+            >
+              <div className={`text-sm mb-2 ${isToday ? "font-bold text-blue-600" : ""}`}>{day.day}</div>
+              {getFilteredSchedules(day.day, day.month).map((event) => {
+                let bgColor = "bg-blue-100 text-blue-800"
+                let borderColor = "border-blue-200"
+
+                if (event.type === "interview") {
+                  bgColor = "bg-blue-100 text-blue-800"
+                  borderColor = "border-blue-200"
+                }
+                if (event.type === "deadline") {
+                  bgColor = "bg-yellow-100 text-yellow-800"
+                  borderColor = "border-yellow-200"
+                }
+                if (event.type === "personal") {
+                  bgColor = "bg-green-100 text-green-800"
+                  borderColor = "border-green-200"
+                }
+
+                return (
+                  <div
+                    key={event.id}
+                    className={`${bgColor} text-xs p-1.5 rounded border ${borderColor} mb-1 truncate cursor-pointer hover:opacity-80`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      openEditModal(event)
+                    }}
+                  >
+                    {event.title}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
+      </div>
+
+      <ScheduleModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveSchedule}
+        schedule={selectedSchedule}
+        isEditing={isEditing}
+      />
+    </div>
+  )
+}
