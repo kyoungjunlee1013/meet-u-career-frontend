@@ -4,7 +4,7 @@ export function InterviewList() {
   const interviews = [
     {
       id: 1,
-      status: "scheduled",
+      status: "scheduled" as const,
       date: "2023-06-15T14:00:00",
       company: "(주)사람인HR",
       position: "웹 프론트엔드 개발자",
@@ -15,7 +15,7 @@ export function InterviewList() {
     },
     {
       id: 2,
-      status: "completed",
+      status: "completed" as const,
       date: "2023-06-10T10:30:00",
       company: "테크스타트(주)",
       position: "React 개발자",
@@ -27,7 +27,7 @@ export function InterviewList() {
     },
     {
       id: 3,
-      status: "canceled",
+      status: "canceled" as const,
       date: "2023-05-25T15:30:00",
       company: "글로벌소프트(주)",
       position: "백엔드 개발자",
@@ -39,9 +39,9 @@ export function InterviewList() {
   ]
 
   return (
-    <div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 justify-center">
       {interviews.map((interview) => (
-        <div key={interview.id} className="p-4 hover:bg-gray-50 transition-colors">
+        <div key={interview.id} className="flex justify-center h-full">
           <InterviewCard interview={interview} />
         </div>
       ))}

@@ -304,37 +304,40 @@ export function CoverLetterEditor({ id, isEditMode }: { id?: string | null; isEd
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">{isEditMode ? "자기소개서 수정" : "자기소개서 작성"}</h1>
-
-      <CoverLetterBasicInfoCard coverLetterData={coverLetterData} setCoverLetterData={setCoverLetterData} />
-
+    <>
       {isMobile ? (
-        <Tabs defaultValue="editor" className="w-full">
-          <TabsList className="w-full grid grid-cols-2">
-            <TabsTrigger value="editor">작성</TabsTrigger>
-            <TabsTrigger value="manager">항목 관리</TabsTrigger>
-          </TabsList>
-          <TabsContent value="editor" className="mt-4">
-            <CoverLetterContentEditorList
-              sections={sections}
-              onSectionContentUpdate={handleSectionContentUpdate}
-              onRequestFeedback={handleRequestFeedback}
-              onApplyFeedback={handleApplyFeedback}
-            />
-          </TabsContent>
-          <TabsContent value="manager" className="mt-4">
-            <CoverLetterSectionManagerPanel
-              sections={sections}
-              onSectionReorder={handleSectionReorder}
-              onDeleteSection={handleDeleteSection}
-              onAddSectionClick={() => setIsAddModalOpen(true)}
-            />
-          </TabsContent>
-        </Tabs>
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold text-gray-900">{isEditMode ? "자기소개서 수정" : "자기소개서 작성"}</h1>
+          <CoverLetterBasicInfoCard coverLetterData={coverLetterData} setCoverLetterData={setCoverLetterData} />
+          <Tabs defaultValue="editor" className="w-full">
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="editor">작성</TabsTrigger>
+              <TabsTrigger value="manager">항목 관리</TabsTrigger>
+            </TabsList>
+            <TabsContent value="editor" className="mt-4">
+              <CoverLetterContentEditorList
+                sections={sections}
+                onSectionContentUpdate={handleSectionContentUpdate}
+                onRequestFeedback={handleRequestFeedback}
+                onApplyFeedback={handleApplyFeedback}
+              />
+            </TabsContent>
+            <TabsContent value="manager" className="mt-4">
+              <CoverLetterSectionManagerPanel
+                sections={sections}
+                onSectionReorder={handleSectionReorder}
+                onDeleteSection={handleDeleteSection}
+                onAddSectionClick={() => setIsAddModalOpen(true)}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
       ) : (
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="w-full md:w-7/10 lg:w-7/10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* 좌측 70%: 상단(제목 입력) + 항목 입력 카드 리스트 */}
+          <div className="lg:col-span-2 space-y-6">
+            <h1 className="text-2xl font-bold text-gray-900">{isEditMode ? "자기소개서 수정" : "자기소개서 작성"}</h1>
+            <CoverLetterBasicInfoCard coverLetterData={coverLetterData} setCoverLetterData={setCoverLetterData} />
             <CoverLetterContentEditorList
               sections={sections}
               onSectionContentUpdate={handleSectionContentUpdate}
@@ -342,7 +345,8 @@ export function CoverLetterEditor({ id, isEditMode }: { id?: string | null; isEd
               onApplyFeedback={handleApplyFeedback}
             />
           </div>
-          <div className="w-full md:w-3/10 lg:w-3/10">
+          {/* 우측 30%: 항목 관리 */}
+          <div className="lg:col-span-1">
             <div className="sticky top-20">
               <CoverLetterSectionManagerPanel
                 sections={sections}
@@ -354,7 +358,6 @@ export function CoverLetterEditor({ id, isEditMode }: { id?: string | null; isEd
           </div>
         </div>
       )}
-
       <div className="fixed bottom-6 right-6 z-10">
         <SaveButton
           onClick={handleSaveCoverLetter}
@@ -363,7 +366,6 @@ export function CoverLetterEditor({ id, isEditMode }: { id?: string | null; isEd
           progress={saveProgress}
         />
       </div>
-
       {isAddModalOpen && (
         <CoverLetterSectionAddModal
           isOpen={isAddModalOpen}
@@ -371,6 +373,6 @@ export function CoverLetterEditor({ id, isEditMode }: { id?: string | null; isEd
           onAdd={handleAddSection}
         />
       )}
-    </div>
+    </>
   )
 }

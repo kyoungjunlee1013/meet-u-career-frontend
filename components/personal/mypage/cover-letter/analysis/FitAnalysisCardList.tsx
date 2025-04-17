@@ -7,18 +7,16 @@ import { analyzeAllContents } from "./actions"
 import { Loader2 } from "lucide-react"
 
 interface FitAnalysisCardListProps {
-  coverLetterId: string
-  contents: any[]
-  jobTitle: string | null
-  jobPostingId: string | null
-  onAnalysisComplete: (contents: any[]) => void
+  coverLetterId: string;
+  contents: any[];
+  jobTitle: string | null;
+  onAnalysisComplete: (contents: any[]) => void;
 }
 
 export const FitAnalysisCardList = ({
   coverLetterId,
   contents,
   jobTitle,
-  jobPostingId,
   onAnalysisComplete,
 }: FitAnalysisCardListProps) => {
   const [analysisContents, setAnalysisContents] = useState<any[]>([])
@@ -39,18 +37,11 @@ export const FitAnalysisCardList = ({
       setAnalyzing(true)
       setError(null)
 
-      const results = await analyzeAllContents(
-        coverLetterId,
-        analysisContents.map((c) => c.id),
-        jobTitle,
-        jobPostingId,
-      )
-
-      setAnalysisContents(results)
-      onAnalysisComplete(results)
+      const updated = await analyzeAllContents(coverLetterId, contents.map((c) => c.id), jobTitle)
+      setAnalysisContents(updated)
+      onAnalysisComplete(updated)
     } catch (err) {
-      setError("분석 중 오류가 발생했습니다. 다시 시도해주세요.")
-      console.error(err)
+      setError("전체 분석에 실패했습니다.")
     } finally {
       setAnalyzing(false)
     }
@@ -100,7 +91,6 @@ export const FitAnalysisCardList = ({
           key={content.id}
           content={content}
           jobTitle={jobTitle}
-          jobPostingId={jobPostingId}
           onAnalysisComplete={updateContentAnalysis}
         />
       ))}

@@ -18,7 +18,6 @@ export const CoverLetterAnalysisContent = ({ coverLetterId }: CoverLetterAnalysi
   const [error, setError] = useState<string | null>(null)
   const [selectedJobCategory, setSelectedJobCategory] = useState<string | null>(null)
   const [selectedJobTitle, setSelectedJobTitle] = useState<string | null>(null)
-  const [selectedJobPosting, setSelectedJobPosting] = useState<string | null>(null)
   const [allAnalysisComplete, setAllAnalysisComplete] = useState(false)
 
   useEffect(() => {
@@ -61,31 +60,31 @@ export const CoverLetterAnalysisContent = ({ coverLetterId }: CoverLetterAnalysi
   }
 
   return (
-    <div className="space-y-6">
-      <AnalysisHeader
-        title={coverLetter?.title || "제목 없음"}
-        onJobCategoryChange={setSelectedJobCategory}
-        onJobTitleChange={setSelectedJobTitle}
-        onJobPostingChange={setSelectedJobPosting}
-      />
-
-      {allAnalysisComplete && (
-        <Alert className="bg-green-50 border-green-200 mb-6">
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">모든 항목에 대한 분석이 완료되었습니다.</AlertDescription>
-        </Alert>
-      )}
-
+    <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        {/* 좌측 70%: 상단 정보 + 카드 리스트 */}
+        <div className="lg:col-span-2 space-y-6">
+          <AnalysisHeader
+            title={coverLetter?.title || "제목 없음"}
+            onJobCategoryChange={setSelectedJobCategory}
+            onJobTitleChange={setSelectedJobTitle}
+          />
+
+          {allAnalysisComplete && (
+            <Alert className="bg-green-50 border-green-200 mb-6">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">모든 항목에 대한 분석이 완료되었습니다.</AlertDescription>
+            </Alert>
+          )}
+
           <FitAnalysisCardList
             coverLetterId={coverLetterId}
             contents={coverLetter?.contents || []}
             jobTitle={selectedJobTitle}
-            jobPostingId={selectedJobPosting}
             onAnalysisComplete={(contents) => checkAllAnalysisComplete(contents)}
           />
         </div>
+        {/* 우측 30%: 분석 현황/요약 */}
         <div className="lg:col-span-1">
           <AnalysisSidebar contents={coverLetter?.contents || []} />
         </div>

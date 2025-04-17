@@ -35,66 +35,57 @@ export function InterviewCard({ interview }: InterviewCardProps) {
   })
 
   return (
-    <>
-      <div className="flex items-start justify-between">
-        <div className="flex items-start space-x-4">
-          <div className="h-12 w-12 rounded-md overflow-hidden flex-shrink-0 border border-gray-200">
-            <Image
-              src={interview.logo || "/placeholder.svg"}
-              alt={interview.company}
-              width={48}
-              height={48}
-              className="h-full w-full object-cover"
-            />
-          </div>
-          <div>
-            <h4 className="font-medium text-gray-900">{interview.company}</h4>
-            <p className="text-sm text-gray-600 mt-1">{interview.position}</p>
-            <p className="text-sm text-gray-500 mt-1">{formattedDate}</p>
-            <div className="mt-2">
-              <InterviewStatusBadge status={interview.status} />
-            </div>
-          </div>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col h-full max-w-[350px] w-full mx-auto p-6">
+      {/* 상단: 상태 뱃지 & 날짜 */}
+      <div className="flex items-center justify-between mb-4">
+        <InterviewStatusBadge status={interview.status} />
+        <span className="text-xs text-gray-400 font-medium">{formattedDate.split(' ')[0]}</span>
+      </div>
+      {/* 회사/포지션 */}
+      <div className="flex items-center mb-2">
+        <div className="h-10 w-10 rounded-md overflow-hidden flex-shrink-0 border border-gray-200 mr-3">
+          <Image
+            src={interview.logo || "/placeholder.svg"}
+            alt={interview.company}
+            width={40}
+            height={40}
+            className="h-full w-full object-cover"
+          />
         </div>
-        <div className="flex space-x-2">
-          {interview.status === "scheduled" ? (
-            <>
-              <button className="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors">
-                일정 변경
-              </button>
-              <button className="text-sm bg-red-50 text-red-600 px-3 py-1.5 rounded-md hover:bg-red-100 transition-colors">
-                취소
-              </button>
-            </>
-          ) : (
-            <button
-              className="text-sm bg-green-50 text-green-600 px-3 py-1.5 rounded-md hover:bg-green-100 transition-colors"
-              onClick={() => setIsModalOpen(true)}
-            >
-              후기 작성
-            </button>
-          )}
+        <div>
+          <h4 className="font-bold text-gray-900 text-base leading-tight">{interview.company}</h4>
+          <p className="text-sm text-gray-600 mt-0.5">{interview.position}</p>
         </div>
       </div>
-
-      {isModalOpen && (
-        <ReviewModal
-          onClose={() => setIsModalOpen(false)}
-          interview={{
-            id: interview.id,
-            company: interview.company,
-            position: interview.position,
-            date: interview.date,
-            location: interview.location || "",
-            time: interview.time || "",
-            interviewer: interview.interviewer || "",
-            status: interview.status,
-            hasReview: interview.hasReview,
-          }}
-        />
-      )}
-    </>
-  )
+      {/* 상세 정보 */}
+      <div className="flex flex-col gap-1 text-sm text-gray-700 mb-6 mt-2">
+        {interview.location && (
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21c-4.418 0-8-4.03-8-9 0-3.866 3.134-7 7-7s7 3.134 7 7c0 4.97-3.582 9-8 9z" /><circle cx="12" cy="12" r="3" /></svg>
+            <span>{interview.location}</span>
+          </div>
+        )}
+        {interview.time && (
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /></svg>
+            <span>{interview.time}</span>
+          </div>
+        )}
+        {interview.interviewer && (
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 14a4 4 0 1 0-8 0M12 18c-4.418 0-8 1.79-8 4v1h16v-1c0-2.21-3.582-4-8-4z" /></svg>
+            <span>{interview.interviewer}</span>
+          </div>
+        )}
+      </div>
+      {/* 하단 버튼 */}
+      <div className="mt-auto">
+        <button className="w-full border border-blue-500 text-blue-600 font-medium rounded-lg py-2 transition-colors hover:bg-blue-50">
+          상세 보기
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function InterviewStatusBadge({ status }: { status: "scheduled" | "completed" | "canceled" }) {

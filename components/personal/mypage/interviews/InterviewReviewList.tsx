@@ -23,10 +23,12 @@ export function InterviewReviewList() {
   ]
 
   return (
-    <div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
       {reviews.map((review) => (
-        <div key={review.id} className="p-4 hover:bg-gray-50 transition-colors">
-          <InterviewReviewCard review={review} />
+        <div key={review.id} className="h-full">
+          <div className="p-4 hover:bg-gray-50 transition-colors h-full">
+            <InterviewReviewCard review={review} />
+          </div>
         </div>
       ))}
     </div>
