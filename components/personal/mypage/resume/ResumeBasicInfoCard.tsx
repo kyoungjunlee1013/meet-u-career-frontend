@@ -70,16 +70,33 @@ export function ResumeBasicInfoCard({ resumeData, setResumeData }: ResumeBasicIn
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left column - Profile image */}
         <div className="flex flex-col items-center">
-          <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-200 mb-4">
+          <div className="relative w-32 h-32 rounded-md overflow-hidden bg-gray-200 mb-2">
             <Image
-              src="/vibrant-street-market.png"
+              src={resumeData.profileImage || "/vibrant-street-market.png"}
               alt="Profile"
               width={128}
               height={128}
               className="object-cover w-full h-full"
             />
           </div>
-          <p className="text-sm text-gray-500">프로필 이미지는 마이페이지에서 변경 가능합니다.</p>
+          <label className="block w-full">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setResumeData({ ...resumeData, profileImage: reader.result as string });
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            />
+            <Button type="button" variant="outline" className="w-full mt-2">프로필 사진 변경</Button>
+          </label>
         </div>
 
         {/* Middle column - Basic info */}
