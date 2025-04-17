@@ -38,56 +38,55 @@ export function ResumeSectionManagerPanel({
     onSectionReorder(reordered);
   }
 
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900">항목 관리</h3>
-      </div>
+  const activeSections = sections.filter(s => s.isActive);
+const inactiveSections = sections.filter(s => !s.isActive);
+return (
+  <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="p-4 border-b border-gray-200">
+      <h3 className="text-lg font-medium text-gray-900">항목 관리</h3>
+    </div>
 
-      <div className="p-4">
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">활성 항목</h4>
-            <Droppable droppableId="active-sections" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
-  {(provided) => (
-    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-      {sections.map((section: ResumeSection, index: number) => {
-        if (!section.isActive) return null;
-        return (
-          <Draggable key={section.id} draggableId={section.id} index={index}>
-            {(providedDraggable, snapshot) => (
-              <li
-                ref={providedDraggable.innerRef}
-                {...providedDraggable.draggableProps}
-                className={`flex items-center justify-between p-3 rounded-md border ${
-                  snapshot.isDragging
-                    ? "border-blue-300 bg-blue-50 shadow-md"
-                    : "border-gray-200 bg-white"
-                }`}
-              >
-                <div className="flex items-center">
-                  <div {...providedDraggable.dragHandleProps} className="mr-2 cursor-grab">
-                    <GripVertical className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <span>{section.title}</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onSectionToggle(section.id)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </li>
+    <div className="p-4">
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">활성 항목</h4>
+          <Droppable droppableId="active-sections" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
+            {(provided) => (
+              <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                {activeSections.map((section, index) => (
+                  <Draggable key={section.id} draggableId={section.id} index={index}>
+                    {(providedDraggable, snapshot) => (
+                      <li
+                        ref={providedDraggable.innerRef}
+                        {...providedDraggable.draggableProps}
+                        className={`flex items-center justify-between p-3 rounded-md border ${
+                          snapshot.isDragging
+                            ? "border-blue-300 bg-blue-50 shadow-md"
+                            : "border-gray-200 bg-white"
+                        }`}
+                      >
+                        <div className="flex items-center">
+                          <div {...providedDraggable.dragHandleProps} className="mr-2 cursor-grab">
+                            <GripVertical className="h-4 w-4 text-gray-400" />
+                          </div>
+                          <span>{section.title}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onSectionToggle(section.id)}
+                          className="text-gray-500 hover:text-gray-700"
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                        </Button>
+                      </li>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </ul>
             )}
-          </Draggable>
-        );
-      })}
-      {provided.placeholder}
-    </ul>
-  )}
-</Droppable>
+          </Droppable>
           </div>
 
           <div>
@@ -105,39 +104,36 @@ export function ResumeSectionManagerPanel({
               <Droppable droppableId="inactive-sections" ignoreContainerClipping={false} isDropDisabled={false} isCombineEnabled={false}>
                 {(provided) => (
                   <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                    {sections.map((section: ResumeSection, index: number) => {
-  if (section.isActive) return null;
-  return (
-    <Draggable key={section.id} draggableId={section.id} index={index}>
-      {(providedDraggable, snapshot) => (
-        <li
-          ref={providedDraggable.innerRef}
-          {...providedDraggable.draggableProps}
-          className={`flex items-center justify-between p-3 rounded-md border ${
-            snapshot.isDragging
-              ? "border-blue-300 bg-blue-50 shadow-md"
-              : "border-gray-200 bg-gray-50"
-          } opacity-70`}
-        >
-          <div className="flex items-center">
-            <div {...providedDraggable.dragHandleProps} className="mr-2 cursor-grab">
-              <GripVertical className="h-4 w-4 text-gray-400" />
-            </div>
-            <span className="text-gray-600">{section.title}</span>
+                    {inactiveSections.map((section, index) => (
+  <Draggable key={section.id} draggableId={section.id} index={index}>
+    {(providedDraggable, snapshot) => (
+      <li
+        ref={providedDraggable.innerRef}
+        {...providedDraggable.draggableProps}
+        className={`flex items-center justify-between p-3 rounded-md border ${
+          snapshot.isDragging
+            ? "border-blue-300 bg-blue-50 shadow-md"
+            : "border-gray-200 bg-gray-50"
+        } opacity-70`}
+      >
+        <div className="flex items-center">
+          <div {...providedDraggable.dragHandleProps} className="mr-2 cursor-grab">
+            <GripVertical className="h-4 w-4 text-gray-400" />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onSectionToggle(section.id)}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <ChevronUp className="h-4 w-4" />
-          </Button>
-        </li>
-      )}
-    </Draggable>
-  );
-})}
+          <span className="text-gray-600">{section.title}</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onSectionToggle(section.id)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <ChevronUp className="h-4 w-4" />
+        </Button>
+      </li>
+    )}
+  </Draggable>
+))}
 {provided.placeholder}
                   </ul>
                 )}
