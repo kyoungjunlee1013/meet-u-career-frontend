@@ -15,33 +15,27 @@ interface BlockedCompanyCardProps {
 
 export function BlockedCompanyCard({ company }: BlockedCompanyCardProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="p-4">
-        <div className="flex items-start">
-          <Building className="h-5 w-5 text-gray-500 mr-2 mt-0.5 flex-shrink-0" />
-          <div>
-            <h3 className="font-medium text-gray-900">{company.name}</h3>
-            <p className="text-sm text-gray-500">
-              {company.category} | {company.size}
-            </p>
-          </div>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col h-full max-w-[350px] w-full mx-auto p-6">
+      {/* 상단: 빌딩 아이콘 & 회사명 */}
+      <div className="flex items-center mb-4">
+        <Building className="h-6 w-6 text-gray-500 mr-2" />
+        <h3 className="font-bold text-gray-900 text-base leading-tight">{company.name}</h3>
+      </div>
+      {/* 상세 정보 */}
+      <div className="flex flex-col gap-2 text-sm text-gray-700 mb-6 mt-2">
+        <div className="flex items-center text-gray-500">
+          <MapPin className="h-4 w-4 mr-1" />
+          <span>{company.location}</span>
         </div>
-
-        <div className="mt-4 space-y-2">
-          <div className="flex items-start">
-            <MapPin className="h-5 w-5 text-gray-500 mr-2 mt-0.5 flex-shrink-0" />
-            <span className="text-sm text-gray-700">위치: {company.location}</span>
-          </div>
-          <div className="flex items-start">
-            <Calendar className="h-5 w-5 text-gray-500 mr-2 mt-0.5 flex-shrink-0" />
-            <span className="text-sm text-gray-700">차단 일자: {company.blockedDate}</span>
-          </div>
+        <div className="flex items-center text-gray-500">
+          <Calendar className="h-4 w-4 mr-1" />
+          <span>차단 일자: {company.blockedDate}</span>
         </div>
       </div>
-
-      <div className="border-t border-gray-200">
+      {/* 버튼 */}
+      <div className="flex mt-auto">
         <button
-          className="w-full py-3 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+          className="flex-1 py-2 px-4 bg-white border border-blue-500 text-blue-600 rounded-md text-sm font-semibold hover:bg-blue-50 transition-colors"
           aria-label={`${company.name} 차단 해제하기`}
         >
           차단해제

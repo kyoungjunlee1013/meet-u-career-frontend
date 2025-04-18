@@ -1,36 +1,30 @@
 "use client"
 
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-
-export function OffersTabs() {
-  const [activeTab, setActiveTab] = useState("전체")
-
+export function OffersTabs({ activeTab, onTabChange, counts }) {
   const tabs = [
-    { id: "전체", label: "전체", count: 3 },
-    { id: "검토중", label: "검토중", count: 1 },
-    { id: "수락", label: "수락", count: 1 },
-    { id: "거절", label: "거절", count: 1 },
-  ]
-
+    { id: "전체", label: "전체", count: counts["전체"] },
+    { id: "검토중", label: "검토중", count: counts["검토중"] },
+    { id: "수락함", label: "수락", count: counts["수락함"] },
+    { id: "거절함", label: "거절", count: counts["거절함"] },
+  ];
   return (
     <div className="border-b border-gray-200">
-      <nav className="flex -mb-px space-x-8">
-        {tabs.map((tab) => (
+      <nav className="flex">
+        {tabs.map(tab => (
           <button
             key={tab.id}
-            className={cn(
-              "py-4 px-1 text-sm font-medium border-b-2 whitespace-nowrap",
-              activeTab === tab.id
+            className={
+              "py-4 px-4 text-sm font-medium border-b-2 whitespace-nowrap " +
+              (activeTab === tab.id
                 ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
-            )}
-            onClick={() => setActiveTab(tab.id)}
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300")
+            }
+            onClick={() => onTabChange(tab.id)}
           >
-            {tab.label} {tab.count}
+            {tab.label} <span className={activeTab === tab.id ? "text-blue-600 ml-1" : "text-gray-500 ml-1"}>{tab.count}</span>
           </button>
         ))}
       </nav>
     </div>
-  )
+  );
 }

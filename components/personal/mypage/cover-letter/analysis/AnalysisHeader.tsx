@@ -6,24 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getJobCategories, getJobTitles, getJobPostings } from "./actions"
 
 interface AnalysisHeaderProps {
-  title: string
-  onJobCategoryChange: (category: string | null) => void
-  onJobTitleChange: (title: string | null) => void
-  onJobPostingChange: (postingId: string | null) => void
+  title: string;
+  onJobCategoryChange: (category: string | null) => void;
+  onJobTitleChange: (title: string | null) => void;
 }
 
 export const AnalysisHeader = ({
   title,
   onJobCategoryChange,
   onJobTitleChange,
-  onJobPostingChange,
 }: AnalysisHeaderProps) => {
   const [jobCategories, setJobCategories] = useState<any[]>([])
   const [jobTitles, setJobTitles] = useState<any[]>([])
-  const [jobPostings, setJobPostings] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedTitle, setSelectedTitle] = useState<string | null>(null)
-  const [selectedPosting, setSelectedPosting] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -63,46 +59,17 @@ export const AnalysisHeader = ({
     fetchJobTitles()
   }, [selectedCategory])
 
-  useEffect(() => {
-    const fetchJobPostings = async () => {
-      if (!selectedTitle) {
-        setJobPostings([])
-        return
-      }
-
-      try {
-        setLoading(true)
-        const postings = await getJobPostings(selectedTitle)
-        setJobPostings(postings)
-      } catch (error) {
-        console.error("Failed to fetch job postings:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchJobPostings()
-  }, [selectedTitle])
 
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value)
     setSelectedTitle(null)
-    setSelectedPosting(null)
     onJobCategoryChange(value)
     onJobTitleChange(null)
-    onJobPostingChange(null)
   }
 
   const handleTitleChange = (value: string) => {
     setSelectedTitle(value)
-    setSelectedPosting(null)
     onJobTitleChange(value)
-    onJobPostingChange(null)
-  }
-
-  const handlePostingChange = (value: string) => {
-    setSelectedPosting(value)
-    onJobPostingChange(value)
   }
 
   return (
@@ -152,27 +119,7 @@ export const AnalysisHeader = ({
             </Select>
           </div>
 
-          <div>
-            <label htmlFor="job-posting" className="block text-sm font-medium text-gray-700 mb-1">
-              공고 선택 (선택)
-            </label>
-            <Select
-              value={selectedPosting || ""}
-              onValueChange={handlePostingChange}
-              disabled={!selectedTitle || loading}
-            >
-              <SelectTrigger id="job-posting" className="w-full">
-                <SelectValue placeholder="공고 선택 (선택사항)" />
-              </SelectTrigger>
-              <SelectContent>
-                {jobPostings.map((posting) => (
-                  <SelectItem key={posting.id} value={posting.id}>
-                    {posting.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+
         </div>
       </CardContent>
     </Card>

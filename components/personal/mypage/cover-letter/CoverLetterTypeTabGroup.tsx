@@ -1,16 +1,15 @@
-"use client"
+"use client";
 
-import { Bookmark, Building2 } from "lucide-react"
-
-interface BookmarkTabsProps {
-  activeTab: "jobs" | "companies"
-  setActiveTab: (tab: "jobs" | "companies") => void
+interface CoverLetterTypeTabGroupProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
 }
 
-export function BookmarkTabs({ activeTab, setActiveTab }: BookmarkTabsProps) {
+export const CoverLetterTypeTabGroup = ({ activeTab, setActiveTab }: CoverLetterTypeTabGroupProps) => {
   const tabs = [
-    { id: "jobs", label: "스크랩 공고" },
-    { id: "companies", label: "관심기업" },
+    { id: "all", label: "전체" },
+    { id: "analyzed", label: "분석 완료" },
+    { id: "unanalyzed", label: "미분석" },
   ];
 
   return (
@@ -24,7 +23,7 @@ export function BookmarkTabs({ activeTab, setActiveTab }: BookmarkTabsProps) {
                 ? "text-blue-600 border-blue-600"
                 : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
             }`}
-            onClick={() => setActiveTab(tab.id as "jobs" | "companies")}
+            onClick={() => setActiveTab(tab.id)}
             type="button"
           >
             {tab.label}
@@ -33,4 +32,4 @@ export function BookmarkTabs({ activeTab, setActiveTab }: BookmarkTabsProps) {
       </div>
     </div>
   );
-}
+};

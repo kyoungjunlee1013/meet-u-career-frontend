@@ -49,7 +49,7 @@ export function BookmarkedCompanies({ searchQuery }: BookmarkedCompaniesProps) {
 
   return (
     <div>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredCompanies.map((company) => (
           <CompanyCard key={company.id} company={company} />
         ))}

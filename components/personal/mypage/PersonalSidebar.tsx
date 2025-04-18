@@ -5,12 +5,15 @@ import Link from "next/link"
 import Image from "next/image"
 import { Bookmark, FileText, Home, Mail, MessageSquare, Send, HelpCircle, ChevronRight } from "lucide-react"
 
+import { useSidebar } from "./SidebarProvider"
+
 interface PersonalSidebarProps {
-  isOpen: boolean
   activeItem?: string
 }
 
-export const PersonalSidebar = ({ isOpen, activeItem = "MY홈" }: PersonalSidebarProps) => {
+export const PersonalSidebar = ({ activeItem = "MY홈" }: PersonalSidebarProps) => {
+  const { sidebarOpen: isOpen, setSidebarOpen } = useSidebar()
+  const onClose = () => setSidebarOpen(false)
   // Handle body scroll lock when sidebar is open on mobile
   useEffect(() => {
     const handleBodyScroll = () => {
@@ -34,14 +37,18 @@ export const PersonalSidebar = ({ isOpen, activeItem = "MY홈" }: PersonalSideba
     <>
       {/* Mobile overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 z-20 transition-opacity md:hidden" aria-hidden="true" />
+        <div
+          className="fixed inset-0 bg-gray-600 bg-opacity-50 z-20 transition-opacity md:hidden"
+          aria-hidden="true"
+          onClick={onClose}
+        />
       )}
 
       {/* Sidebar */}
       <aside
         className={`fixed top-16 bottom-0 left-0 w-64 bg-white shadow-sm z-20 transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0`}
+        }`}
       >
         <div className="flex flex-col h-full overflow-y-auto">
           <div className="p-4 border-b border-gray-100">
