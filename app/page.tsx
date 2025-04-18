@@ -1,15 +1,17 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from "react"
-import axios, { AxiosResponse } from 'axios'
+import { useEffect, useState } from "react";
+import axios, { AxiosResponse } from "axios";
 import type { JobProps } from "@/types/job";
-import { Header } from "@/components/home/Header"
-import { MainNavigation } from "@/components/home/MainNavigation"
-import { SearchBar } from "@/components/home/SearchBar"
-import { PopularJobs } from "@/components/home/PopularJobs"
-import { MostAppliedJobs } from "@/components/home/MostAppliedJobs"
-import { LatestJobs } from "@/components/home/LatestJobs"
-import { Footer } from "@/components/home/Footer"
+import { Header } from "@/components/home/Header";
+import { MainNavigation } from "@/components/home/MainNavigation";
+import { SearchBar } from "@/components/home/SearchBar";
+import { PopularJobs } from "@/components/home/PopularJobs";
+import { MostAppliedJobs } from "@/components/home/MostAppliedJobs";
+import { LatestJobs } from "@/components/home/LatestJobs";
+import { Footer } from "@/components/home/Footer";
+import { useAuthStore } from "@/store/useAuthStore";
+import LoginHeader from "@/components/home/LoginHeader";
 
 interface ResponseProps {
   data: {
@@ -24,23 +26,19 @@ export default function HomePage() {
   const [popular, setPopular] = useState<JobProps[]>([]);
   const [latest, setLatest] = useState<JobProps[]>([]);
   const [mostApplied, setMostApplied] = useState<JobProps[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { accessToken } = useAuthStore();
 
   useEffect(() => {
-    axios.get<ResponseProps>(API_URL)
+    axios
+      .get<ResponseProps>(API_URL)
       .then((response: AxiosResponse<ResponseProps>) => {
         console.log("response.data:", response.data.data);
 
-        if (response.data.data.popular) {
-          setPopular(response.data.data.popular);
-        }
-
-        if (response.data.data.latest) {
-          setLatest(response.data.data.latest);
-        }
-
-        if (response.data.data.mostApplied) {
-          setMostApplied(response.data.data.mostApplied);
-        }
+        setPopular(response.data.data.popular || []);
+        setLatest(response.data.data.latest || []);
+        setMostApplied(response.data.data.mostApplied || []);
       })
       .catch((error: any) => {
         console.error("error", error);
@@ -49,15 +47,15 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Header />
+      {accessToken ? <LoginHeader /> : <Header />}
       <MainNavigation />
       <main className="flex-1 max-w-[1200px] mx-auto px-4 py-6 w-full">
         <SearchBar />
-        <PopularJobs popular={popular} />
-        <LatestJobs latest={latest} />
-        <MostAppliedJobs mostApplied={mostApplied} />
+        <PopularJobs popular={popular} isLoading={isLoading} />
+        <LatestJobs latest={latest} isLoading={isLoading} />
+        <MostAppliedJobs mostApplied={mostApplied} isLoading={isLoading} />
       </main>
       <Footer />
     </div>
-  )
+  );
 }

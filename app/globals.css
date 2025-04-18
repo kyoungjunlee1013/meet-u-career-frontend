@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE/Edge */
 }
 
 @layer utilities {
@@ -90,5 +92,6 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+    @apply font-sans;
   }
 }

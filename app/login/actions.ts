@@ -34,6 +34,7 @@ export async function loginUser(formData: FormData) {
     if (error instanceof z.ZodError) {
       return {
         success: false,
+        message: "아이디 또는 비밀번호를 확인해주세요",
         errors: error.errors.reduce(
           (acc, curr) => {
             if (curr.path[0]) {
@@ -43,7 +44,7 @@ export async function loginUser(formData: FormData) {
           },
           {} as Record<string, string>,
         ),
-      }
+      };
     }
 
     return { success: false, message: "로그인 중 오류가 발생했습니다" }

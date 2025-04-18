@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export const MainNavigation = () => {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const isActive = (path: string) => {
-    return pathname === path || pathname.startsWith(`${path}/`)
-  }
+    return pathname === path || pathname.startsWith(`${path}/`);
+  };
 
   const navItems = [
     { label: "채용정보", href: "/personal/jobs" },
@@ -16,12 +16,12 @@ export const MainNavigation = () => {
     { label: "커뮤니티", href: "/personal/community" },
     { label: "자소서 코칭", href: "/personal/coaching" },
     { label: "일정 관리", href: "/personal/schedule" },
-  ]
+  ];
 
   return (
-    <nav className="bg-[#15274a] text-white">
+    <nav className="bg-[#15274a] text-white overflow-hidden">
       <div className="max-w-[1200px] mx-auto px-4">
-        <ul className="flex overflow-x-auto whitespace-nowrap py-3 -mb-px">
+        <ul className="flex items-center h-[52px]">
           {navItems.map((item) => (
             <li key={item.href} className="mr-6">
               <Link
@@ -39,5 +39,5 @@ export const MainNavigation = () => {
         </ul>
       </div>
     </nav>
-  )
-}
+  );
+};

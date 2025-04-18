@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import type { JobCardProps } from "@/types/job";
 import { useState, useEffect } from "react";
@@ -6,13 +6,20 @@ import Image from "next/image";
 import Link from "next/link";
 
 const gradients = [
-  "bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500",  // 1열
+  "bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500", // 1열
   "bg-gradient-to-r from-green-400 via-blue-500 to-purple-500", // 2열
-  "bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500",   // 3열
-  "bg-gradient-to-r from-blue-400 via-cyan-500 to-teal-500",    // 4열
+  "bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500", // 3열
+  "bg-gradient-to-r from-blue-400 via-cyan-500 to-teal-500", // 4열
 ];
 
-export const JobCard = ({ index, title, company, hashtag, dDay, thumbnailUrl }: JobCardProps) => {
+export const JobCard = ({
+  index,
+  title,
+  company,
+  hashtag,
+  dDay,
+  thumbnailUrl,
+}: JobCardProps) => {
   const [randomThumbnail, setRandomThumbnail] = useState<string>("");
 
   useEffect(() => {
@@ -22,15 +29,16 @@ export const JobCard = ({ index, title, company, hashtag, dDay, thumbnailUrl }: 
     }
   }, [thumbnailUrl]);
 
-  const finalThumbnail = thumbnailUrl && thumbnailUrl.trim() !== "" ? thumbnailUrl : randomThumbnail;
-  const isReady = thumbnailUrl && thumbnailUrl.trim() !== "" || randomThumbnail !== "";
+  const finalThumbnail =
+    thumbnailUrl && thumbnailUrl.trim() !== "" ? thumbnailUrl : randomThumbnail;
+  const isReady =
+    (thumbnailUrl && thumbnailUrl.trim() !== "") || randomThumbnail !== "";
 
-  const gradientClass = gradients[parseInt(index, 10) % 4]; // 열 고정 그라데이션
+  const gradientClass = gradients[parseInt(index.toString(), 10) % 4];
 
   return (
     <div className="group relative rounded-2xl overflow-hidden border bg-white transition-all hover:shadow-md">
       <Link href="#" className="block">
-
         {/* 상단 고정 그라데이션 선 */}
         <div className={`h-1 w-full ${gradientClass}`} />
 
