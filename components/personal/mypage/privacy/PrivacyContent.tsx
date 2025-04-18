@@ -1,24 +1,18 @@
 "use client"
 
-import { useState } from "react"
-import { PrivacyHeader } from "./PrivacyHeader"
-import { PrivacyStats } from "./PrivacyStats"
-import { PrivacyControls } from "./PrivacyControls"
-import { BlockedCompaniesList } from "./BlockedCompaniesList"
+import { useState } from "react";
+import { PrivacyHeader } from "./PrivacyHeader";
+import { PrivacyControls } from "./PrivacyControls";
+import { BlockedCompaniesList } from "./BlockedCompaniesList";
 
 export function PrivacyContent() {
-  const [searchQuery, setSearchQuery] = useState("")
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query)
-  }
-
+  const [searchQuery, setSearchQuery] = useState("");
   return (
     <div className="max-w-screen-xl mx-auto px-6 py-8">
       <PrivacyHeader />
-      <PrivacyStats />
       <PrivacyControls />
-      <BlockedCompaniesList searchQuery={searchQuery} onSearch={handleSearch} />
+      {/* 하단 중복 버튼 제거됨 */}
+      <BlockedCompaniesList searchQuery={searchQuery} onSearch={setSearchQuery} />
     </div>
-  )
+  );
 }

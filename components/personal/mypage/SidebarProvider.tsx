@@ -17,7 +17,7 @@ export function useSidebar() {
 }
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const toggleSidebar = () => setSidebarOpen((prev) => !prev)
   return (
     <SidebarContext.Provider value={{ sidebarOpen, setSidebarOpen, toggleSidebar }}>

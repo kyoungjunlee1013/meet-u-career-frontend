@@ -7,6 +7,7 @@ import { ResumeSummaryStatsCardList } from "./ResumeSummaryStatsCardList"
 import { ResumeTypeTabGroup } from "./ResumeTypeTabGroup"
 import { ResumeCardList } from "./ResumeCardList"
 import { ResumeEmptyState } from "./ResumeEmptyState"
+import { Pagination } from "../bookmarks/Pagination"
 
 // // Mock data for resumes
 // const mockResumes = [
@@ -55,15 +56,17 @@ import { ResumeEmptyState } from "./ResumeEmptyState"
 export const ResumeContent = () => {
   const [activeTab, setActiveTab] = useState<number | null>(null)
   type Resume = {
-  id: number;
-  title: string;
-  updatedAt: string;
-  resumeType: number;
-  isPrimary: boolean;
-  status: number;
-};
+    id: number;
+    title: string;
+    updatedAt: string;
+    resumeType: number;
+    isPrimary: boolean;
+    status: number;
+  };
 
-const [resumes, setResumes] = useState<Resume[]>([])
+  const [resumes, setResumes] = useState<Resume[]>([])
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 6;
 
   useEffect(() => {
     axios.get("/api/personal/resume/list")
@@ -80,6 +83,13 @@ const [resumes, setResumes] = useState<Resume[]>([])
 
   // Filter resumes based on active tab
   const filteredResumes = activeTab !== null ? resumes.filter((resume) => resume.resumeType === activeTab) : resumes
+
+  // 페이지네이션: 현재 페이지의 이력서만 추출
+  const totalPages = Math.max(1, Math.ceil(filteredResumes.length / pageSize));
+  const pagedResumes = filteredResumes.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  // 페이지/탭 변경 시 1페이지로 리셋
+  useEffect(() => { setCurrentPage(1); }, [activeTab, filteredResumes.length]);
 
   // Calculate stats
   const stats = {
@@ -111,7 +121,12 @@ const [resumes, setResumes] = useState<Resume[]>([])
         <ResumeTypeTabGroup activeTab={activeTab} setActiveTab={setActiveTab} />
 
         {filteredResumes.length > 0 ? (
-          <ResumeCardList resumes={filteredResumes} onSetPrimary={handleSetPrimary} onDelete={handleDelete} />
+          <>
+            <ResumeCardList resumes={pagedResumes} onSetPrimary={handleSetPrimary} onDelete={handleDelete} />
+            <div className="mt-8 flex justify-center">
+              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </div>
+          </>
         ) : (
           <ResumeEmptyState activeTab={activeTab} />
         )}

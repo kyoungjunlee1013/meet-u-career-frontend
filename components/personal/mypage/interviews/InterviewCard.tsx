@@ -3,9 +3,6 @@ import Image from "next/image"
 import { useState } from "react"
 import { ReviewModal } from "./review/ReviewModal"
 
-// Update the styling to match other mypage card components
-// Keep the component structure and functionality the same
-
 interface Interview {
   id: number
   company: string
@@ -34,6 +31,30 @@ export function InterviewCard({ interview }: InterviewCardProps) {
     minute: "2-digit",
   })
 
+  // 버튼 상태/텍스트 결정
+  let buttonText = ""
+  let buttonDisabled = true
+  let buttonStyle = "w-full py-2 px-4 rounded-md border text-sm font-semibold mt-6 "
+  if (interview.status === "scheduled") {
+    buttonText = "후기 작성"
+    buttonDisabled = true
+    buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+  } else if (interview.status === "completed") {
+    if (interview.hasReview) {
+      buttonText = "작성 완료"
+      buttonDisabled = true
+      buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+    } else {
+      buttonText = "후기 작성"
+      buttonDisabled = false
+      buttonStyle += "bg-blue-50 text-blue-600 border-blue-500 hover:bg-blue-100 cursor-pointer"
+    }
+  } else if (interview.status === "canceled") {
+    buttonText = "작성 불가"
+    buttonDisabled = true
+    buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col h-full max-w-[350px] w-full mx-auto p-6">
       {/* 상단: 상태 뱃지 & 날짜 */}
@@ -60,30 +81,45 @@ export function InterviewCard({ interview }: InterviewCardProps) {
       {/* 상세 정보 */}
       <div className="flex flex-col gap-1 text-sm text-gray-700 mb-6 mt-2">
         {interview.location && (
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21c-4.418 0-8-4.03-8-9 0-3.866 3.134-7 7-7s7 3.134 7 7c0 4.97-3.582 9-8 9z" /><circle cx="12" cy="12" r="3" /></svg>
-            <span>{interview.location}</span>
+          <div className="flex items-center">
+            <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {interview.location}
           </div>
         )}
         {interview.time && (
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" /></svg>
-            <span>{interview.time}</span>
+          <div className="flex items-center">
+            <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
+            </svg>
+            {interview.time}
           </div>
         )}
         {interview.interviewer && (
-          <div className="flex items-center gap-2">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 14a4 4 0 1 0-8 0M12 18c-4.418 0-8 1.79-8 4v1h16v-1c0-2.21-3.582-4-8-4z" /></svg>
-            <span>{interview.interviewer}</span>
+          <div className="flex items-center">
+            <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            {interview.interviewer}
           </div>
         )}
       </div>
-      {/* 하단 버튼 */}
-      <div className="mt-auto">
-        <button className="w-full border border-blue-500 text-blue-600 font-medium rounded-lg py-2 transition-colors hover:bg-blue-50">
-          상세 보기
-        </button>
-      </div>
+      {/* 버튼 */}
+      <button
+        className={buttonStyle}
+        disabled={buttonDisabled}
+        onClick={() => !buttonDisabled && setIsModalOpen(true)}
+        type="button"
+      >
+        {buttonText}
+      </button>
+      {/* 후기 작성 모달 */}
+      {isModalOpen && (
+        <ReviewModal interview={interview} onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 }
