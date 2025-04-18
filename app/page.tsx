@@ -39,6 +39,8 @@ export default function HomePage() {
         setPopular(response.data.data.popular || []);
         setLatest(response.data.data.latest || []);
         setMostApplied(response.data.data.mostApplied || []);
+
+        setIsLoading(false);
       })
       .catch((error: any) => {
         console.error("error", error);
