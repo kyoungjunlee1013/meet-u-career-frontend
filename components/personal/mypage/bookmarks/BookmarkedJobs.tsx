@@ -54,7 +54,7 @@ export function BookmarkedJobs({ searchQuery }: BookmarkedJobsProps) {
 
   return (
     <div>
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredJobs.map((job) => (
           <JobCard key={job.id} job={job} />
         ))}

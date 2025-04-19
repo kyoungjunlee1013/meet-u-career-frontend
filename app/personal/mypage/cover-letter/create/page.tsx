@@ -1,26 +1,21 @@
-"use client"
-
-import { useState } from "react"
-import { PersonalHeader } from "@/components/personal/mypage/PersonalHeader"
-import { PersonalSidebar } from "@/components/personal/mypage/PersonalSidebar"
-import { CoverLetterEditor } from "@/components/personal/mypage/cover-letter/CoverLetterEditor"
+"use client";
+import { useSidebar } from "@/components/personal/mypage/SidebarProvider";
+import { PersonalHeader } from "@/components/personal/mypage/PersonalHeader";
+import { PersonalSidebar } from "@/components/personal/mypage/PersonalSidebar";
+import { CoverLetterEditor } from "@/components/personal/mypage/cover-letter/CoverLetterEditor";
 
 export default function CreateCoverLetterPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-
-  const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev)
-  }
+  const { sidebarOpen, toggleSidebar } = useSidebar();
 
   return (
     <div className="min-h-screen bg-gray-50">
       <PersonalHeader toggleSidebar={toggleSidebar} />
-      <div className="pt-16 md:pl-64">
-        <PersonalSidebar isOpen={sidebarOpen} activeItem="자기소개서 관리" />
+      <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:pl-64' : 'md:pl-0'}`}>
+        <PersonalSidebar activeItem="자기소개서 관리" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <CoverLetterEditor id={null} isEditMode={false} />
         </div>
       </div>
     </div>
-  )
+  );
 }

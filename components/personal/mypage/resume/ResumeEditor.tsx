@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { ResumeBasicInfoCard } from "./ResumeBasicInfoCard"
 import { ResumeSectionEditorList } from "./ResumeSectionEditorList"
-import { ResumeSectionManagerPanel } from "./ResumeSectionManagerPanel"
+import dynamic from "next/dynamic"
+const ResumeSectionManagerPanel = dynamic(() => import("./ResumeSectionManagerPanel.client"), { ssr: false })
 import { ResumeSectionAddModal } from "./ResumeSectionAddModal"
 import { SaveButton } from "./SaveButton"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -31,6 +32,7 @@ export interface ResumeData {
   resumeFileKey?: string
   resumeFileName?: string
   resumeUrl?: string
+  profileImage?: string // 프로필 이미지 (data URL 또는 URL)
 }
 
 export function ResumeEditor({
@@ -248,8 +250,6 @@ export function ResumeEditor({
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">{isEditMode ? "이력서 수정" : "이력서 작성"}</h1>
 
-      <ResumeBasicInfoCard resumeData={resumeData} setResumeData={setResumeData} />
-
       {isMobile ? (
         <Tabs defaultValue="editor" className="w-full">
           <TabsList className="w-full grid grid-cols-2">
@@ -270,10 +270,15 @@ export function ResumeEditor({
         </Tabs>
       ) : (
         <div className="flex flex-col md:flex-row gap-6">
-          <div className="w-full md:w-7/10 lg:w-7/10">
-            <ResumeSectionEditorList sections={activeSections} onSectionContentUpdate={handleSectionContentUpdate} />
+          {/* 좌측: 기본 정보 + 작성 영역 */}
+          <div className="flex-[0_0_70%] max-w-[70%]">
+            <ResumeBasicInfoCard resumeData={resumeData} setResumeData={setResumeData} />
+            <div className="mt-8">
+              <ResumeSectionEditorList sections={activeSections} onSectionContentUpdate={handleSectionContentUpdate} />
+            </div>
           </div>
-          <div className="w-full md:w-3/10 lg:w-3/10">
+          {/* 우측: 항목 관리 패널 */}
+          <div className="flex-[0_0_30%] max-w-[30%]">
             <div className="sticky top-20">
               <ResumeSectionManagerPanel
                 sections={sections}

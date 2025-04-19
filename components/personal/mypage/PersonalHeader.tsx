@@ -8,11 +8,10 @@ import { ChatDropdown } from "./ChatDropdown"
 import { ProfileDropdown } from "./ProfileDropdown"
 import { useState, useRef, useEffect } from "react"
 
-interface PersonalHeaderProps {
-  toggleSidebar: () => void
-}
+import { useSidebar } from "./SidebarProvider"
 
-export function PersonalHeader({ toggleSidebar }: PersonalHeaderProps) {
+export function PersonalHeader() {
+  const { toggleSidebar } = useSidebar()
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [isProfileOpen, setIsProfileOpen] = useState(false)

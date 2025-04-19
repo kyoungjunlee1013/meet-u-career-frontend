@@ -1,5 +1,5 @@
 "use client";
-import { Suspense } from "react"
+import React, { Suspense } from "react"
 import { CoverLetterAnalysisContent } from "@/components/personal/mypage/cover-letter/analysis/CoverLetterAnalysisContent"
 import { PersonalHeader } from "@/components/personal/mypage/PersonalHeader"
 import { PersonalSidebar } from "@/components/personal/mypage/PersonalSidebar"
@@ -10,20 +10,18 @@ interface CoverLetterAnalysisPageProps {
   }
 }
 
-export default function CoverLetterAnalysisPage({ params }: CoverLetterAnalysisPageProps) {
-  const { id } = params
-  const [isSidebarOpen, setSidebarOpen] = useState(true)
+import { useSidebar } from "@/components/personal/mypage/SidebarProvider"
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!isSidebarOpen)
-  }
+export default function CoverLetterAnalysisPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
+  const { sidebarOpen } = useSidebar();
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <PersonalHeader toggleSidebar={toggleSidebar} />
-      <PersonalSidebar isOpen={isSidebarOpen} activeItem="자기소개서 관리" />
+      <PersonalHeader />
+      <PersonalSidebar activeItem="자기소개서 관리" />
 
-      <main className="pt-16 md:pl-64">
+      <main className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:pl-64' : 'md:pl-0'}`}>
         <div className="container mx-auto px-4 py-8">
           <Suspense fallback={<AnalysisPageSkeleton />}>
             <CoverLetterAnalysisContent coverLetterId={id} />
@@ -31,11 +29,9 @@ export default function CoverLetterAnalysisPage({ params }: CoverLetterAnalysisP
         </div>
       </main>
     </div>
-  )
+  );
 }
 
-// Add missing useState import
-import { useState } from "react"
 
 // Skeleton for loading state
 const AnalysisPageSkeleton = () => {
