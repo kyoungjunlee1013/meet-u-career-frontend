@@ -24,15 +24,32 @@ export interface ResumeData {
   title: string
   status: number
   resumeType: number
-  location?: string
-  desiredPosition?: string
-  desiredSalary?: string
+
+  // account/profile 기반 정보
+  name: string // account.name
+  email: string // account.email
+  phone: string // account.phone
+  profileImage?: string // profile.profileImageKey (S3 key or URL)
+  locationId?: number // profile.locationId (DB id)
+  locationName?: string // location.fullLocation (UI 표시용)
+
+  // 이력서 입력 항목
+  overview: string // 간단소개 (resume.overview)
+  desiredPosition?: string // 희망 직무명 (jobCategory.jobName)
+  desiredJobCategoryId?: number // 희망 직무 id (profile.desiredJobCategoryId)
+  desiredSalaryCode?: number // 희망 연봉 코드 (profile.desiredSalaryCode)
+  desiredSalaryLabel?: string // 희망 연봉명 (UI 표시용)
   skills?: string[]
-  externalLinks?: string[]
+
+  // 외부 링크 (자유 입력)
+  extraLink1?: string // resume.extraLink1 (예: GitHub)
+  extraLink2?: string // resume.extraLink2 (예: 포트폴리오, 블로그 등)
+
+  // 파일/URL 이력서
   resumeFileKey?: string
   resumeFileName?: string
+  resumeFileType?: string
   resumeUrl?: string
-  profileImage?: string // 프로필 이미지 (data URL 또는 URL)
 }
 
 export function ResumeEditor({
@@ -52,11 +69,24 @@ export function ResumeEditor({
     title: "",
     status: 1, // Default to private
     resumeType: resumeTypeNum,
-    location: "",
+    name: "",
+    email: "",
+    phone: "",
+    profileImage: undefined,
+    locationId: undefined,
+    locationName: "",
+    overview: "",
     desiredPosition: "",
-    desiredSalary: "",
+    desiredJobCategoryId: undefined,
+    desiredSalaryCode: undefined,
+    desiredSalaryLabel: "",
     skills: [],
-    externalLinks: [],
+    extraLink1: "",
+    extraLink2: "",
+    resumeFileKey: undefined,
+    resumeFileName: undefined,
+    resumeFileType: undefined,
+    resumeUrl: "",
   })
 
   // State for resume sections
@@ -149,13 +179,23 @@ export function ResumeEditor({
           title: "백엔드 개발자 이력서",
           status: 2, // Public
           resumeType: resumeTypeNum,
-          location: "서울시 강남구",
+          name: "홍길동",
+          email: "hong@example.com",
+          phone: "010-1234-5678",
+          profileImage: undefined,
+          locationId: 1,
+          locationName: "서울시 강남구",
+          overview: "백엔드 개발자, 5년 경력, 대용량 트래픽 경험",
           desiredPosition: "백엔드 개발자",
-          desiredSalary: "5000만원",
+          desiredJobCategoryId: 1,
+          desiredSalaryCode: 3,
+          desiredSalaryLabel: "5000만원",
           skills: ["Java", "Spring", "MySQL", "AWS"],
-          externalLinks: ["https://github.com/username"],
+          extraLink1: "https://github.com/username",
+          extraLink2: "https://myblog.com",
           resumeFileKey: resumeTypeNum === 1 ? "resume-file-key" : undefined,
           resumeFileName: resumeTypeNum === 1 ? "resume.pdf" : undefined,
+          resumeFileType: resumeTypeNum === 1 ? "application/pdf" : undefined,
           resumeUrl: resumeTypeNum === 2 ? "https://resume.com/myresume" : undefined,
         })
 
