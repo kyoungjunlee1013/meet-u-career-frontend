@@ -10,13 +10,10 @@ import { CreatePostModal } from "./CreatePostModal"
 export const CommunityContent = () => {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
   const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false)
-  const [selectedHashtags, setSelectedHashtags] = useState<string[]>([
-    "#직장생활",
-    "#일상",
-    "#커리어",
-    "#이직",
-    "#마케팅",
-  ])
+  // 상단 태그 목록: 대표 태그만 #포함해서 노출
+  const TAG_NAMES = ["면접", "이직", "연봉", "취업", "자기소개서", "커리어", "자격증"];
+  const hashtagList = TAG_NAMES.map((name) => `#${name}`);
+  const [selectedHashtags, setSelectedHashtags] = useState<string[]>([...hashtagList])
 
   const handleOpenFilterModal = () => {
     setIsFilterModalOpen(true)

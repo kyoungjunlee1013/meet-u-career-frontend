@@ -1,6 +1,7 @@
-"use client"
+'use client'
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
 import { Post } from "./Post"
 import { PostFilters } from "./PostFilters"
 import { CreatePostInput } from "./CreatePostInput"
@@ -11,58 +12,103 @@ interface PostFeedProps {
   onOpenCreatePostModal: () => void
 }
 
+const TAG_ID_TO_NAME: Record<number, string> = {
+  1: "이직",
+  2: "연봉",
+  3: "면접",
+  4: "취업",
+  5: "자기소개서",
+  6: "커리어",
+  7: "자격증",
+};
+
+interface PostData {
+  id: number;
+  accountId: number;
+  content: string;
+  postImageUrl: string;
+  likeCount: number;
+  commentCount: number;
+  tagId: number;
+  profileImageUrl: string | null;
+}
+
 export const PostFeed = ({ selectedHashtags, onOpenFilterModal, onOpenCreatePostModal }: PostFeedProps) => {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      author: {
-        name: "사람인",
-        avatar: "사람",
-      },
-      content: "나누고 싶은 생각을 공유해보세요!",
-      image: "/placeholder.svg?height=400&width=600",
-      likes: 42,
-      comments: 1,
-      tags: ["개발", "직장생활"],
-      likers: [
-        { id: 1, name: "김개발", avatar: "김" },
-        { id: 2, name: "이디자인", avatar: "이" },
-        { id: 3, name: "박마케팅", avatar: "박" },
-      ],
-      commentsList: [
-        { id: 1, author: { name: "김개발", avatar: "김" }, content: "좋은 글이네요!", timestamp: "2시간 전" },
-      ],
-    },
-    {
-      id: 2,
-      author: {
-        name: "개발왕",
-        avatar: "개발",
-      },
-      content: "오늘 면접 봤었습니다!",
-      image: null,
-      likes: 15,
-      comments: 3,
-      tags: ["개발", "직장생활"],
-      likers: [
-        { id: 1, name: "김개발", avatar: "김" },
-        { id: 2, name: "이디자인", avatar: "이" },
-      ],
-      commentsList: [
-        { id: 1, author: { name: "김개발", avatar: "김" }, content: "어떻게 되셨나요?", timestamp: "1시간 전" },
-        { id: 2, author: { name: "이디자인", avatar: "이" }, content: "화이팅입니다!", timestamp: "30분 전" },
-      ],
-    },
-  ])
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]); // 처음은 빈 배열
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/api/personal/community/posts/all-posts");
+        const posts = res.data.data.posts;
+        console.log("불러온 posts:", posts);
+        setPosts(posts);
+      } catch (e) {
+        console.error("게시글을 불러오지 못했습니다.", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  const handleSelectHashtag = (tag: string) => {
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag));
+    } else {
+      setSelectedTags([tag]); // 다른 태그는 해제하고 하나만 선택되게
+    }
+  };
+
+  const handleSelectAll = () => {
+    setSelectedTags([]);
+  };
+
+  if (loading) return <div>로딩중...</div>;
 
   return (
     <div className="space-y-4">
-      <PostFilters selectedHashtags={selectedHashtags} onOpenFilterModal={onOpenFilterModal} />
+      <PostFilters
+        selectedHashtags={selectedTags}
+        onOpenFilterModal={onOpenFilterModal}
+        onSelectHashtag={handleSelectHashtag}
+        onSelectAll={handleSelectAll}
+      />
       <CreatePostInput onOpenCreatePostModal={onOpenCreatePostModal} />
+      {posts
+        .filter(post => {
+          if (selectedTags.length === 0) return true; // 전체 보기
+          const tagName = TAG_ID_TO_NAME[post.tagId];
+          const hashtag = tagName ? `#${tagName}` : "";
+          return selectedTags.includes(hashtag);
+        })
+        .map(post => {
+          const tagName = TAG_ID_TO_NAME[post.tagId];
+          const hashtags = tagName ? [`#${tagName}`] : [];
 
-      {posts.map((post) => (
-        <Post key={post.id} post={post} />
-      ))}
+          return (
+            <Post
+              key={post.id}
+              post={{
+                id: post.id,
+                author: {
+                  name: `user${post.accountId}`,
+                  avatar: post.profileImageUrl || "/profile.png",
+                },
+                content: post.content,
+                image: post.postImageUrl,
+                imageKey: null,
+                likes: post.likeCount,
+                comments: post.commentCount,
+                tags: hashtags,
+                likers: [],
+                commentsList: [],
+              }}
+            />
+          );
+        })}
     </div>
-  )
+  );
 }
