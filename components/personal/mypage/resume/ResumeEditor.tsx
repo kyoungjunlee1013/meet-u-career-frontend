@@ -112,50 +112,85 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
   })
 
   // State for resume sections (UI 관리용)
-  const [sections, setSections] = useState<ResumeSection[]>([
-    {
-      id: "education",
-      title: "학력",
-      sectionType: 0,
-      isActive: true,
-      content: [],
-    },
-    {
-      id: "experience",
-      title: "경력",
-      sectionType: 1,
-      isActive: resumeTypeNum === 0,
-      content: [],
-    },
-    {
-      id: "certifications",
-      title: "자격증",
-      sectionType: 2,
-      isActive: resumeTypeNum === 0,
-      content: [],
-    },
-    {
-      id: "activities",
-      title: "활동/경험",
-      sectionType: 3,
-      isActive: resumeTypeNum === 0,
-      content: [],
-    },
-    {
-      id: "portfolio",
-      title: "포트폴리오",
-      sectionType: 4,
-      isActive: resumeTypeNum === 0,
-      content: [],
-    },
-    {
-      id: "coverLetter",
-      title: "자기소개서",
-      sectionType: 5,
-      isActive: resumeTypeNum === 0,
-      content: { selectedCoverLetterId: null, selectedCoverLetterTitle: null },
-    },
-  ])
+  const getInitialSections = () => {
+    const baseSections: ResumeSection[] = [
+      {
+        id: "education",
+        title: "학력",
+        sectionType: 0,
+        isActive: true,
+        content: [],
+      },
+      {
+        id: "experience",
+        title: "경력",
+        sectionType: 1,
+        isActive: resumeTypeNum === 0,
+        content: [],
+      },
+      {
+        id: "certifications",
+        title: "자격증",
+        sectionType: 2,
+        isActive: resumeTypeNum === 0,
+        content: [],
+      },
+      {
+        id: "activities",
+        title: "활동/경험",
+        sectionType: 3,
+        isActive: resumeTypeNum === 0,
+        content: [],
+      },
+      {
+        id: "portfolio",
+        title: "포트폴리오",
+        sectionType: 4,
+        isActive: resumeTypeNum === 0,
+        content: [],
+      },
+      {
+        id: "coverLetter",
+        title: "자기소개서",
+        sectionType: 5,
+        isActive: resumeTypeNum === 0,
+        content: { selectedCoverLetterId: null, selectedCoverLetterTitle: null },
+      },
+    ];
+    // 파일로 작성일 때 맨 앞에 이력서 파일 섹션 추가
+    if (resumeTypeNum === 1) {
+      return [
+        {
+          id: "resumeFile",
+          title: "이력서 파일",
+          sectionType: -1,
+          isActive: true,
+          content: [],
+        },
+        ...baseSections
+      ];
+    }
+    if (resumeTypeNum === 2) {
+      return [
+        {
+          id: "resumeUrl",
+          title: "이력서 URL",
+          sectionType: -2,
+          isActive: true,
+          content: "",
+        },
+        ...baseSections
+      ];
+    }
+    return baseSections;
+  };
+  const [sections, setSections] = useState<ResumeSection[]>(getInitialSections());
+
+  // resumeType 변경 시 sections 구조 동기화
+  useEffect(() => {
+    setSections(getInitialSections());
+  }, [resumeTypeNum]);
+
 
   // State for add section modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)

@@ -27,6 +27,22 @@ export function ResumeSectionEditorCard({ section, onContentUpdate }: ResumeSect
 
   const renderSectionContent = () => {
     switch (section.sectionType) {
+      case -2: // Resume URL (URL 이력서)
+        return (
+          <div>
+            <Label className="block mb-2">이력서 URL 입력</Label>
+            <Input
+              type="url"
+              placeholder="https://example.com/your-resume"
+              value={section.content || ""}
+              onChange={e => onContentUpdate(e.target.value)}
+              autoComplete="off"
+            />
+            <div className="text-xs text-gray-500 mt-1">공개된 이력서 URL을 입력해 주세요.</div>
+          </div>
+        );
+      case -1: // Resume File (파일 이력서)
+        return <PortfolioSection content={section.content} onContentUpdate={onContentUpdate} resumeFileMode />;
       case 0: // Education
         return <EducationSection content={section.content} onContentUpdate={onContentUpdate} />
       case 1: // Experience
@@ -338,7 +354,7 @@ function ActivitiesSection({ content, onContentUpdate }: { content: any; onConte
 }
 
 // PortfolioSection 파일 업로드 방식
-function PortfolioSection({ content, onContentUpdate }: { content: any; onContentUpdate: (content: any) => void }) {
+function PortfolioSection({ content, onContentUpdate, resumeFileMode = false }: { content: any; onContentUpdate: (content: any) => void; resumeFileMode?: boolean }) {
   const [fileList, setFileList] = useState(content || [])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -351,11 +367,12 @@ function PortfolioSection({ content, onContentUpdate }: { content: any; onConten
       file: file,
       url: URL.createObjectURL(file),
       uploadedAt: new Date().toISOString(),
-    }))
-    const updated = [...fileList, ...newFiles]
-    setFileList(updated)
-    onContentUpdate(updated)
-    if (fileInputRef.current) fileInputRef.current.value = ""
+    }));
+    // resumeFileMode: 항상 1개만 허용 (새 파일로 덮어씀)
+    const updated = resumeFileMode ? newFiles.slice(0, 1) : [...fileList, ...newFiles];
+    setFileList(updated);
+    onContentUpdate(updated);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
   const handleRemove = (idx: number) => {
     const updated = fileList.filter((_: any, i: number) => i !== idx)
@@ -364,14 +381,14 @@ function PortfolioSection({ content, onContentUpdate }: { content: any; onConten
   }
   return (
     <div>
-      <Label className="block mb-2">포트폴리오 파일 추가</Label>
+      <Label className="block mb-2">{resumeFileMode ? "이력서 파일 업로드" : "포트폴리오 파일 추가"}</Label>
       <input
         ref={fileInputRef}
         type="file"
-        multiple
         className="hidden"
         onChange={handleFileChange}
         accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*,application/zip,application/x-zip-compressed"
+        {...(resumeFileMode ? {} : { multiple: true })}
       />
       <Button
         type="button"
@@ -382,7 +399,7 @@ function PortfolioSection({ content, onContentUpdate }: { content: any; onConten
       </Button>
       <div className="space-y-4">
         {fileList.length === 0 && (
-          <div className="text-gray-500">등록된 포트폴리오 파일이 없습니다.</div>
+          <div className="text-gray-500">{resumeFileMode ? "등록된 이력서 파일이 없습니다." : "등록된 포트폴리오 파일이 없습니다."}</div>
         )}
         {fileList.map((file: any, idx: number) => (
           <div key={idx} className="flex items-center justify-between bg-gray-50 rounded border p-4">
