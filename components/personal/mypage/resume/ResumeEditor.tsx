@@ -24,6 +24,7 @@ export interface ResumeData {
   id?: number;
   profileId?: number;
   title: string;
+  createdAt?: string;
   status: number;
   resumeType: number;
 
@@ -89,8 +90,15 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
   const resumeTypeNum = resumeType === "file" ? 1 : resumeType === "url" ? 2 : 0
 
   // State for resume data
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}-${mm}-${dd}`;
+
   const [resumeData, setResumeData] = useState<ResumeData>({
-    title: "",
+    title: `새 이력서 (${todayStr})`,
+    createdAt: todayStr,
     status: 1, // Default to private
     resumeType: resumeTypeNum,
     name: "",
@@ -481,6 +489,7 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
         email: profile.email,
         phone: profile.phone,
         profileId: profile.profileId,
+        profileImage: profile.profileImageUrl ?? undefined,
       }));
     }
   }, [profile, isEditMode]);
