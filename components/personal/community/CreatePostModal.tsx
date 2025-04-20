@@ -100,8 +100,12 @@ export const CreatePostModal = ({
           if (!previewImage.includes("default_profile.png") && !previewImage.includes("generic-app-icon.png")) {
             json.postImageKey = imageKey;
           }
+        } else {
+          // 이미지가 없으면 명시적으로 postImageKey를 null로 설정!
+          json.postImageKey = null;
         }
       }
+      
   
       const blob = new Blob([JSON.stringify(json)], { type: "application/json" });
       formData.append("data", blob);

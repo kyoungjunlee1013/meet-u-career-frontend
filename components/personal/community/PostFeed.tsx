@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from "react"
-import axios from "axios"
-import { Post } from "./Post"
-import { PostFilters } from "./PostFilters"
-import { CreatePostInput } from "./CreatePostInput"
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Post } from "./Post";
+import { PostFilters } from "./PostFilters";
+import { CreatePostInput } from "./CreatePostInput";
 
 interface PostFeedProps {
-  selectedHashtags: string[]
-  onOpenFilterModal: () => void
-  onOpenCreatePostModal: () => void
+  selectedHashtags: string[];
+  onOpenFilterModal: () => void;
+  onOpenCreatePostModal: () => void;
 }
 
 const TAG_ID_TO_NAME: Record<number, string> = {
@@ -27,16 +27,19 @@ interface PostData {
   accountId: number;
   content: string;
   postImageUrl: string;
+  postImageKey?: string | null;
   likeCount: number;
   commentCount: number;
   tagId: number;
   profileImageUrl: string | null;
+  createdAt: string; // ✅ createdAt 추가
+  isLiked?: boolean;
 }
 
 export const PostFeed = ({ selectedHashtags, onOpenFilterModal, onOpenCreatePostModal }: PostFeedProps) => {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]); // 처음은 빈 배열
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -58,7 +61,7 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal, onOpenCreatePost
     if (selectedTags.includes(tag)) {
       setSelectedTags(selectedTags.filter(t => t !== tag));
     } else {
-      setSelectedTags([tag]); // 다른 태그는 해제하고 하나만 선택되게
+      setSelectedTags([tag]);
     }
   };
 
@@ -79,7 +82,7 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal, onOpenCreatePost
       <CreatePostInput onOpenCreatePostModal={onOpenCreatePostModal} />
       {posts
         .filter(post => {
-          if (selectedTags.length === 0) return true; // 전체 보기
+          if (selectedTags.length === 0) return true;
           const tagName = TAG_ID_TO_NAME[post.tagId];
           const hashtag = tagName ? `#${tagName}` : "";
           return selectedTags.includes(hashtag);
@@ -99,16 +102,18 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal, onOpenCreatePost
                 },
                 content: post.content,
                 image: post.postImageUrl,
-                imageKey: null,
+                imageKey: post.postImageKey ?? null,
                 likes: post.likeCount,
+                isLiked: post.isLiked ?? false,
                 comments: post.commentCount,
                 tags: hashtags,
                 likers: [],
                 commentsList: [],
+                createdAt: post.createdAt, // createdAt 추가
               }}
             />
           );
         })}
     </div>
   );
-}
+};
