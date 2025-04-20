@@ -3,7 +3,8 @@ import { create } from "zustand";
 interface UserInfo {
   accountId: number;
   profileId: number | null;
-  nickname: string;
+  name: string;
+  profileImage?: string;
   email: string;
   role: "PERSONAL" | "BUSINESS" | "ADMIN" | "SUPER";
 }
