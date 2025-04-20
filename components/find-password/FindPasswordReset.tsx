@@ -11,17 +11,19 @@ import Link from "next/link"
 
 interface FindPasswordResetProps {
   userId: string
-  onSubmit: () => void
+  code: string
+  onSubmit: (code: string, newPassword: string) => void
   onBack: () => void
+  isLoading?: boolean
+  error?: string
 }
 
-export const FindPasswordReset = ({ userId, onSubmit, onBack }: FindPasswordResetProps) => {
+export const FindPasswordReset = ({ userId, code, onSubmit, onBack, isLoading = false, error }: FindPasswordResetProps) => {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({})
-  const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
   const validateForm = () => {
@@ -45,23 +47,10 @@ export const FindPasswordReset = ({ userId, onSubmit, onBack }: FindPasswordRese
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!validateForm()) return
-
-    setIsLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    setIsLoading(false)
-    setIsSuccess(true)
-
-    // Redirect after success
-    setTimeout(() => {
-      onSubmit()
-    }, 3000)
+    onSubmit(code, password)
   }
 
   if (isSuccess) {
@@ -149,6 +138,9 @@ export const FindPasswordReset = ({ userId, onSubmit, onBack }: FindPasswordRese
           )}
         </div>
 
+        {error && (
+          <div className="text-center text-red-600 mt-2">{error}</div>
+        )}
         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
           {isLoading ? "처리 중..." : "비밀번호 변경"}
         </Button>
