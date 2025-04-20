@@ -2,14 +2,15 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useRef, useState, useEffect } from "react"
 import Image from "next/image"
 import { X, Upload } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
-import type { ResumeData } from "./ResumeEditor"
+import { JobAutoComplete } from "./JobAutoComplete";
+import type { ResumeData } from "./ResumeEditor";
 
 interface ResumeBasicInfoCardProps {
   resumeData: ResumeData
@@ -17,34 +18,49 @@ interface ResumeBasicInfoCardProps {
 }
 
 export function ResumeBasicInfoCard({ resumeData, setResumeData }: ResumeBasicInfoCardProps) {
-  // 임시 하드코딩 옵션
-  const locationOptions = [
-    { id: 1, name: "서울특별시 강남구" },
-    { id: 2, name: "경기도 성남시 분당구" },
-    { id: 3, name: "부산광역시 해운대구" },
-  ];
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
+  const [locationOptions, setLocationOptions] = useState<{ value: number, label: string }[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(false);
+
+  useEffect(() => {
+    setLoadingLocations(true);
+    fetch("/api/locations/provinces")
+      .then(res => res.json())
+      .then(data => {
+        // value를 number로 변환
+        setLocationOptions((data.data || []).map((item: any) => ({ value: item.id, label: item.label })));
+      })
+      .finally(() => setLoadingLocations(false));
+  }, []);
   const jobOptions = [
     { id: 1, name: "백엔드 개발자" },
     { id: 2, name: "프론트엔드 개발자" },
     { id: 3, name: "데이터 엔지니어" },
   ];
-  const salaryOptions = [
-    { code: 1, label: "3000만원" },
-    { code: 2, label: "4000만원" },
-    { code: 3, label: "5000만원" },
-  ];
+
 
   // 프로필 이미지 업로드
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setResumeData({ ...resumeData, profileImage: reader.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // Store the File object directly so FormData can upload it to the backend
+const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    setResumeData({ ...resumeData, profileImage: file });
+  }
+};
+
+// 프로필 이미지 File 객체 미리보기 URL 관리
+const [previewProfileImageUrl, setPreviewProfileImageUrl] = useState<string | null>(null);
+useEffect(() => {
+  if (resumeData.profileImage instanceof File) {
+    const url = URL.createObjectURL(resumeData.profileImage);
+    setPreviewProfileImageUrl(url);
+    return () => {
+      URL.revokeObjectURL(url);
+    };
+  } else {
+    setPreviewProfileImageUrl(null);
+  }
+}, [resumeData.profileImage]);
 
   // ...기존 skill/link 추가/삭제 함수 유지...
 
@@ -84,9 +100,32 @@ export function ResumeBasicInfoCard({ resumeData, setResumeData }: ResumeBasicIn
         {/* 프로필 사진 */}
         <div className="flex flex-col items-center gap-3">
           {/* 프로필 사진 */}
-          <div className="w-full min-w-[120px] max-w-[180px] aspect-[3/4] rounded-md border overflow-hidden bg-gray-100 flex items-center justify-center">
+          <div className="w-full min-w-[120px] max-w-[180px] aspect-[3/4] rounded-md border overflow-hidden bg-gray-100 flex items-center justify-center relative">
+            {/* 프로필 이미지 미리보기 (string or File) */}
             {resumeData.profileImage ? (
-              <img src={resumeData.profileImage} alt="프로필 사진" className="object-cover w-full h-full" />
+              <>
+                <img
+                  src={
+                    typeof resumeData.profileImage === "string"
+                      ? resumeData.profileImage
+                      : previewProfileImageUrl || undefined
+                  }
+                  alt="프로필 사진"
+                  className="object-cover w-full h-full"
+                />
+                <button
+                  type="button"
+                  aria-label="사진 삭제"
+                  tabIndex={0}
+                  className="absolute top-2 right-2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-1 shadow-md transition focus:outline-none focus:ring-2 focus:ring-blue-400 z-10"
+                  onClick={() => {
+                    setResumeData({ ...resumeData, profileImage: undefined });
+                    if (profileImageInputRef.current) profileImageInputRef.current.value = "";
+                  }}
+                >
+                  <X className="w-5 h-5 text-gray-500 hover:text-red-500" />
+                </button>
+              </>
             ) : (
               <span className="text-gray-400 flex flex-col items-center text-sm">
                 <svg xmlns='http://www.w3.org/2000/svg' className='mx-auto mb-2' width='32' height='32' fill='none' viewBox='0 0 24 24' stroke='currentColor'><path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 4a4 4 0 110 8 4 4 0 010-8zm0 12a8 8 0 018 8H4a8 8 0 018-8z' /></svg>
@@ -101,6 +140,7 @@ export function ResumeBasicInfoCard({ resumeData, setResumeData }: ResumeBasicIn
             accept="image/*"
             className="hidden"
             onChange={handleProfileImageChange}
+            ref={profileImageInputRef}
           />
           <label
             htmlFor="profileImageInput"
@@ -128,29 +168,38 @@ export function ResumeBasicInfoCard({ resumeData, setResumeData }: ResumeBasicIn
               <Label htmlFor="phone">연락처</Label>
               <Input id="phone" value={resumeData.phone} disabled placeholder="010-1234-5678" className="mt-1 bg-gray-50 text-gray-900 placeholder-gray-400 cursor-not-allowed" />
             </div>
-            <div>
+            <div className="mt-1 w-full">
               <Label htmlFor="locationId">거주 지역</Label>
-              <select id="locationId" className="mt-1 w-full border rounded px-2 py-2" value={resumeData.locationId ?? ''} onChange={e => {
-                const loc = locationOptions.find(l => l.id === Number(e.target.value));
-                setResumeData({ ...resumeData, locationId: loc?.id, locationName: loc?.name });
-              }}>
-                <option value="">선택하세요</option>
-                {locationOptions.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
+              <select
+                id="locationId"
+                className="mt-1 w-full border rounded px-2 py-2"
+                value={resumeData.locationId ?? ''}
+                onChange={e => {
+                  const value = e.target.value === '' ? undefined : Number(e.target.value);
+                  setResumeData({ ...resumeData, locationId: value });
+                }}
+                disabled={loadingLocations}
+              >
+                <option value="" disabled hidden>선택하세요</option>
+                {locationOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
               </select>
             </div>
+
             <div>
               <Label htmlFor="desiredPosition">희망 직무 <span className="text-red-500">*</span></Label>
-              <Input id="desiredPosition" value={resumeData.desiredPosition || ''} onChange={e => setResumeData({ ...resumeData, desiredPosition: e.target.value })} placeholder="예: 웹 개발자, 프론트엔드 개발자" className="mt-1" />
-            </div>
-            <div>
-              <Label htmlFor="desiredSalary">희망 연봉</Label>
-              <select id="desiredSalary" className="mt-1 w-full border rounded px-2 py-2" value={resumeData.desiredSalaryCode ?? ''} onChange={e => {
-                const sal = salaryOptions.find(s => s.code === Number(e.target.value));
-                setResumeData({ ...resumeData, desiredSalaryCode: sal?.code, desiredSalaryLabel: sal?.label });
-              }}>
-                <option value="">선택하세요</option>
-                {salaryOptions.map(sal => <option key={sal.code} value={sal.code}>{sal.label}</option>)}
-              </select>
+              {/* 자동완성 컴포넌트 적용 */}
+              <JobAutoComplete
+                value={typeof resumeData.desiredJobCategoryId === 'number' && resumeData.desiredPosition ? { label: resumeData.desiredPosition, value: resumeData.desiredJobCategoryId } : null}
+                onChange={opt => {
+                  if (opt && typeof opt.value === 'number') {
+                    setResumeData({ ...resumeData, desiredPosition: opt.label, desiredJobCategoryId: opt.value });
+                  } else {
+                    setResumeData({ ...resumeData, desiredPosition: '', desiredJobCategoryId: undefined });
+                  }
+                }}
+              />
             </div>
             {/* 이력서 공개 설정 */}
             <div>

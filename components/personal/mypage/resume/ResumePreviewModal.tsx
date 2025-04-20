@@ -45,6 +45,23 @@ interface Resume {
   coverLetterTitle?: string
   coverLetterUpdatedAt?: string
   contents?: ResumeContent[]
+  profileInfo?: ProfileInfo // 추가
+}
+
+interface ProfileInfo {
+  profileId: number;
+  accountId: number;
+  name: string;
+  email: string;
+  phone: string;
+  profileImageKey?: string;
+  desiredJobCategoryName?: string | null;
+  desiredLocationName?: string | null;
+  experienceLevel?: string | null;
+  educationLevel?: string | null;
+  desiredSalaryCode?: string | null;
+  skills?: string;
+  profileImageUrl?: string | null;
 }
 
 interface ResumeContent {
@@ -202,12 +219,12 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
 
           <div className="flex-1 overflow-auto p-6">
             {/* Basic Info Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Left column - Basic info */}
-                <div className="md:col-span-2">
-                  <div className="flex flex-wrap items-center gap-2 mb-4">
-                    <h3 className="text-2xl font-bold text-gray-800">{resume.title}</h3>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-8">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+                {/* Left: Main Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <h2 className="text-2xl font-bold text-gray-900 truncate">{resume.title}</h2>
                     {resume.isPrimary && (
                       <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-1">대표</span>
                     )}
@@ -216,81 +233,36 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
                       <span className="ml-1">{getResumeTypeLabel()}</span>
                     </span>
                     <span
-                      className={`text-xs rounded-full px-2 py-1 ${
-                        resume.status === 2 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
-                      }`}
+                      className={`text-xs rounded-full px-2 py-1 ${resume.status === 2 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"}`}
                     >
                       {resume.status === 2 ? "공개" : "비공개"}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-gray-500">이름</p>
-                      <p className="font-medium">{mockUserInfo.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">이메일</p>
-                      <p className="font-medium">{mockUserInfo.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">연락처</p>
-                      <p className="font-medium">{mockUserInfo.phone}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">주소</p>
-                      <p className="font-medium">{mockUserInfo.address}</p>
-                    </div>
-                  </div>
-
                   {resume.overview && (
                     <div className="mb-4">
-                      <p className="text-sm text-gray-500 mb-1">간단 소개</p>
-                      <div className="bg-gray-50 p-3 rounded-md text-gray-700">{resume.overview}</div>
+                      <div className="bg-gray-50 p-3 rounded text-gray-700 text-sm">{resume.overview}</div>
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                    {resume.careerLevel && (
-                      <div>
-                        <p className="text-sm text-gray-500">경력 수준</p>
-                        <p className="font-medium">{resume.careerLevel}</p>
-                      </div>
-                    )}
-                    {resume.educationLevel && (
-                      <div>
-                        <p className="text-sm text-gray-500">학력 수준</p>
-                        <p className="font-medium">{resume.educationLevel}</p>
-                      </div>
-                    )}
-                    {resume.desiredPosition && (
-                      <div>
-                        <p className="text-sm text-gray-500">희망 직무</p>
-                        <p className="font-medium">{resume.desiredPosition}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {resume.skills && resume.skills.length > 0 && (
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-500 mb-1">보유 기술</p>
-                      <div className="flex flex-wrap gap-2">
-                        {resume.skills.map((skill, index) => (
-                          <span key={index} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm">
-                            {skill}
+                  <div className="flex flex-wrap gap-4 mb-4">
+                    {resume.profileInfo?.skills && (
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {resume.profileInfo.skills.split(',').map((skill: string, idx: number) => (
+                          <span key={idx} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm">
+                            {skill.trim()}
                           </span>
                         ))}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   {resume.externalLinks && resume.externalLinks.length > 0 && (
-                    <div>
-                      <p className="text-sm text-gray-500 mb-1">외부 링크</p>
+                    <div className="mb-4">
                       <div className="flex flex-wrap gap-3">
-                        {resume.externalLinks.map((link, index) => (
+                        {resume.externalLinks.map((link, idx) => (
                           <a
-                            key={index}
+                            key={idx}
                             href={link}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -308,60 +280,112 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
                       </div>
                     </div>
                   )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
+                    {resume.profileInfo?.name && (
+                      <div>
+                        <p className="text-xs text-gray-500">이름</p>
+                        <p className="font-medium text-gray-900">{resume.profileInfo.name}</p>
+                      </div>
+                    )}
+                    {resume.profileInfo?.email && (
+                      <div>
+                        <p className="text-xs text-gray-500">이메일</p>
+                        <p className="font-medium text-gray-900">{resume.profileInfo.email}</p>
+                      </div>
+                    )}
+                    {resume.profileInfo?.phone && (
+                      <div>
+                        <p className="text-xs text-gray-500">연락처</p>
+                        <p className="font-medium text-gray-900">{resume.profileInfo.phone}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                    {resume.profileInfo?.experienceLevel && (
+                      <div>
+                        <p className="text-xs text-gray-500">경력 수준</p>
+                        <p className="font-medium text-gray-900">{resume.profileInfo.experienceLevel}</p>
+                      </div>
+                    )}
+                    {resume.profileInfo?.educationLevel && (
+                      <div>
+                        <p className="text-xs text-gray-500">학력 수준</p>
+                        <p className="font-medium text-gray-900">{resume.profileInfo.educationLevel}</p>
+                      </div>
+                    )}
+                    {resume.profileInfo?.desiredLocationName && (
+                      <div>
+                        <p className="text-xs text-gray-500">희망 근무지</p>
+                        <p className="font-medium text-gray-900">{resume.profileInfo.desiredLocationName}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Right column - Profile image */}
-                <div className="flex flex-col items-center md:items-end">
-                  <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 mb-2">
+                {/* Right: Profile image + updated date */}
+                <div className="flex flex-col items-center md:items-end shrink-0">
+                  <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-200 mb-2 border border-gray-300">
                     <Image
-                      src="/vibrant-street-market.png"
+                      src={resume.profileInfo?.profileImageUrl || "/vibrant-street-market.png"}
                       alt="Profile"
                       width={128}
                       height={128}
                       className="object-cover w-full h-full"
                     />
                   </div>
-                  <p className="text-sm text-gray-500">최종 수정일: {formatDate(resume.updatedAt)}</p>
+                  <p className="text-xs text-gray-500 mt-2">최종 수정일: {formatDate(resume.updatedAt)}</p>
                 </div>
               </div>
             </div>
 
-            {/* Resume Content Cards */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(0)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">학력</h3>
-  </div>
-  <EducationSection list={educationList} />
-</div>
-<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(1)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">경력</h3>
-  </div>
-  <ExperienceSection list={experienceList} />
-</div>
-<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(2)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">자격증</h3>
-  </div>
-  <CertificationSection list={certificationList} />
-</div>
-<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(3)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">활동/경험</h3>
-  </div>
-  <ActivitySection list={activityList} />
-</div>
-<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(4)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">포트폴리오</h3>
-  </div>
-  <PortfolioSection list={portfolioList} />
-</div>
+            {/* Resume Content Cards - Only render if data exists */}
+            {educationList.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                <div className="flex items-center mb-4">
+                  {getSectionIcon(0)}
+                  <h3 className="text-lg font-medium text-gray-800 ml-2">학력</h3>
+                </div>
+                <EducationSection list={educationList} />
+              </div>
+            )}
+            {experienceList.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                <div className="flex items-center mb-4">
+                  {getSectionIcon(1)}
+                  <h3 className="text-lg font-medium text-gray-800 ml-2">경력</h3>
+                </div>
+                <ExperienceSection list={experienceList} />
+              </div>
+            )}
+            {certificationList.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                <div className="flex items-center mb-4">
+                  {getSectionIcon(2)}
+                  <h3 className="text-lg font-medium text-gray-800 ml-2">자격증</h3>
+                </div>
+                <CertificationSection list={certificationList} />
+              </div>
+            )}
+            {activityList.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                <div className="flex items-center mb-4">
+                  {getSectionIcon(3)}
+                  <h3 className="text-lg font-medium text-gray-800 ml-2">활동/경험</h3>
+                </div>
+                <ActivitySection list={activityList} />
+              </div>
+            )}
+            {portfolioList.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                <div className="flex items-center mb-4">
+                  {getSectionIcon(4)}
+                  <h3 className="text-lg font-medium text-gray-800 ml-2">포트폴리오</h3>
+                </div>
+                <PortfolioSection list={portfolioList} />
+              </div>
+            )}
+
           </div>
 
           {/* Action Buttons */}

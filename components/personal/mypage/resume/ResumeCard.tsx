@@ -78,10 +78,16 @@ export const ResumeCard = ({ resume, onSetPrimary, onDelete }: ResumeCardProps) 
     }
   }
 
-  const handleDelete = () => {
-    onDelete(resume.id)
-    setIsDeleteModalOpen(false)
+  const handleDelete = async () => {
+  try {
+    await axios.delete(`/api/personal/resume/${resume.id}`);
+    onDelete(resume.id);
+  } catch (err) {
+    alert("이력서 삭제에 실패했습니다.");
+  } finally {
+    setIsDeleteModalOpen(false);
   }
+}
 
   const fetchResumeDetail = async (id: number) => {
   const res = await axios.get(`/api/personal/resume/view/${id}`);
@@ -134,7 +140,7 @@ const handlePreview = async () => {
             variant="outline"
             size="sm"
             className="flex-1 flex items-center justify-center"
-            onClick={() => (window.location.href = `/personal/mypage/resume/${resume.id}/edit`)}
+            onClick={() => (window.location.href = `/personal/mypage/resume/create?id=${resume.id}`)}
           >
             <Edit className="h-4 w-4 mr-1" />
             수정
@@ -143,7 +149,14 @@ const handlePreview = async () => {
             variant="outline"
             size="sm"
             className={`flex-1 ${resume.isPrimary ? "bg-blue-50 text-blue-600" : ""}`}
-            onClick={() => onSetPrimary(resume.id)}
+            onClick={async () => {
+              try {
+                await axios.patch(`/api/personal/resume/${resume.id}/represent`);
+                onSetPrimary(resume.id);
+              } catch (err) {
+                alert("대표 이력서 설정에 실패했습니다.");
+              }
+            }}
             disabled={resume.isPrimary}
           >
             <Star className={`h-4 w-4 mr-1 ${resume.isPrimary ? "fill-blue-600" : ""}`} />
