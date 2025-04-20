@@ -124,10 +124,10 @@ export async function getJobPostings(jobCode: string) {
   return mockJobPostings[jobCode as keyof typeof mockJobPostings] || []
 }
 
-export async function analyzeContent(contentId: string, jobTitle: string, jobPostingId: string | null = null) {
+export async function analyzeContent(contentId: string, jobTitle: string) {
   try {
     // Validate input
-    analyzeContentSchema.parse({ contentId, jobTitle, jobPostingId })
+    analyzeContentSchema.parse({ contentId, jobTitle })
 
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 1500))
@@ -146,12 +146,11 @@ export async function analyzeContent(contentId: string, jobTitle: string, jobPos
 export async function analyzeAllContents(
   coverLetterId: string,
   contentIds: string[],
-  jobTitle: string,
-  jobPostingId: string | null = null,
+  jobTitle: string
 ) {
   try {
     // Validate input
-    analyzeAllContentsSchema.parse({ coverLetterId, contentIds, jobTitle, jobPostingId })
+    analyzeAllContentsSchema.parse({ coverLetterId, contentIds, jobTitle })
 
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 2500))

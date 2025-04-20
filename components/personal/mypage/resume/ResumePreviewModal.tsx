@@ -61,6 +61,10 @@ interface ResumePreviewModalProps {
   onClose: () => void
 }
 
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toISOString().slice(0, 10);
+};
+
 export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewModalProps) => {
   const modalRef = useRef<HTMLDivElement>(null)
 
@@ -166,7 +170,12 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
   }
 
   // Sort contents by contentOrder
-  const sortedContents = resume.contents?.sort((a, b) => a.contentOrder - b.contentOrder) || []
+  const sortedContents = resume.contents?.sort((a, b) => a.contentOrder - b.contentOrder) || [];
+  const educationList = resume.contents?.filter(c => c.sectionType === 0) || [];
+  const experienceList = resume.contents?.filter(c => c.sectionType === 1) || [];
+  const certificationList = resume.contents?.filter(c => c.sectionType === 2) || [];
+  const activityList = resume.contents?.filter(c => c.sectionType === 3) || [];
+  const portfolioList = resume.contents?.filter(c => c.sectionType === 4) || [];
 
   return (
     <>
@@ -312,35 +321,47 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
                       className="object-cover w-full h-full"
                     />
                   </div>
-                  <p className="text-sm text-gray-500">최종 수정일: {resume.updatedAt}</p>
+                  <p className="text-sm text-gray-500">최종 수정일: {formatDate(resume.updatedAt)}</p>
                 </div>
               </div>
             </div>
 
             {/* Resume Content Cards */}
-            {sortedContents.map((content) => (
-              <div key={content.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                <div className="flex items-center mb-4">
-                  {getSectionIcon(content.sectionType)}
-                  <h3 className="text-lg font-medium text-gray-800 ml-2">{content.sectionTitle}</h3>
-                </div>
-
-                {/* Render different content based on section type */}
-                {content.sectionType === 0 && <EducationSection content={content.content} />}
-                {content.sectionType === 1 && <ExperienceSection content={content.content} />}
-                {content.sectionType === 2 && <CertificationSection content={content.content} />}
-                {content.sectionType === 3 && <ActivitySection content={content.content} />}
-                {content.sectionType === 4 && <PortfolioSection content={content.content} />}
-                {content.sectionType === 5 && (
-                  <CoverLetterSection
-                    coverLetterId={resume.coverLetterId}
-                    coverLetterTitle={resume.coverLetterTitle}
-                    coverLetterUpdatedAt={resume.coverLetterUpdatedAt}
-                  />
-                )}
-                {content.sectionType === 6 && <CustomSection content={content.content} />}
-              </div>
-            ))}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+  <div className="flex items-center mb-4">
+    {getSectionIcon(0)}
+    <h3 className="text-lg font-medium text-gray-800 ml-2">학력</h3>
+  </div>
+  <EducationSection list={educationList} />
+</div>
+<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+  <div className="flex items-center mb-4">
+    {getSectionIcon(1)}
+    <h3 className="text-lg font-medium text-gray-800 ml-2">경력</h3>
+  </div>
+  <ExperienceSection list={experienceList} />
+</div>
+<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+  <div className="flex items-center mb-4">
+    {getSectionIcon(2)}
+    <h3 className="text-lg font-medium text-gray-800 ml-2">자격증</h3>
+  </div>
+  <CertificationSection list={certificationList} />
+</div>
+<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+  <div className="flex items-center mb-4">
+    {getSectionIcon(3)}
+    <h3 className="text-lg font-medium text-gray-800 ml-2">활동/경험</h3>
+  </div>
+  <ActivitySection list={activityList} />
+</div>
+<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+  <div className="flex items-center mb-4">
+    {getSectionIcon(4)}
+    <h3 className="text-lg font-medium text-gray-800 ml-2">포트폴리오</h3>
+  </div>
+  <PortfolioSection list={portfolioList} />
+</div>
           </div>
 
           {/* Action Buttons */}
@@ -392,141 +413,142 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
         </div>
 
         {/* Print each section */}
-        {sortedContents.map((content) => (
-          <div key={content.id} className="mb-6">
-            <h2 className="text-xl font-bold mb-3 border-b pb-2">{content.sectionTitle}</h2>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-3 border-b pb-2">학력</h2>
+          <EducationSection list={educationList} />
+        </div>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-3 border-b pb-2">경력</h2>
+          <ExperienceSection list={experienceList} />
+        </div>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-3 border-b pb-2">자격증</h2>
+          <CertificationSection list={certificationList} />
+        </div>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-3 border-b pb-2">활동/경험</h2>
+          <ActivitySection list={activityList} />
+        </div>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-3 border-b pb-2">포트폴리오</h2>
+          <PortfolioSection list={portfolioList} />
+        </div>
+        {/* CoverLetterSection, CustomSection 등은 필요시 아래에 추가 구현 */}
 
-            {/* Render different content based on section type */}
-            {content.sectionType === 0 && <EducationSection content={content.content} />}
-            {content.sectionType === 1 && <ExperienceSection content={content.content} />}
-            {content.sectionType === 2 && <CertificationSection content={content.content} />}
-            {content.sectionType === 3 && <ActivitySection content={content.content} />}
-            {content.sectionType === 4 && <PortfolioSection content={content.content} />}
-            {content.sectionType === 5 && (
-              <CoverLetterSection
-                coverLetterId={resume.coverLetterId}
-                coverLetterTitle={resume.coverLetterTitle}
-                coverLetterUpdatedAt={resume.coverLetterUpdatedAt}
-              />
-            )}
-            {content.sectionType === 6 && <CustomSection content={content.content} />}
-          </div>
-        ))}
       </div>
     </>
   )
 }
 
 // Education Section
-function EducationSection({ content }: { content: any[] }) {
-  if (!content || content.length === 0) {
-    return <p className="text-gray-500">등록된 학력 정보가 없습니다.</p>
+function EducationSection({ list }: { list: any[] }) {
+  if (!list || list.length === 0) {
+    return <p className="text-gray-500">등록된 학력 정보가 없습니다.</p>;
   }
-
   return (
     <div className="space-y-6">
-      {content.map((education, index) => (
+      {list.map((education, index) => (
         <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
           <div className="flex flex-col md:flex-row md:justify-between mb-2">
-            <h4 className="font-medium text-gray-900">{education.school}</h4>
+            <h4 className="font-medium text-gray-900">{education.organization}</h4>
             <div className="text-sm text-gray-600">
-              {education.startDate} ~ {education.isAttending ? "현재" : education.endDate}
+              {education.dateFrom?.slice(0, 10)} ~ {education.dateTo?.slice(0, 10)}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div className="text-sm">
-              <span className="text-gray-500">전공:</span> {education.major || "-"}
+              <span className="text-gray-500">전공:</span> {education.field || "-"}
             </div>
             <div className="text-sm">
-              <span className="text-gray-500">학위:</span> {education.degree || "-"}
+              <span className="text-gray-500">학위:</span> {education.title || "-"}
             </div>
           </div>
           {education.description && <p className="text-sm text-gray-700 mt-2">{education.description}</p>}
         </div>
       ))}
     </div>
-  )
+  );
 }
 
-// Experience Section
-function ExperienceSection({ content }: { content: any[] }) {
-  if (!content || content.length === 0) {
-    return <p className="text-gray-500">등록된 경력 정보가 없습니다.</p>
-  }
 
+// Experience Section
+function ExperienceSection({ list }: { list: any[] }) {
+  if (!list || list.length === 0) {
+    return <p className="text-gray-500">등록된 경력 정보가 없습니다.</p>;
+  }
   return (
     <div className="space-y-6">
-      {content.map((experience, index) => (
+      {list.map((experience, index) => (
         <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
           <div className="flex flex-col md:flex-row md:justify-between mb-2">
-            <h4 className="font-medium text-gray-900">{experience.company}</h4>
+            <h4 className="font-medium text-gray-900">{experience.organization}</h4>
             <div className="text-sm text-gray-600">
-              {experience.startDate} ~ {experience.isCurrentlyWorking ? "현재" : experience.endDate}
+              {experience.dateFrom?.slice(0, 10)} ~ {experience.dateTo ? experience.dateTo.slice(0, 10) : ""}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div className="text-sm">
-              <span className="text-gray-500">부서:</span> {experience.department || "-"}
+              <span className="text-gray-500">직책:</span> {experience.title || "-"}
             </div>
             <div className="text-sm">
-              <span className="text-gray-500">직책:</span> {experience.position || "-"}
+              <span className="text-gray-500">분야:</span> {experience.field || "-"}
             </div>
           </div>
           {experience.description && <p className="text-sm text-gray-700 mt-2">{experience.description}</p>}
         </div>
       ))}
     </div>
-  )
+  );
 }
 
-// Certification Section
-function CertificationSection({ content }: { content: any[] }) {
-  if (!content || content.length === 0) {
-    return <p className="text-gray-500">등록된 자격증 정보가 없습니다.</p>
-  }
 
+// Certification Section
+function CertificationSection({ list }: { list: any[] }) {
+  if (!list || list.length === 0) {
+    return <p className="text-gray-500">등록된 자격증 정보가 없습니다.</p>;
+  }
   return (
     <div className="space-y-6">
-      {content.map((certification, index) => (
+      {list.map((cert, index) => (
         <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
           <div className="flex flex-col md:flex-row md:justify-between mb-2">
-            <h4 className="font-medium text-gray-900">{certification.name}</h4>
-            <div className="text-sm text-gray-600">취득일: {certification.acquisitionDate || "-"}</div>
+            <h4 className="font-medium text-gray-900">{cert.title}</h4>
+            <div className="text-sm text-gray-600">취득일: {cert.dateFrom?.slice(0, 10) || "-"}</div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div className="text-sm">
-              <span className="text-gray-500">발급 기관:</span> {certification.organization || "-"}
+              <span className="text-gray-500">발급 기관:</span> {cert.organization || "-"}
             </div>
             <div className="text-sm">
-              <span className="text-gray-500">분야:</span> {certification.field || "-"}
+              <span className="text-gray-500">분야:</span> {cert.field || "-"}
             </div>
           </div>
-          {certification.description && <p className="text-sm text-gray-700 mt-2">{certification.description}</p>}
+          {cert.description && <p className="text-sm text-gray-700 mt-2">{cert.description}</p>}
         </div>
       ))}
     </div>
-  )
+  );
 }
 
-// Activity Section
-function ActivitySection({ content }: { content: any[] }) {
-  if (!content || content.length === 0) {
-    return <p className="text-gray-500">등록된 활동/경험 정보가 없습니다.</p>
-  }
 
+// Activity Section
+function ActivitySection({ list }: { list: any[] }) {
+  if (!list || list.length === 0) {
+    return <p className="text-gray-500">등록된 활동/경험 정보가 없습니다.</p>;
+  }
   return (
     <div className="space-y-6">
-      {content.map((activity, index) => (
+      {list.map((activity, index) => (
         <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
           <div className="flex flex-col md:flex-row md:justify-between mb-2">
-            <h4 className="font-medium text-gray-900">{activity.name}</h4>
+            <h4 className="font-medium text-gray-900">{activity.organization}</h4>
             <div className="text-sm text-gray-600">
-              {activity.startDate} ~ {activity.endDate}
+              {activity.dateFrom?.slice(0, 10)} ~ {activity.dateTo ? activity.dateTo.slice(0, 10) : ""}
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
             <div className="text-sm">
-              <span className="text-gray-500">기관/단체:</span> {activity.organization || "-"}
+              <span className="text-gray-500">활동명:</span> {activity.title || "-"}
             </div>
             <div className="text-sm">
               <span className="text-gray-500">분야:</span> {activity.field || "-"}
@@ -536,69 +558,40 @@ function ActivitySection({ content }: { content: any[] }) {
         </div>
       ))}
     </div>
-  )
+  );
 }
+
 
 // Portfolio Section
-function PortfolioSection({ content }: { content: any[] }) {
-  if (!content || content.length === 0) {
-    return <p className="text-gray-500">등록된 포트폴리오 파일이 없습니다.</p>
+function PortfolioSection({ list }: { list: any[] }) {
+  if (!list || list.length === 0) {
+    return <p className="text-gray-500">등록된 포트폴리오 파일이 없습니다.</p>;
   }
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + " B"
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB"
-    else return (bytes / 1048576).toFixed(1) + " MB"
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
-
   return (
-    <div>
-      <ul className="divide-y divide-gray-200">
-        {content.map((item, index) => (
-          <li key={index} className="py-3 flex items-center justify-between first:pt-0">
-            <div className="flex items-center">
-              <Download className="h-5 w-5 text-gray-400 mr-3" />
-              <div>
-                <a
-                  href="#"
-                  className="font-medium text-blue-600 hover:text-blue-800"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    alert(`파일 다운로드: ${item.fileName}`)
-                  }}
-                >
-                  {item.fileName}
-                </a>
-                <p className="text-xs text-gray-500">
-                  {formatFileSize(item.fileSize)} • {formatDate(item.uploadDate)}
-                </p>
-              </div>
+    <div className="space-y-6">
+      {list.map((item, index) => (
+        <div key={index} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+          <div className="flex flex-col md:flex-row md:justify-between mb-2">
+            <h4 className="font-medium text-gray-900">{item.title}</h4>
+            <div className="text-sm text-gray-600">
+              {item.dateFrom?.slice(0, 10)} ~ {item.dateTo ? item.dateTo.slice(0, 10) : ""}
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-blue-600"
-              onClick={() => alert(`파일 다운로드: ${item.fileName}`)}
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-          </li>
-        ))}
-      </ul>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+            <div className="text-sm">
+              <span className="text-gray-500">기관/단체:</span> {item.organization || "-"}
+            </div>
+            <div className="text-sm">
+              <span className="text-gray-500">분야:</span> {item.field || "-"}
+            </div>
+          </div>
+          {item.description && <p className="text-sm text-gray-700 mt-2">{item.description}</p>}
+        </div>
+      ))}
     </div>
-  )
+  );
 }
+
 
 // Cover Letter Section
 function CoverLetterSection({
@@ -618,7 +611,7 @@ function CoverLetterSection({
     <div className="bg-gray-50 p-4 rounded-md">
       <h4 className="font-medium mb-2">선택된 자기소개서</h4>
       <p className="text-gray-700">{coverLetterTitle}</p>
-      {coverLetterUpdatedAt && <p className="text-sm text-gray-500 mt-1">최종 수정일: {coverLetterUpdatedAt}</p>}
+      {coverLetterUpdatedAt && <p className="text-sm text-gray-500 mt-1">최종 수정일: {formatDate(coverLetterUpdatedAt)}</p>}
     </div>
   )
 }

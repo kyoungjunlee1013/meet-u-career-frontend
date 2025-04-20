@@ -1,100 +1,117 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { PersonalLoginForm } from "./PersonalLoginForm"
-import { BusinessLoginForm } from "./BusinessLoginForm"
-import { SocialLoginButtons } from "./SocialLoginButtons"
-import { PromotionalBanner } from "./PromotionalBanner"
+import { useState, useEffect, memo } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { PersonalLoginForm } from "./PersonalLoginForm";
+import { BusinessLoginForm } from "./BusinessLoginForm";
+import { SocialLoginButtons } from "./SocialLoginButtons";
+import { PromotionalBanner } from "./PromotionalBanner";
 
 interface LoginTabsProps {
-  onTabChange?: (tab: "personal" | "business") => void
+  onTabChange?: (tab: "personal" | "business") => void;
 }
 
+// 왼쪽 고정 영역 컴포넌트
+const LoginLeftPanel = memo(({ buttonLabel }: { buttonLabel: string }) => (
+  <div className="w-full md:w-1/2 p-10 flex flex-col h-full min-h-[600px]">
+    {/* 로고 */}
+    <div className="flex flex-col items-center justify-center">
+      <Image
+        src="/images/etc/login_03.png"
+        alt="Login Logo"
+        width={360}
+        height={280}
+        className="object-contain mb-8"
+      />
+    </div>
+
+    <div className="flex-1" />
+
+    {/* 버튼 */}
+    <Link
+      href="/register"
+      className="block w-full text-center py-3 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors mt-auto"
+    >
+      {buttonLabel}
+    </Link>
+  </div>
+));
+LoginLeftPanel.displayName = "LoginLeftPanel";
+
 export const LoginTabs = ({ onTabChange }: LoginTabsProps) => {
-  const [activeTab, setActiveTab] = useState<"personal" | "business">("personal")
+  const [activeTab, setActiveTab] = useState<"personal" | "business">(
+    "personal"
+  );
 
   useEffect(() => {
-    onTabChange?.(activeTab)
-  }, [activeTab, onTabChange])
+    onTabChange?.(activeTab);
+  }, [activeTab, onTabChange]);
+
+  // 탭에 따라 버튼 텍스트 변경
+  const buttonLabel =
+    activeTab === "personal" ? "개인 회원가입" : "기업 회원가입";
 
   return (
-    <div className="max-w-[1000px] mx-auto px-4 py-24">
-      <div className="border rounded-lg overflow-hidden">
-        <div className="flex flex-col md:flex-row">
-          {/* Left side - Welcome message and illustration */}
-          <div className="w-full md:w-1/2 p-8 flex flex-col">
-            <div className="mb-6">
-              <h1 className="text-xl font-medium mb-2">다양한 사람인 서비스를</h1>
-              <h1 className="text-xl font-medium mb-2">로그인 한 번으로</h1>
-              <h1 className="text-xl font-medium mb-2">편하게 이용하세요!</h1>
-            </div>
+    <div className="max-w-[1100px] mx-auto px-4 py-24">
+      <div className="border rounded-2xl overflow-hidden bg-white flex flex-col md:flex-row min-h-[600px]">
+        {/* 왼쪽 고정 패널 */}
+        <LoginLeftPanel buttonLabel={buttonLabel} />
 
-            <div className="flex-1 flex items-center justify-center">
-              <div className="relative w-[200px] h-[200px]">
-                <Image
-                  src="/images/etc/login_01.png"
-                  alt="Login illustration"
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </div>
+        {/* 가운데 구분선 */}
+        <div className="hidden md:flex w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent" />
 
-            <div className="mt-6">
-              <Link
-                href="/register"
-                className="block w-full text-center py-2.5 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors"
-              >
-                개인 회원가입 가입
-              </Link>
-            </div>
+        {/* 오른쪽 로그인 폼 */}
+        <div className="w-full md:w-[35%] p-10 flex flex-col mx-auto">
+          {/* 탭 버튼 */}
+          <div className="flex mb-8">
+            <button
+              className={`flex-1 py-2 text-center font-semibold text-2xl ${
+                activeTab === "personal"
+                  ? "text-[#1D3557] border-b-4 border-blue-600"
+                  : "text-gray-400"
+              }`}
+              onClick={() => setActiveTab("personal")}
+            >
+              개인회원
+            </button>
+            <button
+              className={`flex-1 py-2 text-center font-semibold text-2xl ${
+                activeTab === "business"
+                  ? "text-[#1D3557] border-b-4 border-blue-600"
+                  : "text-gray-400"
+              }`}
+              onClick={() => setActiveTab("business")}
+            >
+              기업회원
+            </button>
           </div>
 
-          {/* Right side - Login tabs */}
-          <div className="w-full md:w-1/2 border-t md:border-t-0 md:border-l">
-            <div className="flex border-b">
-              <button
-                className={`flex-1 py-3 text-center font-medium ${
-                  activeTab === "personal"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:bg-gray-50"
-                }`}
-                onClick={() => setActiveTab("personal")}
-              >
-                개인회원
-              </button>
-              <button
-                className={`flex-1 py-3 text-center font-medium ${
-                  activeTab === "business"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:bg-gray-50"
-                }`}
-                onClick={() => setActiveTab("business")}
-              >
-                기업회원
-              </button>
-            </div>
-
-            <div className="p-6">
-              {activeTab === "personal" ? <PersonalLoginForm /> : <BusinessLoginForm />}
-
-              {activeTab === "personal" && (
-                <>
-                  <div className="mt-6 text-center">
-                    <p className="text-xs text-gray-500 mb-4">소셜 계정으로 간편 로그인</p>
-                    <SocialLoginButtons />
-                  </div>
-                  <div className="mt-6">
-                    <PromotionalBanner />
-                  </div>
-                </>
-              )}
-            </div>
+          {/* 로그인 폼 영역 */}
+          <div className="flex-1 flex flex-col">
+            {activeTab === "personal" ? (
+              <>
+                <PersonalLoginForm />
+                <div className="mt-8 text-center">
+                  <p className="text-xs text-gray-500 mb-4">
+                    소셜 계정으로 간편 로그인
+                  </p>
+                  <SocialLoginButtons />
+                </div>
+                <div className="mt-8">
+                  <PromotionalBanner />
+                </div>
+              </>
+            ) : (
+              <>
+                <BusinessLoginForm />
+                {/* 높이 맞추기 */}
+                <div className="mt-8 h-[160px]" />
+              </>
+            )}
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

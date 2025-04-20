@@ -1,17 +1,26 @@
 import { Search } from "lucide-react"
+import Image from "next/image"
 
 export const SearchBar = () => {
   return (
-    <div className="bg-gray-50 p-6 rounded-lg">
-      <div className="flex items-center mb-6">
-        <Search className="h-5 w-5 text-blue-500 mr-2" />
-        <span className="text-blue-500 text-sm font-medium">회원님을 위한 추천공고</span>
+    <div className="bg-gray-50 p-6 rounded-lg mt-3 mb-12">
+      <div className="flex items-center bg-[#15274a] rounded-2xl text-white px-[20px] py-[5px] w-fit mb-[10px]">
+        <Search className="h-5 w-5 text-white mr-2" />
+        <span className="text-sm font-medium">회원님을 위한 추천공고</span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-4">
         {featuredJobs.map((job, index) => (
-          <div key={index} className="bg-white border border-gray-100 rounded-md p-4 hover:shadow-sm transition-shadow">
-            <div className="w-12 h-12 bg-gray-100 mb-3"></div>
+          <div key={index} className="bg-white border border-gray-100 rounded-md p-4 hover:shadow-md transition-shadow cursor-pointer">
+            <div className="w-12 h-12 bg-gray-100 mb-3">
+              <Image
+                src="/images/thumbnail/generic-app-icon.png"
+                alt="로고"
+                width={120}
+                height={35}
+                priority
+              />
+            </div>
             <h3 className="text-sm font-medium mb-1 line-clamp-2 h-10">{job.title}</h3>
             <div className="text-xs text-gray-500 mb-1">{job.company}</div>
             <div className="flex justify-between items-center text-xs text-gray-400">

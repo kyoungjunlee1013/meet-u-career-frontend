@@ -38,7 +38,7 @@ export function CoverLetterSectionManagerPanel({
       <CardContent className="pt-0">
         <div className="space-y-4">
           <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="sections">
+            <Droppable droppableId="sections" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
               {(provided: DroppableProvided) => (
                 <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                   {sections.map((section, index) => (
@@ -46,6 +46,7 @@ export function CoverLetterSectionManagerPanel({
                       key={section.id}
                       draggableId={section.id}
                       index={index}
+                      isDragDisabled={false}
                     >
                       {(provided) => (
                         <div
