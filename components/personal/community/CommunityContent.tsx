@@ -50,7 +50,7 @@ export const CommunityContent = () => {
           />
         </div>
         <div className="w-full md:w-64">
-          <NewsSidebar />
+          <NewsSidebar selectedTags={selectedHashtags} />
         </div>
       </div>
 
@@ -62,7 +62,14 @@ export const CommunityContent = () => {
         />
       )}
 
-      {isCreatePostModalOpen && <CreatePostModal onClose={handleCloseCreatePostModal} />}
+      {isCreatePostModalOpen && (
+        <CreatePostModal
+          onClose={handleCloseCreatePostModal}
+          profileImageUrl="/profile.png" // 기본 프로필 이미지
+          userName="User1"               // 기본 사용자 이름
+        />
+      )}
+
     </div>
   )
 }
