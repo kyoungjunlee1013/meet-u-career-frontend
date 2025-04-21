@@ -1,35 +1,66 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import Link from "next/link"
-import { useActionState } from "react"
-import { loginBusiness } from "@/app/login/actions"
+import type React from "react";
+import { useState } from "react";
+import Link from "next/link";
+import axios from "axios";
 
 export const BusinessLoginForm = () => {
-  const [state, formAction, isPending] = useActionState(loginBusiness, {
-    success: false,
-    errors: {},
-  })
-  const [rememberMe, setRememberMe] = useState(false)
+  const [companyId, setCompanyId] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [isPending, setIsPending] = useState(false);
+  const [errorMessages, setErrorMessages] = useState<{ companyId?: string; password?: string; message?: string }>({});
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRememberMe(e.target.checked)
-  }
+    setRememberMe(e.target.checked);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsPending(true);
+    setErrorMessages({});
+    setSuccessMessage("");
+
+    try {
+      const response = await axios.post("/api/auth/business-login", {
+        companyId,
+        password,
+        rememberMe,
+      });
+
+      if (response.data.success) {
+        setSuccessMessage(response.data.message || "로그인 성공!");
+        // 로그인 성공 후 필요한 경우 리다이렉트 추가 가능
+        // window.location.href = "/";
+      } else {
+        setErrorMessages({ message: response.data.message || "로그인에 실패했습니다." });
+      }
+    } catch (error: any) {
+      if (error.response?.data?.errors) {
+        setErrorMessages(error.response.data.errors);
+      } else {
+        setErrorMessages({ message: "로그인 중 오류가 발생했습니다." });
+      }
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <input
           type="text"
           name="companyId"
           placeholder="기업 아이디"
-          className={`w-full px-3 py-2.5 border ${
-            state?.errors?.companyId ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          value={companyId}
+          onChange={(e) => setCompanyId(e.target.value)}
+          className={`w-full px-3 py-2.5 border ${errorMessages.companyId ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
-        {state?.errors?.companyId && <p className="text-red-500 text-xs mt-1">{state.errors.companyId}</p>}
+        {errorMessages.companyId && <p className="text-red-500 text-xs mt-1">{errorMessages.companyId}</p>}
       </div>
 
       <div>
@@ -37,11 +68,12 @@ export const BusinessLoginForm = () => {
           type="password"
           name="password"
           placeholder="비밀번호"
-          className={`w-full px-3 py-2.5 border ${
-            state?.errors?.password ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className={`w-full px-3 py-2.5 border ${errorMessages.password ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
-        {state?.errors?.password && <p className="text-red-500 text-xs mt-1">{state.errors.password}</p>}
+        {errorMessages.password && <p className="text-red-500 text-xs mt-1">{errorMessages.password}</p>}
       </div>
 
       <div className="flex items-center">
@@ -79,8 +111,10 @@ export const BusinessLoginForm = () => {
         )}
       </button>
 
-      {state?.success && <p className="text-green-600 text-sm text-center">{state.message}</p>}
-      {state?.message && !state.success && <p className="text-red-600 text-sm text-center">{state.message}</p>}
+      {successMessage && <p className="text-green-600 text-sm text-center">{successMessage}</p>}
+      {errorMessages.message && !successMessage && (
+        <p className="text-red-600 text-sm text-center">{errorMessages.message}</p>
+      )}
     </form>
-  )
-}
+  );
+};

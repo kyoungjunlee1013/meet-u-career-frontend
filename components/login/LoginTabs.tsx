@@ -66,21 +66,19 @@ export const LoginTabs = ({ onTabChange }: LoginTabsProps) => {
           {/* 탭 버튼 */}
           <div className="flex mb-8">
             <button
-              className={`flex-1 py-2 text-center font-semibold text-2xl ${
-                activeTab === "personal"
-                  ? "text-[#1D3557] border-b-4 border-blue-600"
-                  : "text-gray-400"
-              }`}
+              className={`flex-1 py-2 text-center font-semibold text-2xl ${activeTab === "personal"
+                ? "text-[#1D3557] border-b-4 border-blue-600"
+                : "text-gray-400"
+                }`}
               onClick={() => setActiveTab("personal")}
             >
               개인회원
             </button>
             <button
-              className={`flex-1 py-2 text-center font-semibold text-2xl ${
-                activeTab === "business"
-                  ? "text-[#1D3557] border-b-4 border-blue-600"
-                  : "text-gray-400"
-              }`}
+              className={`flex-1 py-2 text-center font-semibold text-2xl ${activeTab === "business"
+                ? "text-[#1D3557] border-b-4 border-blue-600"
+                : "text-gray-400"
+                }`}
               onClick={() => setActiveTab("business")}
             >
               기업회원

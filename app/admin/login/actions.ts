@@ -21,7 +21,7 @@ export const initialState: LoginState = {
     errors: {},
 }
 
-// ✅ useFormState가 기대하는 형태로 감싸기
+// useFormState가 기대하는 형태로 감싸기
 export async function loginAdminAction(
     _: LoginState,
     formData: FormData
@@ -33,8 +33,8 @@ export async function loginAdminAction(
 
     if (!parsed.success) {
         return {
-        success: false,
-        errors: parsed.error.flatten().fieldErrors,
+            success: false,
+            errors: parsed.error.flatten().fieldErrors,
         }
     }
 
