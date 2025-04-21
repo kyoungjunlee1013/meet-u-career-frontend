@@ -135,7 +135,7 @@ export const ApplicationsContent = () => {
           <div className="flex flex-col md:flex-row justify-between gap-4">
             <ApplicationsSearch
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
             />
             <ApplicationsFilter
               duration={duration}

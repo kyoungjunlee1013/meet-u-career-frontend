@@ -1,4 +1,11 @@
-export const ApplicationsStats = ({ total, applied, passed, rejected }) => {
+interface ApplicationsStatsProps {
+  total: number;
+  applied: number;
+  passed: number;
+  rejected: number;
+}
+
+export const ApplicationsStats = ({ total, applied, passed, rejected }: ApplicationsStatsProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">

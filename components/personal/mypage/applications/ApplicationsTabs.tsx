@@ -1,7 +1,16 @@
 import { useState } from "react";
 
 // props: total, applied, passed, rejected
-export const ApplicationsTabs = ({ activeTab, onTabChange, total, applied, passed, rejected }) => {
+interface ApplicationsTabsProps {
+  activeTab: number | null;
+  onTabChange: (tab: number | null) => void;
+  total: number;
+  applied: number;
+  passed: number;
+  rejected: number;
+}
+
+export const ApplicationsTabs = ({ activeTab, onTabChange, total, applied, passed, rejected }: ApplicationsTabsProps) => {
   const TAB_LIST = [
     { key: null, label: <>전체 <span className="ml-1 text-blue-600">{total}</span></> },
     { key: 0, label: <>지원완료 <span className="ml-1 text-gray-500">{applied}</span></> },
