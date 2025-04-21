@@ -1,5 +1,5 @@
 interface ApplicationStatusBadgeProps {
-  status: "서류통과" | "완수완료" | "최종합격" | "불합격" | "면접예정"
+  status: "서류통과" | "완수완료" | "불합격" | "면접예정"
 }
 
 export const ApplicationStatusBadge = ({ status }: ApplicationStatusBadgeProps) => {
@@ -9,8 +9,6 @@ export const ApplicationStatusBadge = ({ status }: ApplicationStatusBadgeProps) 
         return "bg-blue-100 text-blue-800"
       case "완수완료":
         return "bg-green-100 text-green-800"
-      case "최종합격":
-        return "bg-blue-100 text-blue-800"
       case "불합격":
         return "bg-red-100 text-red-800"
       case "면접예정":

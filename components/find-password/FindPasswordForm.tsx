@@ -10,14 +10,16 @@ import { AlertCircle } from "lucide-react"
 import Link from "next/link"
 
 interface FindPasswordFormProps {
-  onSubmit: (email: string, userId: string) => void
+  onSubmit: (email: string, userId: string, name: string) => void
+  isLoading?: boolean
+  error?: string
 }
 
-export const FindPasswordForm = ({ onSubmit }: FindPasswordFormProps) => {
+export const FindPasswordForm = ({ onSubmit, isLoading = false, error }: FindPasswordFormProps) => {
   const [userId, setUserId] = useState("")
   const [email, setEmail] = useState("")
-  const [errors, setErrors] = useState<{ userId?: string; email?: string }>({})
-  const [isLoading, setIsLoading] = useState(false)
+  const [name, setName] = useState("")
+  const [errors, setErrors] = useState<{ userId?: string; email?: string; name?: string }>({})
 
   const validateForm = () => {
     const newErrors: { userId?: string; email?: string } = {}
@@ -36,18 +38,10 @@ export const FindPasswordForm = ({ onSubmit }: FindPasswordFormProps) => {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!validateForm()) return
-
-    setIsLoading(true)
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    setIsLoading(false)
-    onSubmit(email, userId)
+    onSubmit(email, userId, name)
   }
 
   return (
@@ -56,7 +50,7 @@ export const FindPasswordForm = ({ onSubmit }: FindPasswordFormProps) => {
         <p>가입 시 등록한 아이디와 이메일 주소를 입력하시면 비밀번호 재설정을 위한 인증 코드를 보내드립니다.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="userId">아이디</Label>
           <Input
@@ -64,7 +58,7 @@ export const FindPasswordForm = ({ onSubmit }: FindPasswordFormProps) => {
             type="text"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
-            placeholder="아이디를 입력하세요"
+            placeholder="아이디"
             className={errors.userId ? "border-red-500" : ""}
           />
           {errors.userId && (
@@ -82,7 +76,7 @@ export const FindPasswordForm = ({ onSubmit }: FindPasswordFormProps) => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="이메일을 입력하세요"
+            placeholder="이메일"
             className={errors.email ? "border-red-500" : ""}
           />
           {errors.email && (
@@ -93,8 +87,30 @@ export const FindPasswordForm = ({ onSubmit }: FindPasswordFormProps) => {
           )}
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="name">이름</Label>
+          <Input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="이름"
+            className={errors.name ? "border-red-500" : ""}
+          />
+          {errors.name && (
+            <div className="flex items-center gap-1 text-red-500 text-sm mt-1">
+              <AlertCircle className="h-4 w-4" />
+              <span>{errors.name}</span>
+            </div>
+          )}
+        </div>
+
+        {error && (
+          <div className="text-center text-red-600 mt-2">{error}</div>
+        )}
+
         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
-          {isLoading ? "처리 중..." : "다음"}
+          {isLoading ? "처리 중..." : "다음 단계로"}
         </Button>
       </form>
 
