@@ -97,7 +97,7 @@ export const CreatePostModal = ({
         if (selectedImage) {
           formData.append("image", selectedImage);
         } else if (previewImage && imageKey) {
-          if (!previewImage.includes("default_profile.png") && !previewImage.includes("generic-app-icon.png")) {
+          if (!previewImage.includes("/profile.png") && !previewImage.includes("generic-app-icon.png")) {
             json.postImageKey = imageKey;
           }
         } else {
@@ -116,10 +116,10 @@ export const CreatePostModal = ({
       console.log("FormData 보내기 직전:", [...formData.entries()]);
 
       if (isEditMode) {
-        await axios.post("http://localhost:8080/api/personal/community/posts/edit", formData);
+        await axios.post("/api/personal/community/posts/edit", formData);
         alert("게시글이 수정되었습니다!");
       } else {
-        await axios.post("http://localhost:8080/api/personal/community/posts/create", formData);
+        await axios.post("/api/personal/community/posts/create", formData);
         alert("게시글이 등록되었습니다!");
       }
   

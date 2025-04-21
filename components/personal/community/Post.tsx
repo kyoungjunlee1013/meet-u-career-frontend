@@ -155,7 +155,7 @@ export const Post = ({ post }: PostProps) => {
     setShowMenu(false)
     if (confirm("게시글을 삭제하시겠습니까?")) {
       try {
-        await axios.post(`http://localhost:8080/api/personal/community/posts/delete/${post.id}`, {
+        await axios.post(`/api/personal/community/posts/delete/${post.id}`, {
           accountId: 1,
         })
         alert("게시글이 삭제되었습니다.")
@@ -181,7 +181,7 @@ export const Post = ({ post }: PostProps) => {
   const handleToggleLike = async (e: React.MouseEvent) => {
     e.stopPropagation()
     try {
-      const response = await axios.post("http://localhost:8080/api/community/likes/toggle", {
+      const response = await axios.post("/api/community/likes/toggle", {
         accountId: 1,
         postId: post.id,
       })
@@ -216,7 +216,7 @@ export const Post = ({ post }: PostProps) => {
   // 댓글 목록 불러오기
   const fetchComments = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/community/comments/${post.id}`);
+      const response = await axios.get(`/api/community/comments/${post.id}`);
       if (response.status === 200) {
         console.log("서버에서 내려준 댓글 리스트:", response.data.data); 
         setComments(response.data.data); // 서버에서 댓글 리스트 받아오기
@@ -234,7 +234,7 @@ export const Post = ({ post }: PostProps) => {
     }
   
     try {
-      const response = await axios.post("http://localhost:8080/api/community/comments/create", {
+      const response = await axios.post("/api/community/comments/create", {
         accountId: 1, // 임시 로그인 사용자 ID
         postId: post.id,
         content: commentContent,
@@ -257,7 +257,7 @@ export const Post = ({ post }: PostProps) => {
     if (!confirm("댓글을 삭제하시겠습니까?")) return;
 
     try {
-      await axios.post(`http://localhost:8080/api/community/comments/delete/${commentId}`);
+      await axios.post(`/api/community/comments/delete/${commentId}`);
       alert("댓글이 삭제되었습니다!");
       fetchComments(); // 삭제 후 댓글 다시 새로 불러오기
     } catch (error) {
@@ -277,7 +277,7 @@ export const Post = ({ post }: PostProps) => {
     if (editingCommentId === null) return
 
     try {
-      await axios.post("http://localhost:8080/api/community/comments/update", {
+      await axios.post("/api/community/comments/update", {
         id: editingCommentId,
         accountId: 1, // 나중에 로그인 사용자 accountId로 교체
         content: editingContent,
