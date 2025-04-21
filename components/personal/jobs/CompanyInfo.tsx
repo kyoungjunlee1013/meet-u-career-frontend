@@ -1,56 +1,99 @@
-import Link from "next/link"
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
 
 export const CompanyInfo = () => {
   return (
-    <div className="border rounded-md overflow-hidden">
-      <div className="bg-gray-50 p-4 flex justify-between items-center">
-        <h3 className="font-bold">기업정보</h3>
-        <Link href="/personal/company/1/salary" className="text-sm text-blue-500 flex items-center">
-          기업정보 전체보기
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12L8.59 16.59Z" fill="#2365f2"></path>
-          </svg>
-        </Link>
-      </div>
-      <div className="p-4">
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 bg-gray-100 rounded-md flex-shrink-0"></div>
-          <div>
-            <Link href="/personal/company/1/salary" className="font-medium hover:text-blue-500 hover:underline">
-              (주)테스트그룹
-            </Link>
-            <p className="text-sm text-gray-500 mt-1">IT, 웹서비스</p>
-            <div className="flex gap-2 mt-2">
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">대기업</span>
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">사원수 1,000명+</span>
+    <div>
+      {/* 기업정보 제목 (카드 외부, 좌측 정렬) */}
+      <h3 className="text-lg font-bold mb-2 text-left">기업정보</h3>
+
+      {/* 카드 영역 */}
+      <div className="border rounded-md overflow-hidden">
+        {/* 상단 구역 */}
+        <div className="flex justify-between items-start p-6">
+          {/* 좌측 + 가운데 */}
+          <div className="flex-1 space-y-2">
+            {/* 회사명 + 관심기업 */}
+            <h2 className="text-xl font-bold mb-2">(주)테스트그룹</h2>
+
+            {/* 1열: 대표자명 + 기업형태 */}
+            <div className="flex text-sm text-gray-600">
+              <p className="w-28 text-gray-500">대표자명</p>
+              <p className="flex-1">김테스트</p>
+              <p className="w-28 text-gray-500">기업형태</p>
+              <p className="flex-1 truncate" title="코스피, 1000대기업, 중견기업">
+                코스피, 1000대기업, 중견기업
+              </p>
+            </div>
+
+            {/* 2열: 업종 + 사원수 */}
+            <div className="flex text-sm text-gray-600">
+              <p className="w-28 text-gray-500">업종</p>
+              <p className="flex-1">소프트웨어 개발</p>
+              <p className="w-28 text-gray-500">사원수</p>
+              <p className="flex-1">1,790명 (2025년 기준)</p>
+            </div>
+
+            {/* 3열: 설립일 + 홈페이지 */}
+            <div className="flex text-sm text-gray-600">
+              <p className="w-28 text-gray-500">설립일</p>
+              <p className="flex-1">2000년 1월 1일 (업력 24년차)</p>
+              <p className="w-28 text-gray-500">홈페이지</p>
+              <p className="flex-1 truncate" title="www.test.com">www.test.com</p>
+            </div>
+
+            {/* 4열: 주소 */}
+            <div className="flex text-sm text-gray-600">
+              <p className="w-28 text-gray-500">기업주소</p>
+              <p className="flex-1 col-span-3 truncate" title="서울특별시 강남구 도산대로 10">
+                서울특별시 강남구 도산대로 10
+              </p>
             </div>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
-          <div>
-            <p className="text-gray-500">산업</p>
-            <p>소프트웨어 개발</p>
-          </div>
-          <div>
-            <p className="text-gray-500">사원수</p>
-            <p>1,200명</p>
-          </div>
-          <div>
-            <p className="text-gray-500">설립일</p>
-            <p>2000년 1월</p>
-          </div>
-          <div>
-            <p className="text-gray-500">평균연봉</p>
-            <p>6,500만원</p>
+
+          {/* 우측 로고 */}
+          <div className="w-32 h-20 flex-shrink-0 flex items-center justify-center ml-8">
+            <Image
+              src="/images/logo/logo6.png"
+              alt="회사 로고"
+              width={100}
+              height={50}
+              className="object-contain"
+            />
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t">
-          <p className="text-sm text-gray-500">
-            (주)테스트그룹은 혁신적인 소프트웨어 솔루션을 개발하는 기업으로, 클라우드 서비스, 인공지능, 빅데이터 분석 등
-            다양한 IT 서비스를 제공하고 있습니다.
-          </p>
+
+        {/* 버튼 구역 */}
+        <div className="border-t p-4 flex flex-wrap gap-2 justify-start">
+          <Link href="#" className="border rounded-md px-4 py-2 text-sm hover:bg-gray-50">
+            채용정보 6건 &gt;
+          </Link>
+          <Link href="#" className="border rounded-md px-4 py-2 text-sm hover:bg-gray-50">
+            면접후기 10건 &gt;
+          </Link>
+          <Link href="#" className="border rounded-md px-4 py-2 text-sm hover:bg-gray-50">
+            기업리뷰
+          </Link>
+          <Link href="#" className="border rounded-md px-4 py-2 text-sm hover:bg-gray-50">
+            연봉정보
+          </Link>
+        </div>
+
+        {/* 전체보기 버튼 */}
+        <div className="border-t p-4 text-center">
+          <Link
+            href="/personal/company/1/salary"
+            className="text-sm text-blue-500 font-medium flex justify-center items-center gap-1 hover:underline"
+          >
+            기업정보 전체보기
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12L8.59 16.59Z" fill="#2365f2"></path>
+            </svg>
+          </Link>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
