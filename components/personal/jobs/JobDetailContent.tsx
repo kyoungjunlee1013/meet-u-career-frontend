@@ -1,37 +1,55 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { BookmarkIcon, Share2, ChevronUp, ChevronRight } from "lucide-react"
-import { JobApplicationStats } from "./JobApplicationStats"
-import { CompanyInfo } from "./CompanyInfo"
-import Link from "next/link"
+import { RefObject, useState } from "react";
+import { BookmarkIcon, Share2, ChevronUp, ChevronRight } from "lucide-react";
+import { JobApplicationStats } from "./JobApplicationStats";
+import { CompanyInfo } from "./CompanyInfo";
+import Link from "next/link";
 
 interface JobDetailContentProps {
-  jobId: string
+  jobId: string;
+  sectionRefs: {
+    postRef: RefObject<HTMLDivElement | null>;
+    applyRef: RefObject<HTMLDivElement | null>;
+    companyRef: RefObject<HTMLDivElement | null>;
+  };
 }
 
-export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
-  const [isBookmarked, setIsBookmarked] = useState(false)
+export const JobDetailContent = ({
+  jobId,
+  sectionRefs,
+}: JobDetailContentProps) => {
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   const toggleBookmark = () => {
-    setIsBookmarked(!isBookmarked)
-  }
+    setIsBookmarked(!isBookmarked);
+  };
 
   return (
     <div className="bg-white border rounded-md overflow-hidden">
       <div className="p-6">
-        <div className="flex items-center text-xs text-gray-500 mb-3">
-          <Link href={`/personal/company/1/salary`} className="hover:text-blue-500 hover:underline">
+        <div
+          ref={sectionRefs.postRef}
+          className="flex items-center text-xs text-gray-500 mb-3"
+        >
+          <Link
+            href={`/personal/company/1/salary`}
+            className="hover:text-blue-500 hover:underline"
+          >
             (주)테스트그룹
           </Link>
           <span className="mx-2">•</span>
-          <span className="text-yellow-500 bg-yellow-50 px-2 py-0.5 rounded">채용진행중</span>
+          <span className="text-yellow-500 bg-yellow-50 px-2 py-0.5 rounded">
+            채용진행중
+          </span>
           <span className="mx-2">•</span>
           <span className="text-gray-400">기업정보</span>
         </div>
 
         <div className="flex justify-between items-start">
-          <h1 className="text-xl font-bold mb-6">백엔드 엔지니어(Python) 채용</h1>
+          <h1 className="text-xl font-bold mb-6">
+            백엔드 엔지니어(Python) 채용
+          </h1>
           <div className="flex gap-2">
             <button
               className={`flex items-center justify-center h-8 w-8 rounded-full ${
@@ -41,7 +59,9 @@ export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
             >
               <BookmarkIcon className="h-5 w-5" />
             </button>
-            <button className="bg-red-500 text-white text-sm px-4 py-1.5 rounded-md hover:bg-red-600">지원하기</button>
+            <button className="bg-red-500 text-white text-sm px-4 py-1.5 rounded-md hover:bg-red-600">
+              지원하기
+            </button>
           </div>
         </div>
 
@@ -72,10 +92,14 @@ export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
           </div>
         </div>
 
-        <div className="text-center text-sm text-gray-500 mb-8">자세한 채용 공고입니다</div>
+        <div className="text-center text-sm text-gray-500 mb-8">
+          자세한 채용 공고입니다
+        </div>
 
         <div className="mb-8">
-          <h2 className="text-lg font-bold mb-6 text-center">백엔드 엔지니어(Python) 채용</h2>
+          <h2 className="text-lg font-bold mb-6 text-center">
+            백엔드 엔지니어(Python) 채용
+          </h2>
           <div className="bg-gray-100 h-60 flex items-center justify-center rounded-md mb-8">
             <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center">
               <span className="text-gray-400">▶</span>
@@ -84,7 +108,9 @@ export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
 
           <div className="space-y-6">
             <section>
-              <h3 className="text-base font-bold text-blue-600 mb-3">주요업무</h3>
+              <h3 className="text-base font-bold text-blue-600 mb-3">
+                주요업무
+              </h3>
               <ul className="space-y-2 text-sm">
                 <li>- Python 기반 백엔드 서비스 개발 및 운영</li>
                 <li>- RESTful API 설계 및 구현</li>
@@ -94,7 +120,9 @@ export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
             </section>
 
             <section>
-              <h3 className="text-base font-bold text-blue-600 mb-3">자격요건</h3>
+              <h3 className="text-base font-bold text-blue-600 mb-3">
+                자격요건
+              </h3>
               <ul className="space-y-2 text-sm">
                 <li>- Python 개발 경력 2년 이상</li>
                 <li>- Django, Flask 등 웹 프레임워크 사용 경험</li>
@@ -104,7 +132,9 @@ export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
             </section>
 
             <section>
-              <h3 className="text-base font-bold text-blue-600 mb-3">우대사항</h3>
+              <h3 className="text-base font-bold text-blue-600 mb-3">
+                우대사항
+              </h3>
               <ul className="space-y-2 text-sm">
                 <li>- AWS, GCP 등 클라우드 환경 경험</li>
                 <li>- Docker, Kubernetes 등 컨테이너 기술 경험</li>
@@ -114,7 +144,9 @@ export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
             </section>
 
             <section>
-              <h3 className="text-base font-bold text-blue-600 mb-3">복지혜택</h3>
+              <h3 className="text-base font-bold text-blue-600 mb-3">
+                복지혜택
+              </h3>
               <ul className="space-y-2 text-sm">
                 <li>- 유연근무제 운영</li>
                 <li>- 건강검진 지원</li>
@@ -127,7 +159,7 @@ export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
           </div>
         </div>
 
-        <div className="border-t pt-6 mb-8">
+        <div ref={sectionRefs.applyRef} className="border-t pt-6 mb-8">
           <h3 className="text-base font-bold mb-3">원서접수 방법</h3>
           <div className="flex justify-between items-center mb-4">
             <div className="flex gap-6">
@@ -142,7 +174,9 @@ export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
             <button className="flex-1 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
               이메일지원
             </button>
-            <button className="flex-1 py-2 bg-red-500 text-white rounded-md text-sm hover:bg-red-600">지원하기</button>
+            <button className="flex-1 py-2 bg-red-500 text-white rounded-md text-sm hover:bg-red-600">
+              지원하기
+            </button>
           </div>
         </div>
 
@@ -161,16 +195,13 @@ export const JobDetailContent = ({ jobId }: JobDetailContentProps) => {
 
         <CompanyInfo />
 
-        <div className="mt-4 text-right">
+        <div ref={sectionRefs.companyRef} className="mt-4 text-right">
           <Link
             href={`/personal/company/1/salary`}
             className="inline-flex items-center text-sm text-blue-500 hover:underline"
-          >
-            기업정보 전체보기
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Link>
+          />
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
