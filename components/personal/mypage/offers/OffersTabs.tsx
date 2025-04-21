@@ -1,16 +1,23 @@
-"use client"
+export type TabType = '전체' | '검토중' | '수락함' | '거절함'
 
-export function OffersTabs({ activeTab, onTabChange, counts }) {
-  const tabs = [
-    { id: "전체", label: "전체", count: counts["전체"] },
-    { id: "검토중", label: "검토중", count: counts["검토중"] },
-    { id: "수락함", label: "수락", count: counts["수락함"] },
-    { id: "거절함", label: "거절", count: counts["거절함"] },
-  ];
+interface OffersTabsProps {
+  activeTab: TabType
+  onTabChange: (tab: TabType) => void
+  counts: Record<TabType, number>
+}
+
+export function OffersTabs({ activeTab, onTabChange, counts }: OffersTabsProps) {
+  const tabs: { id: TabType; label: string }[] = [
+    { id: '전체', label: '전체' },
+    { id: '검토중', label: '검토중' },
+    { id: '수락함', label: '수락' },
+    { id: '거절함', label: '거절' },
+  ]
+
   return (
     <div className="border-b border-gray-200">
       <nav className="flex">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             className={
@@ -21,10 +28,13 @@ export function OffersTabs({ activeTab, onTabChange, counts }) {
             }
             onClick={() => onTabChange(tab.id)}
           >
-            {tab.label} <span className={activeTab === tab.id ? "text-blue-600 ml-1" : "text-gray-500 ml-1"}>{tab.count}</span>
+            {tab.label}
+            <span className={activeTab === tab.id ? "text-blue-600 ml-1" : "text-gray-500 ml-1"}>
+              {counts[tab.id]}
+            </span>
           </button>
         ))}
       </nav>
     </div>
-  );
+  )
 }
