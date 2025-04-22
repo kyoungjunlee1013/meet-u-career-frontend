@@ -12,6 +12,8 @@ export const metadata: Metadata = {
 
 import { Toaster } from "@/components/ui/toaster";
 
+import Script from "next/script";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,6 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <Script src="https://js.tosspayments.com/v1" strategy="beforeInteractive" />
+      </head>
       <body>
         {children}
         <Toaster />

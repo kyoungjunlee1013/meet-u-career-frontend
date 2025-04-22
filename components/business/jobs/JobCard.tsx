@@ -20,19 +20,19 @@ import {
 
 interface JobCardProps {
   job: {
-    id: number
-    title: string
-    status: string
-    statusLabel: string
+    id?: number
+    title?: string
+    status?: number | string
+    statusLabel?: string
     daysLeft?: string
-    views: number
-    applicants: number
-    location: string
-    workType: string
-    experience: string
-    salary: string
-    postedDate: string
-    deadline: string
+    views?: number
+    applicants?: number
+    location?: string
+    workType?: string
+    experience?: string
+    salary?: string
+    postedDate?: string
+    deadline?: string
     error?: string
     description?: string
     requirements?: string
@@ -59,7 +59,7 @@ export const JobCard = ({ job }: JobCardProps) => {
     }
   }
 
-  const isRejected = job.status === "반려됨"
+  const isRejected = (job.statusLabel ?? "") === "반려됨"
 
   return (
     <>
@@ -71,7 +71,7 @@ export const JobCard = ({ job }: JobCardProps) => {
           </div>
 
           <div className="flex items-center text-sm mb-2">
-            <span className={`mr-2 font-medium ${getStatusColor(job.status)}`}>{job.statusLabel}</span>
+            <span className={`mr-2 font-medium ${getStatusColor(job.statusLabel as string)}`}>{job.statusLabel}</span>
             {job.daysLeft && (
               <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-medium">{job.daysLeft}</span>
             )}
@@ -123,9 +123,9 @@ export const JobCard = ({ job }: JobCardProps) => {
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-100 px-4 py-3 flex justify-between">
+        <div className="border-t border-gray-100 px-4 py-3 flex gap-2 justify-between">
           <Link
-            href={`/business/jobs/register?id=${job.id}`}
+            href={`/business/jobs/${job.id}/edit`}
             className="text-gray-600 hover:text-gray-900 flex items-center text-sm"
           >
             <Edit className="h-4 w-4 mr-1" />
@@ -138,6 +138,19 @@ export const JobCard = ({ job }: JobCardProps) => {
             <ExternalLink className="h-4 w-4 mr-1" />
             <span>미리보기</span>
           </button>
+          <Link href={`/business/jobs/${job.id}/payment`} passHref>
+            <button
+              className={`px-4 py-2 rounded-md font-medium ${
+                job.status === 3
+                  ? "bg-green-600 text-white hover:bg-green-700"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+              disabled={job.status !== 3}
+              title={job.status !== 3 ? "승인된 공고만 광고 신청 가능" : ""}
+            >
+              광고 신청
+            </button>
+          </Link>
         </div>
       </div>
 

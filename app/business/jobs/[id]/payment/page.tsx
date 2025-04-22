@@ -1,0 +1,138 @@
+"use client";
+
+import { BusinessHeader } from "@/components/business/layout/BusinessHeader";
+
+import { useState } from "react";
+
+export default function JobPaymentPage() {
+  // Toss Payments 결제창 호출 핸들러
+  const handleTossPayment = () => {
+    const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
+    const redirectUrl = process.env.NEXT_PUBLIC_TOSS_REDIRECT_URI;
+    const orderId = `${job.id}-${Date.now()}`;
+    const orderName = `${job.title} - ${selectedProduct?.label} 광고`;
+    const amount = selectedProduct?.amount || 0;
+    console.log({ clientKey, redirectUrl, orderId, orderName, amount });
+    if (typeof window === "undefined" || !(window as any).TossPayments) {
+      alert("TossPayments SDK를 불러오지 못했습니다. 새로고침 후 다시 시도해 주세요.");
+      return;
+    }
+    if (!clientKey || !redirectUrl) {
+      alert("Toss 결제 환경변수가 올바르게 설정되어 있지 않습니다.");
+      return;
+    }
+    const tossPayments = (window as any).TossPayments(clientKey);
+    tossPayments.requestPayment("카드", {
+      amount,
+      orderId,
+      orderName,
+      customerName: "홍길동", // 실제 사용자명으로 교체 필요
+      successUrl: `${redirectUrl}/business/jobs/${job.id}/payment/success`,
+failUrl: `${redirectUrl}/business/jobs/${job.id}/payment/fail`,
+    });
+  };
+
+
+  // 하드코딩 예시 데이터
+  const job = {
+    id: 123,
+    title: "백엔드 개발자 채용",
+    companyName: "하이파이브",
+    expirationDate: "2025-05-10",
+    statusLabel: "승인됨(게시 전)",
+  };
+
+  // 광고 상품 리스트 하드코딩
+  const adProducts = [
+    {
+      type: "BASIC",
+      label: "BASIC",
+      durationDays: 7,
+      amount: 30000,
+      dailyAmount: 4285,
+      desc: "하단 노출",
+    },
+    {
+      type: "STANDARD",
+      label: "STANDARD",
+      durationDays: 14,
+      amount: 60000,
+      dailyAmount: 4285,
+      desc: "중간 우선 영역",
+    },
+    {
+      type: "PREMIUM",
+      label: "PREMIUM",
+      durationDays: 21,
+      amount: 100000,
+      dailyAmount: 4761,
+      desc: "최상단 고정 + 광고 뱃지",
+    },
+  ];
+
+  const [selectedType, setSelectedType] = useState("BASIC");
+  const selectedProduct = adProducts.find(p => p.type === selectedType);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <BusinessHeader />
+      <main className="max-w-[1200px] mx-auto px-6 py-6">
+        <h1 className="text-2xl font-bold mb-6">공고 결제 페이지</h1>
+        <div className="bg-white rounded shadow p-4 mb-8">
+          <div className="text-xl font-semibold mb-1">{job.title}</div>
+          <div className="text-gray-600 mb-1">{job.companyName}</div>
+          <div className="text-gray-500 text-sm mb-1">마감일: {job.expirationDate}</div>
+          <div className="text-blue-600 text-xs">{job.statusLabel}</div>
+        </div>
+
+        {/* 광고 상품 선택 UI */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold mb-4">광고 상품을 선택하세요</h2>
+          <div className="flex gap-6 flex-wrap">
+            {adProducts.map(product => (
+              <button
+                key={product.type}
+                type="button"
+                onClick={() => setSelectedType(product.type)}
+                className={`flex-1 min-w-[220px] max-w-[300px] p-5 rounded-lg border-2 transition-all shadow-sm text-left
+                  ${selectedType === product.type ? "border-blue-600 bg-blue-50" : "border-gray-200 bg-white hover:border-blue-300"}`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-bold text-lg">{product.label}</span>
+                  {selectedType === product.type && (
+                    <span className="text-blue-600 font-bold">선택됨</span>
+                  )}
+                </div>
+                <div className="text-gray-800 font-semibold mb-1">{product.durationDays}일 • <span className="text-blue-700">₩{product.amount.toLocaleString()}</span></div>
+                <div className="text-xs text-gray-500 mb-1">1일당 ₩{product.dailyAmount.toLocaleString()}</div>
+                <div className="text-sm text-gray-600">{product.desc}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 결제 금액 및 안내 */}
+        <div className="bg-white rounded shadow p-4 flex flex-col sm:flex-row items-center justify-between mb-8">
+          <div>
+            <div className="text-sm text-gray-500 mb-1">선택한 상품</div>
+            <div className="font-semibold text-lg">{selectedProduct?.label} ({selectedProduct?.durationDays}일)</div>
+            <div className="text-xs text-gray-400">{selectedProduct?.desc}</div>
+          </div>
+          <div className="text-right mt-4 sm:mt-0">
+            <div className="text-gray-500 text-sm">결제 금액</div>
+            <div className="text-2xl font-bold text-blue-700">₩{selectedProduct?.amount.toLocaleString()}</div>
+          </div>
+        </div>
+
+        {/* 결제 버튼 */}
+        <button
+          className="w-full max-w-md mx-auto block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg text-lg shadow"
+          onClick={handleTossPayment}
+        >
+          결제하기
+        </button>
+      </main>
+    </div>
+  );
+}
+

@@ -5,7 +5,6 @@ import { FormCard } from "./FormCard"
 
 export function TemplateSelectionCard() {
   const {
-    register,
     formState: { errors },
     setValue,
     watch,
@@ -22,9 +21,10 @@ export function TemplateSelectionCard() {
     <FormCard title="공고 템플릿">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {templates.map((template) => (
-          <div
+          <label
             key={template.id}
-            className={`border rounded-md p-4 cursor-pointer transition-colors ${
+            htmlFor={`template-${template.id}`}
+            className={`border rounded-md p-4 cursor-pointer transition-colors block ${
               templateType === template.id
                 ? "border-blue-500 bg-blue-50"
                 : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
@@ -36,19 +36,19 @@ export function TemplateSelectionCard() {
                 type="radio"
                 id={`template-${template.id}`}
                 className="mt-1 mr-2"
+                name="templateType"
                 checked={templateType === template.id}
                 onChange={() => setValue("templateType", template.id)}
-                {...register("templateType")}
                 value={template.id}
               />
               <div>
-                <label htmlFor={`template-${template.id}`} className="font-medium text-gray-900 block mb-1">
+                <span className="font-medium text-gray-900 block mb-1">
                   {template.name}
-                </label>
+                </span>
                 <p className="text-sm text-gray-500">{template.description}</p>
               </div>
             </div>
-          </div>
+          </label>
         ))}
       </div>
       {errors.templateType && <p className="mt-1 text-sm text-red-600">{errors.templateType.message as string}</p>}
