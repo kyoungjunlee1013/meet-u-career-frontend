@@ -1,11 +1,15 @@
 "use client";
 
 import { RefObject, useEffect, useState } from "react";
-import { Star, Share2, MapPin, Map } from "lucide-react";
+import { Star, Share2, Heart } from "lucide-react";
 import { ApplicantStats } from "./ApplicantStats";
 import { WorkLocation } from "./WorkLocation";
 import { CompanyInfo } from "./CompanyInfo";
+import { ApplicationModal } from "./ApplicationModal";
 import Link from "next/link";
+import axios from "axios";
+import { JobPostingType } from "@/types/job";
+import { useUserStore } from "@/store/useUserStore";
 
 interface JobDetailContentProps {
   jobId: string;
@@ -20,31 +24,137 @@ export const JobDetailContent = ({
   jobId,
   sectionRefs,
 }: JobDetailContentProps) => {
+  const [jobPosting, setJobPosting] = useState<JobPostingType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [isApplicationModalOpen, setIsApplicationModalOpen] = useState<boolean>(false);
 
-  const toggleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-  };
+  // 로그인 사용자 정보
+  const { userInfo } = useUserStore();
 
-  const deadline = new Date("2025-04-27T23:00:00"); // 마감일 설정
-  const [timeLeft, setTimeLeft] = useState<number>(Math.floor((deadline.getTime() - Date.now()) / 1000));
+  useEffect(() => {
+    const fetchJobPosting = async () => {
+      try {
+        const response = await axios.get(`/api/jobpostings/${jobId}`);
+        const data: JobPostingType = response.data.data;
+        setJobPosting(data);
+
+        const expiration = new Date(data.jobPosting.expirationDate).getTime();
+        setTimeLeft(Math.floor((expiration - Date.now()) / 1000));
+      } catch (err) {
+        console.error(err);
+        setError("채용 정보를 불러오지 못했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobPosting();
+  }, [jobId]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
-
     return () => clearInterval(interval);
   }, []);
 
+  // 마감일
   const formatTime = (seconds: number) => {
     const days = Math.floor(seconds / (24 * 60 * 60));
     const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-
     return `${days}일 ${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
+
+  // 디데이
+  const calculateDday = (expirationDate: string) => {
+    const today = new Date();
+    const deadline = new Date(expirationDate);
+    const diffTime = deadline.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? `D-${diffDays}` : "마감";
+  };
+
+  // 관심기업
+  const handleFollow = async () => {
+    if (!userInfo) {
+      alert("로그인 후 이용 가능합니다.");
+      return;
+    }
+
+    const endpoint = jobPosting?.companyFollowed
+      ? "/api/personal/company/unfollow"
+      : "/api/personal/company/follow";
+
+    try {
+      // 로컬과 서비스 환경에서 헤더 처리 분리
+      const token = sessionStorage.getItem("accessToken");
+      const headers = token && useUserStore.getState().isLocalhost ? { "Authorization": `Bearer ${token}` } : {};
+
+      await axios.post(endpoint,
+        { companyId: jobPosting?.company.companyId },
+        { headers }
+      );
+
+      const message = jobPosting?.companyFollowed
+        ? "관심기업 설정이 취소되었습니다."
+        : "관심기업으로 설정되었습니다!";
+      alert(message);
+    } catch (error) {
+      console.error("관심기업 설정 실패:", error);
+      alert("관심기업 설정에 실패했습니다.");
+    }
+  };
+
+  // 스크랩
+  const handleBookmark = async () => {
+    if (!userInfo) {
+      alert("로그인 후 이용 가능합니다.");
+      return;
+    }
+
+    const endpoint = jobPosting?.bookmarked
+      ? "/api/personal/bookmark/remove"
+      : "/api/personal/bookmark/add";
+
+    try {
+      // 로컬과 서비스 환경에서 헤더 처리 분리
+      const token = sessionStorage.getItem("accessToken");
+      const headers = token && useUserStore.getState().isLocalhost ? { "Authorization": `Bearer ${token}` } : {};
+
+      await axios.post(endpoint,
+        { jobPostingId: jobPosting?.id },
+        { headers }
+      );
+
+      const message = jobPosting?.bookmarked
+        ? "스크랩이 취소되었습니다."
+        : "스크랩이 완료되었습니다!";
+      alert(message);
+      setIsBookmarked(!jobPosting?.bookmarked); // 상태 변경 (스크랩 여부)
+    } catch (error) {
+      console.error("스크랩 실패:", error);
+      alert("스크랩에 실패했습니다.");
+    }
+  };
+
+  const openApplicationModal = () => {
+    if (!userInfo) {
+      alert("로그인 후 이용 가능합니다.");
+      return;
+    }
+    setIsApplicationModalOpen(true);
+  };
+
+  const closeApplicationModal = () => {
+    setIsApplicationModalOpen(false)
+  }
+
+  if (error) return <div className="text-center text-red-500 py-10">{error}</div>;
+  if (!jobPosting) return null;
 
   return (
     <div className="bg-white border rounded-md overflow-hidden">
@@ -53,76 +163,83 @@ export const JobDetailContent = ({
           ref={sectionRefs.postRef}
           className="flex items-center mb-3 gap-4"
         >
-          {/* 회사명 링크 */}
           <Link
-            href={`/personal/company/1/salary`}
+            href={`/personal/company/${jobPosting.company.companyId}/intro`}
             className="text-md font-semibold"
           >
-            (주)테스트그룹
+            {jobPosting.company.companyName}
           </Link>
 
-          {/* 오른쪽 버튼들 (회사명 옆에 붙음) */}
           <div className="flex items-center gap-2">
             {/* 관심기업 버튼 */}
-            <button className="flex items-center border border-gray-300 px-3 py-1 rounded-md text-sm text-gray-600 hover:text-gray-800">
-              <span className="mr-1">♡</span> 관심기업
+            <button
+              className="flex items-center border border-gray-300 px-3 py-1 rounded-md text-sm text-gray-600 hover:text-gray-800"
+              onClick={handleFollow}
+            >
+              <span className="mr-1">
+                {jobPosting.companyFollowed ? (
+                  <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                ) : (
+                  <Heart className="w-4 h-4 text-gray-600" />
+                )}
+              </span>
+              관심기업
             </button>
 
-            {/* 채용중 버튼 */}
-            <button className="flex items-center border border-gray-300 px-3 py-1 rounded-md text-sm text-gray-600 hover:text-gray-800">
-              채용중 <strong className="ml-1">10</strong>
+            {/* 채용중 */}
+            <button className="flex items-center border border-gray-300 px-3 py-1 rounded-md text-sm text-gray-600 cursor-default hover:text-gray-800">
+              채용중 <strong className="ml-1">{jobPosting.openJobPostingCount}</strong>
             </button>
           </div>
         </div>
 
         <div className="flex justify-between items-center mb-6">
-          {/* 공고명 (좌측) */}
-          <h1 className="text-xl font-bold">
-            백엔드 엔지니어(Python) 채용
-          </h1>
+          {/* 공고명 */}
+          <h1 className="text-xl font-bold">{jobPosting.jobPosting.title}</h1>
 
-          {/* 스크랩 + 지원하기 (우측) */}
           <div className="flex items-center gap-2">
             {/* 스크랩 버튼 */}
             <button
-              onClick={toggleBookmark}
+              onClick={handleBookmark}
               className="flex flex-col justify-center items-center w-14 h-12 border border-gray-300 rounded-md text-sm text-gray-600 hover:text-gray-800"
             >
-              <Star className="h-5 w-5 mb-0.5" />
-              <span className="text-xs">스크랩</span>
+              <Star className={`h-4 w-4 mb-0.5 ${jobPosting.bookmarked ? "text-yellow-400 fill-yellow-400" : "text-gray-600"}`} />
+              <span className="text-xs">{jobPosting.bookmarkCount}</span>
             </button>
 
-            {/* 지원하기 버튼 */}
-            <button className="w-24 h-12 bg-red-500 text-white text-sm rounded-md hover:bg-red-600 flex items-center justify-center">
-              지원하기
-            </button>
+            {/* 지원하기 */}
+            <div className="relative w-fit">
+              <button
+                className="w-28 h-10 bg-red-500 text-white font-bold rounded-md flex items-center justify-center text-sm"
+                onClick={openApplicationModal}
+              >
+                입사지원
+              </button>
+
+              {/* D-day 뱃지 */}
+              <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-white border border-red-500 text-red-500 text-[10px] px-2 py-0.5 rounded-full whitespace-nowrap">
+                {calculateDday(jobPosting.jobPosting.expirationDate)}
+              </div>
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
           <div>
             <h3 className="text-xs text-gray-500 mb-1">직무</h3>
-            <p className="text-sm">웹/앱 개발자</p>
+            <p className="text-sm">{jobPosting.jobPosting.industry}</p>
           </div>
           <div>
-            <h3 className="text-xs text-gray-500 mb-1">근무</h3>
-            <p className="text-sm">정규직</p>
+            <h3 className="text-xs text-gray-500 mb-1">근무형태</h3>
+            <p className="text-sm">{jobPosting.jobPosting.jobType}</p>
           </div>
           <div>
             <h3 className="text-xs text-gray-500 mb-1">근무지역</h3>
-            <p className="text-sm">강남구</p>
+            <p className="text-sm">{jobPosting.jobPosting.locationCode}</p>
           </div>
           <div>
             <h3 className="text-xs text-gray-500 mb-1">경력</h3>
-            <p className="text-sm">신입 & 경력</p>
-          </div>
-          <div>
-            <h3 className="text-xs text-gray-500 mb-1">학력</h3>
-            <p className="text-sm">대졸</p>
-          </div>
-          <div>
-            <h3 className="text-xs text-gray-500 mb-1">기한</h3>
-            <p className="text-sm">2023년 3월 30일</p>
+            <p className="text-sm">{jobPosting.jobPosting.experienceLevel}년</p>
           </div>
         </div>
 
@@ -132,26 +249,32 @@ export const JobDetailContent = ({
             하단에 명시된 급여, 근무 내용 등이 최저임금에 미달하는 경우 위 내용이 우선합니다.
           </div>
           <div className="flex justify-end items-center gap-2 text-xs">
-            <span>조회수 <strong className="text-black">36</strong></span>
+            <span>
+              조회수 <strong className="text-black">{jobPosting.jobPosting.viewCount.toLocaleString()}</strong>
+            </span>
             <span>·</span>
-            <button className="flex items-center hover:text-gray-700">
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href)
+                  .then(() => {
+                    alert("링크가 복사되었습니다.");
+                  })
+                  .catch((err) => {
+                    console.error("링크 복사 실패", err);
+                  });
+              }}
+              className="flex items-center hover:text-gray-700"
+            >
               <Share2 className="h-4 w-4 mr-1" />
               공유하기
             </button>
           </div>
         </div>
 
-        <div className="text-center text-sm text-gray-500 mb-8">
-          자세한 채용 공고입니다
-        </div>
-
         <div className="mb-24">
-          <h2 className="text-lg font-bold mb-6 text-center">
-            백엔드 엔지니어(Python) 채용
-          </h2>
           <div className="bg-gray-100 h-60 flex items-center justify-center rounded-md mb-8">
             <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center">
-              <span className="text-gray-400">▶</span>
+              <span className="text-gray-400">공고 이미지 또는 회사 이미지</span>
             </div>
           </div>
 
@@ -209,7 +332,7 @@ export const JobDetailContent = ({
         </div>
 
         {/* 근무지위치 */}
-        <WorkLocation sectionRef={sectionRefs.companyRef} address="강원 강릉시 창해로14번길 51-20" />
+        <WorkLocation sectionRef={sectionRefs.companyRef} address={jobPosting.company.address} />
 
         <div ref={sectionRefs.applyRef} className="pt-2 mb-12">
           <h3 className="text-lg font-bold mb-2 text-left">접수기간 및 방법</h3>
@@ -226,13 +349,25 @@ export const JobDetailContent = ({
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 text-xs text-gray-500 border border-gray-300 rounded-full">시작일</span>
                   <div className="px-3 py-1 text-sm text-gray-800">
-                    2025.04.15 00:00
+                    {new Date(jobPosting.jobPosting.postingDate).toLocaleString('ko-KR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 text-xs text-gray-500 border border-[#1842a3] text-[#1842a3] rounded-full">마감일</span>
                   <div className="px-3 py-1 text-sm text-[#1842a3] font-medium">
-                    2025.04.27 23:00
+                    {new Date(jobPosting.jobPosting.expirationDate).toLocaleString('ko-KR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </div>
                 </div>
               </div>
@@ -261,9 +396,9 @@ export const JobDetailContent = ({
           </p>
         </div>
 
-        <ApplicantStats />
+        <ApplicantStats title={jobPosting.jobPosting.title} applicantStats={jobPosting.applicantStats} />
 
-        <CompanyInfo />
+        <CompanyInfo company={jobPosting.company} openJobPostingCount={jobPosting.openJobPostingCount} interviewReviewCount={jobPosting.interviewReviewCount} />
 
         <div ref={sectionRefs.companyRef} className="mt-4 text-right">
           <Link
@@ -272,6 +407,14 @@ export const JobDetailContent = ({
           />
         </div>
       </div>
+
+      <ApplicationModal
+        isOpen={isApplicationModalOpen}
+        onClose={closeApplicationModal}
+        jobId={jobId}
+        jobTitle={jobPosting.jobPosting.title}
+        companyName={jobPosting.company.companyName}
+      />
     </div>
   );
 };

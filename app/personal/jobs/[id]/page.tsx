@@ -62,7 +62,7 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
       )}
 
       {/* 본문 */}
-      <main className="flex-1 bg-white pt-[80px]">
+      <main className="flex-1 bg-white">
         <div className="max-w-[1200px] mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="hidden md:block w-16">

@@ -12,6 +12,7 @@ interface UserInfo {
 interface UserStoreState {
   userInfo: UserInfo | null;
   isUserInfoHydrated: boolean;
+  isLocalhost: boolean;
   setUserInfo: (userInfo: UserInfo) => void;
   clearUserInfo: () => void;
   restoreUserInfo: () => void;
@@ -22,6 +23,7 @@ const isLocalhost = typeof window !== "undefined" && window.location.hostname ==
 export const useUserStore = create<UserStoreState>((set) => ({
   userInfo: null,
   isUserInfoHydrated: false,
+  isLocalhost: typeof window !== "undefined" && window.location.hostname === "localhost",
 
   /**
    * 유저 정보 저장

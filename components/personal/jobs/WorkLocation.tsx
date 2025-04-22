@@ -54,6 +54,7 @@ export const WorkLocation = ({ sectionRef, address }: WorkLocationProps) => {
                             const marker = new window.kakao.maps.Marker({
                                 map: map,
                                 position: coords,
+                                text: address
                             });
 
                             // 5. 마커가 지도 위에 표시되도록 설정합니다
@@ -85,7 +86,7 @@ export const WorkLocation = ({ sectionRef, address }: WorkLocationProps) => {
                 <div className="flex items-center p-6 bg-white">
                     <MapPin className="w-5 h-5 text-gray-400 mr-2" />
                     <span className="text-sm text-gray-800">
-                        (24465) 강원 춘천시 버들1길 130
+                        {address}
                     </span>
                 </div>
 
