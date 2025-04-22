@@ -79,7 +79,11 @@ export const JobsTable = ({ jobs = [], loading = false, error = null }: JobsTabl
                 applicants: job.applyCount,
                 description: job.description,
                 companyName: job.companyName,
-                // 필요시 추가 필드
+                // --- 광고 관련 필드 전달 ---
+                isAdvertised: job.isAdvertised,
+                adType: job.adType,
+                adStartDate: job.adStartDate,
+                adEndDate: job.adEndDate,
               }}
             />
           ))

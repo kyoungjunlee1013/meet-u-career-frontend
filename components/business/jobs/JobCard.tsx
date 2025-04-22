@@ -18,28 +18,48 @@ import {
   X,
 } from "lucide-react"
 
+// JobCard에 전달되는 job 객체 타입 정의
 interface JobCardProps {
   job: {
-    id?: number
-    title?: string
-    status?: number | string
-    statusLabel?: string
-    daysLeft?: string
-    views?: number
-    applicants?: number
-    location?: string
-    workType?: string
-    experience?: string
-    salary?: string
-    postedDate?: string
-    deadline?: string
-    error?: string
-    description?: string
-    requirements?: string
-    benefits?: string
-    companyName?: string
-  }
+    id?: number;
+    title?: string;
+    status?: number | string;
+    statusLabel?: string;
+    daysLeft?: string;
+    views?: number;
+    applicants?: number;
+    location?: string;
+    workType?: string;
+    experience?: string;
+    salary?: string;
+    postedDate?: string;
+    deadline?: string;
+    error?: string;
+    description?: string;
+    requirements?: string;
+    benefits?: string;
+    companyName?: string;
+    // --- 광고 관련 필드 (조건부 제공) ---
+    /**
+     * 광고 정보가 있는 경우에만 true (현재 광고 중/예정)
+     * 없거나 만료된 경우 undefined/null/false
+     */
+    isAdvertised?: boolean;
+    /**
+     * 광고 타입 (1: BASIC, 2: STANDARD, 3: PREMIUM)
+     */
+    adType?: 1 | 2 | 3;
+    /**
+     * 광고 시작일 (ISO8601)
+     */
+    adStartDate?: string;
+    /**
+     * 광고 종료일 (ISO8601)
+     */
+    adEndDate?: string;
+  };
 }
+
 
 export const JobCard = ({ job }: JobCardProps) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -70,10 +90,33 @@ export const JobCard = ({ job }: JobCardProps) => {
             <ChevronDown className="h-5 w-5 text-gray-400" />
           </div>
 
-          <div className="flex items-center text-sm mb-2">
+          {/* 광고 배지 (조건부 표시, 명세 개선) */}
+          <div className="flex items-center text-sm mb-2 gap-2">
             <span className={`mr-2 font-medium ${getStatusColor(job.statusLabel as string)}`}>{job.statusLabel}</span>
             {job.daysLeft && (
               <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-medium">{job.daysLeft}</span>
+            )}
+            {/* 광고 정보가 모두 있을 때만 배지 노출 */}
+            {job.isAdvertised && job.adType && job.adStartDate && job.adEndDate && (
+              <span
+                className={
+                  `inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ` +
+                  (job.adType === 1
+                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                    : job.adType === 2
+                    ? 'bg-green-50 text-green-700 border-green-200'
+                    : job.adType === 3
+                    ? 'bg-red-50 text-red-700 border-red-200'
+                    : 'bg-blue-50 text-blue-700 border-blue-200')
+                }
+              >
+                {/* 광고 타입 영문 표기 */}
+                {job.adType === 1 && 'BASIC'}
+                {job.adType === 2 && 'STANDARD'}
+                {job.adType === 3 && 'PREMIUM'}
+                {" | "}
+                {job.adStartDate.slice(0, 10)} ~ {job.adEndDate.slice(0, 10)}
+              </span>
             )}
           </div>
 
@@ -147,6 +190,10 @@ export const JobCard = ({ job }: JobCardProps) => {
               }`}
               disabled={!(job.status === 2 || job.status === 3)}
               title={!(job.status === 2 || job.status === 3) ? "게시중/승인된 공고만 광고 신청 가능" : ""}
+              onClick={() => {
+                console.log('광고 신청 버튼 클릭 - job.id:', job.id);
+                console.log('광고 신청 버튼 클릭 - job 전체:', job);
+              }}
             >
               광고 신청
             </button>
