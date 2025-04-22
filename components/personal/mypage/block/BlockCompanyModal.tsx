@@ -2,57 +2,65 @@
 
 import { useEffect, useRef, useState } from "react"
 import { Search, X, Building, Check } from "lucide-react"
+import axios from "axios"
+import { useUserStore } from "@/store/useUserStore"
 
 interface Company {
   id: number
   name: string
   industry: string
+  logo: string
   size: string
   location: string
 }
 
 interface BlockCompanyModalProps {
-  onClose: () => void
+  onClose: () => void;
+  fetchBlockedCompanies: () => void;
 }
 
-export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isSearching, setIsSearching] = useState(false)
+export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompanyModalProps) {
+  const [keyword, setKeyword] = useState<string>("")
+  const [isSearching, setIsSearching] = useState<boolean>(false)
   const [searchResults, setSearchResults] = useState<Company[]>([])
   const [selectedCompanies, setSelectedCompanies] = useState<Company[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
   const modalRef = useRef<HTMLDivElement>(null)
 
-  // Mock companies data
-  const mockCompanies: Company[] = [
-    { id: 1, name: "네이버", industry: "IT/웹/통신", size: "대기업", location: "경기 성남시" },
-    { id: 2, name: "카카오", industry: "IT/웹/통신", size: "대기업", location: "제주 제주시" },
-    { id: 3, name: "라인플러스", industry: "IT/웹/통신", size: "대기업", location: "경기 성남시" },
-    { id: 4, name: "쿠팡", industry: "유통/무역/상사", size: "대기업", location: "서울 송파구" },
-    { id: 5, name: "우아한형제들", industry: "IT/웹/통신", size: "중견기업", location: "서울 송파구" },
-    { id: 6, name: "당근마켓", industry: "IT/웹/통신", size: "중견기업", location: "서울 강남구" },
-    { id: 7, name: "토스", industry: "금융", size: "중견기업", location: "서울 강남구" },
-    { id: 8, name: "야놀자", industry: "IT/웹/통신", size: "중견기업", location: "서울 강남구" },
-  ]
-
-  // Handle search
   useEffect(() => {
-    if (searchTerm.length > 0) {
-      setIsSearching(true)
-      // Simulate API call with setTimeout
-      const timeoutId = setTimeout(() => {
-        const results = mockCompanies.filter((company) => company.name.toLowerCase().includes(searchTerm.toLowerCase()))
-        setSearchResults(results)
-        setIsSearching(false)
-      }, 500)
+    if (keyword.length > 1) {
+      setIsSearching(true);
 
-      return () => clearTimeout(timeoutId)
+      const timeoutId = setTimeout(async () => {
+        try {
+          const token = sessionStorage.getItem("accessToken");
+          const headers = token && useUserStore.getState().isLocalhost ? { "Authorization": `Bearer ${token}` } : {};
+
+          const response = await axios.post("/api/personal/companyblock/search", { keyword }, { headers });
+
+          const companies = response.data.data.map((company: any) => ({
+            id: company.id,
+            name: company.name,
+            industry: company.industry ?? "업종 정보 없음",
+            logo: company.logoUrl ?? "",
+            representativeName: company.representativeName ?? "대표자명 정보 없음",
+            location: company.address ?? "위치 정보 없음"
+          }));
+
+          setSearchResults(companies);
+        } catch (error) {
+          console.error("기업 검색 실패:", error);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
     } else {
-      setSearchResults([])
+      setSearchResults([]);
     }
-  }, [searchTerm])
+  }, [keyword]);
 
-  // Handle outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -66,7 +74,6 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
     }
   }, [onClose])
 
-  // Handle company selection
   const toggleCompanySelection = (company: Company) => {
     if (selectedCompanies.some((c) => c.id === company.id)) {
       setSelectedCompanies(selectedCompanies.filter((c) => c.id !== company.id))
@@ -77,18 +84,33 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
     }
   }
 
-  // Handle form submission
-  const handleSubmit = () => {
-    if (selectedCompanies.length === 0) return
+  // 차단 설정
+  const handleSubmit = async () => {
+    if (selectedCompanies.length === 0) return;
 
-    setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      onClose()
-      // Here you would typically update the state in the parent component
-      // or trigger a refetch of the blocked companies list
-    }, 1000)
+    setIsSubmitting(true);
+
+    try {
+      // 선택된 기업들의 ID만 배열로 추출
+      const companyIds = selectedCompanies.map(company => company.id);
+
+      const token = sessionStorage.getItem("accessToken");
+      const headers = token && useUserStore.getState().isLocalhost ? { "Authorization": `Bearer ${token}` } : {};
+
+      const response = await axios.post('/api/personal/companyblock/block', {
+        companyIds: companyIds,
+      }, { headers });
+
+      console.log('기업 차단 성공:', response.data);
+
+      fetchBlockedCompanies();
+
+      setIsSubmitting(false);
+      onClose();  // 모달 닫기
+    } catch (error) {
+      console.error('차단 설정 실패:', error);
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -124,8 +146,8 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
               type="text"
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="기업명을 입력하세요"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
             />
           </div>
 
@@ -140,13 +162,6 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
                     className="flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm"
                   >
                     <span>{company.name}</span>
-                    <button
-                      onClick={() => toggleCompanySelection(company)}
-                      className="ml-1 text-blue-600 hover:text-blue-800 focus:outline-none"
-                      aria-label={`${company.name} 선택 취소`}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
                   </div>
                 ))}
               </div>
@@ -160,7 +175,7 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
             <div className="flex justify-center items-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
-          ) : searchTerm && searchResults.length === 0 ? (
+          ) : keyword && searchResults.length === 0 ? (
             <div className="text-center py-8 text-gray-500">검색 결과가 없습니다</div>
           ) : searchResults.length > 0 ? (
             <div className="space-y-3">
@@ -168,11 +183,10 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
                 <div
                   key={company.id}
                   onClick={() => toggleCompanySelection(company)}
-                  className={`flex items-start p-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedCompanies.some((c) => c.id === company.id)
-                      ? "bg-blue-50 border border-blue-200"
-                      : "hover:bg-gray-50 border border-gray-200"
-                  }`}
+                  className={`flex items-start p-3 rounded-lg cursor-pointer transition-colors ${selectedCompanies.some((c) => c.id === company.id)
+                    ? "bg-blue-50 border border-blue-200"
+                    : "hover:bg-gray-50 border border-gray-200"
+                    }`}
                 >
                   <div className="flex-shrink-0 mt-0.5">
                     <Building className="h-5 w-5 text-gray-400" />
@@ -207,11 +221,10 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
           <button
             onClick={handleSubmit}
             disabled={selectedCompanies.length === 0 || isSubmitting}
-            className={`px-4 py-2 rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              selectedCompanies.length === 0 || isSubmitting
-                ? "bg-blue-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
+            className={`px-4 py-2 rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedCompanies.length === 0 || isSubmitting
+              ? "bg-blue-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+              }`}
           >
             {isSubmitting ? (
               <span className="flex items-center">
