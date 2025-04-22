@@ -1,6 +1,6 @@
 import { X, Calendar } from "lucide-react"
 
-export function PrivacyStats() {
+export function BlockStats() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <div className="bg-white rounded-lg shadow-sm p-4">
