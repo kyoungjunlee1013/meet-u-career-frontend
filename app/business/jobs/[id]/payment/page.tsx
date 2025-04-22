@@ -34,14 +34,16 @@ export default function JobPaymentPage() {
       alert("Toss 결제 환경변수가 올바르게 설정되어 있지 않습니다.");
       return;
     }
+    const successUrl = `${redirectUrl}/business/jobs/${job.id}/payment/success?adType=${selectedProduct?.type}&durationDays=${selectedProduct?.durationDays}&jobPostingId=${job.id}`;
+    const failUrl = `${redirectUrl}/business/jobs/${job.id}/payment/fail?adType=${selectedProduct?.type}&durationDays=${selectedProduct?.durationDays}&jobPostingId=${job.id}`;
     const tossPayments = (window as any).TossPayments(clientKey);
     tossPayments.requestPayment("카드", {
       amount,
       orderId,
       orderName,
       customerName: "홍길동", // 실제 사용자명으로 교체 필요
-      successUrl: `${redirectUrl}/business/jobs/${job.id}/payment/success`,
-failUrl: `${redirectUrl}/business/jobs/${job.id}/payment/fail`,
+      successUrl,
+      failUrl,
     });
   };
 
@@ -73,7 +75,7 @@ failUrl: `${redirectUrl}/business/jobs/${job.id}/payment/fail`,
   // 광고 상품 리스트 하드코딩
   const adProducts = [
     {
-      type: "BASIC",
+      type: 1,
       label: "BASIC",
       durationDays: 7,
       amount: 30000,
@@ -81,7 +83,7 @@ failUrl: `${redirectUrl}/business/jobs/${job.id}/payment/fail`,
       desc: "하단 노출",
     },
     {
-      type: "STANDARD",
+      type: 2,
       label: "STANDARD",
       durationDays: 14,
       amount: 60000,
@@ -89,7 +91,7 @@ failUrl: `${redirectUrl}/business/jobs/${job.id}/payment/fail`,
       desc: "중간 우선 영역",
     },
     {
-      type: "PREMIUM",
+      type: 3,
       label: "PREMIUM",
       durationDays: 21,
       amount: 100000,
