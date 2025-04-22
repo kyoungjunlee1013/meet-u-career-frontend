@@ -1,12 +1,25 @@
 "use client";
 
 import { BusinessHeader } from "@/components/business/layout/BusinessHeader";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
-import { useState } from "react";
+type JobType = {
+  id: number;
+  title: string;
+  companyName: string;
+  expirationDate: string;
+  statusLabel: string;
+  // 필요한 필드 추가
+};
 
 export default function JobPaymentPage() {
   // Toss Payments 결제창 호출 핸들러
   const handleTossPayment = () => {
+    if (!job) {
+      alert("공고 정보를 불러오지 못했습니다.");
+      return;
+    }
     const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
     const redirectUrl = process.env.NEXT_PUBLIC_TOSS_REDIRECT_URI;
     const orderId = `${job.id}-${Date.now()}`;
@@ -33,14 +46,29 @@ failUrl: `${redirectUrl}/business/jobs/${job.id}/payment/fail`,
   };
 
 
-  // 하드코딩 예시 데이터
-  const job = {
-    id: 123,
-    title: "백엔드 개발자 채용",
-    companyName: "하이파이브",
-    expirationDate: "2025-05-10",
-    statusLabel: "승인됨(게시 전)",
-  };
+  // 실제 공고 데이터 fetch
+  const params = useParams();
+  const jobId = params?.id;
+  const [job, setJob] = useState<JobType|null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string|null>(null);
+
+  useEffect(() => {
+    if (jobId) {
+      setLoading(true);
+      setError(null);
+      fetch(`/api/business/job/view/${jobId}`)
+        .then(res => res.json())
+        .then(data => setJob(data.data))
+        .catch(() => setError('공고 데이터를 불러올 수 없습니다.'))
+        .finally(() => setLoading(false));
+    }
+  }, [jobId]);
+
+  const [selectedType, setSelectedType] = useState("BASIC");
+
+  if (loading) return <div className="text-center py-10">로딩 중...</div>;
+  if (error || !job) return <div className="text-center py-10 text-red-500">{error || '공고 데이터를 불러올 수 없습니다.'}</div>;
 
   // 광고 상품 리스트 하드코딩
   const adProducts = [
@@ -70,7 +98,6 @@ failUrl: `${redirectUrl}/business/jobs/${job.id}/payment/fail`,
     },
   ];
 
-  const [selectedType, setSelectedType] = useState("BASIC");
   const selectedProduct = adProducts.find(p => p.type === selectedType);
 
   return (
@@ -79,10 +106,10 @@ failUrl: `${redirectUrl}/business/jobs/${job.id}/payment/fail`,
       <main className="max-w-[1200px] mx-auto px-6 py-6">
         <h1 className="text-2xl font-bold mb-6">공고 결제 페이지</h1>
         <div className="bg-white rounded shadow p-4 mb-8">
-          <div className="text-xl font-semibold mb-1">{job.title}</div>
-          <div className="text-gray-600 mb-1">{job.companyName}</div>
-          <div className="text-gray-500 text-sm mb-1">마감일: {job.expirationDate}</div>
-          <div className="text-blue-600 text-xs">{job.statusLabel}</div>
+          <div className="text-xl font-semibold mb-1">{job?.title}</div>
+          <div className="text-gray-600 mb-1">{job?.companyName}</div>
+          <div className="text-gray-500 text-sm mb-1">마감일: {job?.expirationDate ? new Date(job.expirationDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) : ''}</div>
+          <div className="text-blue-600 text-xs">{job?.statusLabel}</div>
         </div>
 
         {/* 광고 상품 선택 UI */}

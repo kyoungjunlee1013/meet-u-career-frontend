@@ -141,12 +141,12 @@ export const JobCard = ({ job }: JobCardProps) => {
           <Link href={`/business/jobs/${job.id}/payment`} passHref>
             <button
               className={`px-4 py-2 rounded-md font-medium ${
-                job.status === 3
+                job.status === 2 || job.status === 3
                   ? "bg-green-600 text-white hover:bg-green-700"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"
               }`}
-              disabled={job.status !== 3}
-              title={job.status !== 3 ? "승인된 공고만 광고 신청 가능" : ""}
+              disabled={!(job.status === 2 || job.status === 3)}
+              title={!(job.status === 2 || job.status === 3) ? "게시중/승인된 공고만 광고 신청 가능" : ""}
             >
               광고 신청
             </button>

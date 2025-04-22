@@ -1,7 +1,7 @@
 import { useFormContext } from "react-hook-form";
 import { FormCard } from "./FormCard";
 import { FormField } from "./FormField";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MultiJobAutoComplete } from "./MultiJobAutoComplete";
 
 interface IndustryOptionDTO {
@@ -77,32 +77,6 @@ export function BasicInfoCard() {
     setValue("jobType", next.join(","), { shouldValidate: true });
   };
 
-  // Industry handlers
-  const handleIndustryInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const keyword = e.target.value;
-    setIndustryInput(keyword);
-    setValue("industry", ""); // reset value until selection
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    if (keyword.length >= 2) {
-      timeoutRef.current = setTimeout(() => {
-        fetch(`/api/industries/search?keyword=${encodeURIComponent(keyword)}`)
-          .then(res => res.json())
-          .then(data => {
-            setIndustryOptions(data.success ? data.data : []);
-            setShowDropdown(true);
-          });
-      }, 300);
-    } else {
-      setIndustryOptions([]);
-      setShowDropdown(false);
-    }
-  };
-  const handleIndustrySelect = (option: IndustryOptionDTO) => {
-    setIndustryInput(option.label);
-    setValue("industry", option.value, { shouldValidate: true });
-    setShowDropdown(false);
-  };
-
   // Location handlers
   const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const prov = e.target.value;
@@ -113,7 +87,17 @@ export function BasicInfoCard() {
       fetch(`/api/locations/cities?province=${encodeURIComponent(prov)}`)
         .then(res => res.json())
         .then(data => {
-          setCities(data.success ? data.data : []);
+          console.log("도시 API 응답:", data);
+          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+            console.log("data.data[0] 구조:", data.data[0]);
+          }
+          const cityOptions = (data.success && Array.isArray(data.data))
+            ? data.data.map((item: any) => ({
+                value: item.id,   // 실제 id 사용
+                label: item.label // label: 시/군/구 이름
+              }))
+            : [];
+          setCities(cityOptions);
         });
     } else {
       setCities([]);
@@ -137,32 +121,17 @@ export function BasicInfoCard() {
       </FormField>
 
       <FormField label="산업 분야" name="industry" required error={errors.industry?.message as string}>
-        <div className="relative">
-          <input
-            type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="산업 분야를 입력하세요 (예: IT, 제조업 등)"
-            value={industryInput}
-            onChange={handleIndustryInput}
-            autoComplete="off"
-            onFocus={() => {
-              if (industryOptions.length > 0) setShowDropdown(true);
-            }}
-          />
-          {showDropdown && industryOptions.length > 0 && (
-            <ul className="absolute z-10 w-full bg-white border rounded shadow max-h-60 overflow-auto">
-              {industryOptions.map(opt => (
-                <li
-                  key={opt.value}
-                  className="px-3 py-2 cursor-pointer hover:bg-gray-100"
-                  onMouseDown={() => handleIndustrySelect(opt)}
-                >
-                  {opt.label}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <input
+          type="text"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="산업 분야를 입력하세요 (예: IT, 제조업 등)"
+          value={industryInput}
+          onChange={e => {
+            setIndustryInput(e.target.value);
+            setValue("industry", e.target.value, { shouldValidate: true });
+          }}
+          autoComplete="off"
+        />
       </FormField>
 
       <FormField label="직무 카테고리" name="jobCategoryIds" required error={errors.jobCategoryIds?.message as string}>

@@ -1,46 +1,34 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import axios from "axios"
 import { JobCard } from "@/components/business/jobs/JobCard"
+import { useState } from "react"
 
-export const JobsTable = () => {
+interface JobsTableProps {
+  jobs: any[];
+  loading?: boolean;
+  error?: string | null;
+}
+
+export const JobsTable = ({ jobs = [], loading = false, error = null }: JobsTableProps) => {
   const tableHeaders = [
     { label: "전체", value: "all" },
-    { label: "지원됨", value: "지원됨" },
-    { label: "승인 대기", value: "승인 대기" },
-    { label: "게시 중", value: "게시 중" },
-    { label: "반려됨", value: "반려됨" },
-  ]
+    { label: "진행 중", value: "active" },
+    { label: "임시/반려", value: "draft_rejected" },
+    { label: "종료", value: "ended" },
+  ];
 
-  const [activeTab, setActiveTab] = useState("all")
-  const [jobs, setJobs] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string|null>(null)
+  const [activeTab, setActiveTab] = useState("all");
 
-  useEffect(() => {
-    setLoading(true)
-    axios.get('/api/business/job/my-list')
-      .then(res => {
-        setJobs(res.data.data || [])
-        setError(null)
-      })
-      .catch(err => {
-        setError("공고 목록을 불러오지 못했습니다.")
-      })
-      .finally(() => setLoading(false))
-  }, [])
-
-  // status 필터 매핑 (필요시 확장)
+  // status 필터 매핑 (추천 그룹핑)
   const statusFilterMap: Record<string, number[]|null> = {
-    "all": null,
-    "지원됨": [], // 실제 status 코드 필요시 수정
-    "승인 대기": [1],
-    "게시 중": [4],
-    "반려됨": [2,5],
-  }
-  const filter = statusFilterMap[activeTab]
-  const filteredJobs = !filter ? jobs : jobs.filter(job => filter.includes(job.status))
+    all: null,
+    active: [1,2,4],           // 승인 대기, 게시 중, 승인 완료
+    draft_rejected: [0,3],     // 임시 저장, 반려됨
+    ended: [5],                // 게시 종료
+  };
+
+  const filter = statusFilterMap[activeTab];
+  const filteredJobs = !filter ? jobs : jobs.filter(job => filter.includes(job.status));
 
   return (
     <div>

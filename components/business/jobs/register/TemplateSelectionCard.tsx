@@ -10,6 +10,7 @@ export function TemplateSelectionCard() {
     watch,
   } = useFormContext()
   const templateType = watch("templateType")
+  const formValues = watch()
 
   const templates = [
     { id: 0, name: "기본 템플릿", description: "기본적인 공고 템플릿입니다." },
@@ -46,6 +47,30 @@ export function TemplateSelectionCard() {
                   {template.name}
                 </span>
                 <p className="text-sm text-gray-500">{template.description}</p>
+                {/* 입력값 연동: 제목 미리보기 */}
+                <div className="mt-2 text-xs text-gray-700 truncate">
+                  {formValues.title ? `제목: ${formValues.title}` : '제목 미입력'}
+                </div>
+                {/* 입력값 연동: 직무카테고리 미리보기 및 콘솔 구조 확인 */}
+                {(() => {
+                  if (Array.isArray(formValues.jobCategoryIds)) {
+                    formValues.jobCategoryIds.forEach((item: any, idx: number) => {
+                      console.log(`[DEBUG] jobCategoryIds[${idx}]:`, item);
+                    });
+                  }
+                  return null;
+                })()}
+                <div className="mt-1 text-xs text-gray-700 truncate">
+                  {Array.isArray(formValues.jobCategoryIds) && formValues.jobCategoryIds.length > 0
+                    ? `직무카테고리: ${formValues.jobCategoryIds
+                        .map((item: any) =>
+                          typeof item === "object" && item !== null
+                            ? (item.label ?? item.value ?? item.id ?? "[object]")
+                            : String(item)
+                        )
+                        .join(", ")}`
+                    : "직무카테고리 미입력"}
+                </div>
               </div>
             </div>
           </label>

@@ -7,13 +7,13 @@ import { CheckCircleIcon } from "@heroicons/react/24/solid";
 import { BusinessHeader } from "@/components/business/layout/BusinessHeader";
 
 export default function PaymentSuccessPage() {
+  const router = useRouter();
   // 임시: 무조건 결제 성공 화면 노출
   const adRegistered = true;
   const error = null;
   const amount = 100000; // 임시 금액
   const orderId = "테스트-주문번호";
   const adInfo = { data: { result: "테스트-광고ID" } };
-  const router = useRouter();
 
   return (
     <>
@@ -29,8 +29,18 @@ export default function PaymentSuccessPage() {
             <div><b>광고 ID:</b> {adInfo?.data?.result || "-"}</div>
           </div>
           <div className="flex gap-3 justify-center mt-4">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">내 광고 현황 보기</button>
-            <button className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded">메인으로 이동</button>
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => router.push('/business/payments')}
+            >
+              결제 내역 확인
+            </button>
+            <button
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded"
+              onClick={() => router.push('/business/jobs')}
+            >
+              공고 목록 이동
+            </button>
           </div>
         </div>
       </div>
