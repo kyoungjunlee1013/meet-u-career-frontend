@@ -98,25 +98,38 @@ const REVIEWS = [
   },
 ];
 
+interface Interview {
+  id: number;
+  company: string;
+  position: string;
+  date?: string;
+  location?: string;
+  time?: string;
+  interviewer?: string;
+  hasReview?: boolean;
+  logo?: string;
+  // 필요한 경우 추가로 jobCategory 등 다른 필드들도 넣을 수 있어
+}
+
 export function InterviewsContent() {
   const [activeTab, setActiveTab] = useState("status");
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [editingReview, setEditingReview] = useState(undefined); // undefined로 초기화
+  const [editingReview, setEditingReview] = useState<Interview | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [viewingReview, setViewingReview] = useState(undefined);
+  const [viewingReview, setViewingReview] = useState<Interview | null>(null);
   const counts = useMemo(() => ({
     status: INTERVIEWS.length,
     reviews: REVIEWS.length,
   }), []);
 
   // 면접 리뷰 수정 버튼 클릭 시
-  const handleEditReview = (review) => {
+  const handleEditReview = (review: Interview) => {
     setEditingReview(review);
     setReviewModalOpen(true);
   };
 
   // 면접 리뷰 상세보기 버튼 클릭 시
-  const handleViewReview = (review) => {
+  const handleViewReview = (review: Interview) => {
     setViewingReview(review);
     setDetailModalOpen(true);
   };
@@ -124,11 +137,11 @@ export function InterviewsContent() {
   // 모달 닫기 시 상태 초기화
   const handleCloseModal = () => {
     setReviewModalOpen(false);
-    setEditingReview(undefined);
+    setEditingReview(null);
   };
   const handleCloseDetailModal = () => {
     setDetailModalOpen(false);
-    setViewingReview(undefined);
+    setViewingReview(null);
   };
 
   return (
@@ -142,12 +155,29 @@ export function InterviewsContent() {
           ? <InterviewReviewTab reviews={REVIEWS} onEditReview={handleEditReview} onViewReview={handleViewReview} />
           : <InterviewStatusTab interviews={INTERVIEWS} />}
       </div>
-      {reviewModalOpen && editingReview && (
-        <ReviewModal interview={editingReview} onClose={handleCloseModal} />
-      )}
-      {detailModalOpen && viewingReview && (
-        <ReviewDetailModal isOpen={detailModalOpen} onClose={handleCloseDetailModal} review={viewingReview} />
-      )}
+            {/* 수정된 부분 - ReviewModal 여는 부분 */}
+            {reviewModalOpen && editingReview && (
+            <ReviewModal 
+              onClose={handleCloseModal}
+              onComplete={() => {}}
+              interview={{
+                ...editingReview,
+                companyId: 1,        // 임시값 (또는 실제 데이터에 추가해야 함)
+                jobCategoryId: 1,    // 임시값
+                applicationId: editingReview?.id ? editingReview.id : 3,
+
+              }}
+            />
+          )}
+
+            {detailModalOpen && viewingReview && (
+              <ReviewDetailModal 
+                isOpen={detailModalOpen} 
+                onClose={handleCloseDetailModal} 
+                review={viewingReview as any} // 일단 강제로 any 캐스팅
+              />
+            )}
+
     </div>
   )
 }

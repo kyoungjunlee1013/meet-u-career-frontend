@@ -10,11 +10,15 @@ import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { X } from "lucide-react"
+import axios from "axios";
+import { getCookie } from "cookies-next";
+
 
 // Combined schema for all steps
 const reviewSchema = z.object({
   // Step 1
-  company: z.string().min(1, "회사명을 입력해주세요"),
+  companyName: z.string().min(1, "회사명을 입력해주세요"),
+  careerType: z.enum(["신입", "경력"]),
   interviewType: z.enum(["online", "offline"]),
   jobCategory: z.string().min(1, "직무 카테고리를 선택해주세요"),
   position: z.string().min(1, "지원 직무를 선택해주세요"),
@@ -48,18 +52,23 @@ interface ReviewModalProps {
     time?: string
     interviewer?: string
     status?: string
-    hasReview?: boolean
-  }
+    hasReview?: boolean;
+    companyId: number;    
+    jobCategoryId: number; 
+    applicationId?: number; 
+  };
+  onComplete: (id: number) => void; 
 }
 
-export function ReviewModal({ onClose, interview }: ReviewModalProps) {
+export function ReviewModal({ onClose, interview, onComplete }: ReviewModalProps) {
   const [currentStep, setCurrentStep] = useState(1)
 
   const methods = useForm<ReviewFormValues>({
     resolver: zodResolver(reviewSchema),
     defaultValues: {
-      company: interview.company,
+      companyName: interview.company || "",
       position: interview.position,
+      careerType: "신입", // 기본값 추가
       interviewType: "offline",
       interviewFormats: [],
       interviewStatus: [],
@@ -97,15 +106,58 @@ export function ReviewModal({ onClose, interview }: ReviewModalProps) {
 
   const handleSubmit = async (data: ReviewFormValues) => {
     try {
-      // Here you would normally submit the data to your backend
-      console.log("Form submitted with data:", data)
-
-      // Close the modal after successful submission
-      onClose()
+      const requestData = {
+        companyId: 1,
+        jobCategoryId: 1,
+        applicationId: 2,
+        profileId:2,
+        careerLevel: data.careerType === "신입" ? 0 : 1,
+        interviewYearMonth: `${data.year}-${data.month.toString().padStart(2, '0')}`,
+        rating: data.overallImpression === "positive" ? 2 :
+                data.overallImpression === "neutral" ? 1 : 0,
+        difficulty: data.difficulty === "easy" ? 1 :
+                    data.difficulty === "moderate" ? 3 : 5,
+        interviewType: calculateInterviewType(data.interviewFormats),
+        interviewParticipants: data.interviewStructure === "oneOnOne" ? 0 :
+                              data.interviewStructure === "panel" ? 1 : 2,
+        hasFrequentQuestions: data.interviewStatus && data.interviewStatus.length > 0,
+        questionsAsked: formatQuestions(data.interviewStatus, data.interviewQuestions),
+        interviewTip: data.interviewTip || "",
+        result: data.result === "accepted" ? 1 :
+                data.result === "waiting" ? 2 : 0,
+      };
+  
+      // 8080 안 써도 됨
+      await axios.post("/api/personal/interview-reviews/create", requestData);
+  
+      alert("면접 후기 등록이 완료되었습니다!");
+      onComplete(3);
+      onClose();
     } catch (error) {
-      console.error("Error submitting form:", error)
+      console.error("면접 후기 등록 실패", error);
+      alert("면접 후기 등록에 실패했습니다. 다시 시도해주세요.");
     }
-  }
+  };
+  
+  
+  
+  // 면접 유형을 비트맵으로 변환하는 함수
+const calculateInterviewType = (formats: string[]) => {
+  let result = 0;
+  if (formats.includes("직무/인성면접")) result |= 1;
+  if (formats.includes("토론면접")) result |= 2;
+  if (formats.includes("인적성 검사")) result |= 4;
+  if (formats.includes("PT면접")) result |= 8;
+  if (formats.includes("실무 과제 및 시험")) result |= 16;
+  if (formats.includes("기타")) result |= 32;
+  return result;
+};
+
+// 질문 포맷팅 함수
+const formatQuestions = (commonQuestions: string[] = [], customQuestions: string[] = []) => {
+  const allQuestions = [...(commonQuestions || []), ...(customQuestions.filter(q => q.trim() !== ''))];
+  return allQuestions.join('\n');
+};
 
   return (
     <div
@@ -132,7 +184,7 @@ export function ReviewModal({ onClose, interview }: ReviewModalProps) {
             면접후기 등록
           </h2>
           <p className="text-center text-gray-600 text-sm mt-1 mb-4">
-            등록된 면접후기는 지원자 또는 기업담당 큐 도움이 됩니다. 작성해주신 면접후기는 익명으로 등록됩니다.
+            등록된 면접후기는 지원자 또는 면접방식 발전에 도움이 됩니다. 작성해주신 면접후기는 익명으로 등록됩니다.
           </p>
 
           <div className="flex border-b mb-6">
@@ -172,7 +224,7 @@ export function ReviewModal({ onClose, interview }: ReviewModalProps) {
                     이전 단계
                   </button>
                 ) : (
-                  <div></div> // Empty div to maintain spacing
+                  <div></div> 
                 )}
 
                 {currentStep < 3 ? (
