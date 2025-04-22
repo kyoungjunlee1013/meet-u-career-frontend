@@ -19,9 +19,14 @@ type JobType = {
   // 광고 정보
   advertisements?: {
     adType: 1 | 2 | 3;
-    adStartDate: string;
-    adEndDate: string;
+    startDate: string;
+    endDate: string;
   }[];
+  // 상단 AdBadge에서 사용하는 필드
+  isAdvertised?: boolean;
+  adType?: 1 | 2 | 3;
+  adStartDate?: string;
+  adEndDate?: string;
 };
 
 export default function JobPaymentPage() {
