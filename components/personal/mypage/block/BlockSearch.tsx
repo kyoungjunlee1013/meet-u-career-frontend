@@ -5,11 +5,11 @@ import type React from "react"
 import { Search } from "lucide-react"
 import { useState } from "react"
 
-interface PrivacySearchProps {
+interface BlockSearchProps {
   onSearch?: (term: string) => void
 }
 
-export function PrivacySearch({ onSearch }: PrivacySearchProps) {
+export function BlockSearch({ onSearch }: BlockSearchProps) {
   const [searchTerm, setSearchTerm] = useState("")
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
