@@ -6,7 +6,7 @@ import Link from "next/link";
 import axios from "axios";
 import { ApplicantsSearch } from "./ApplicantsSearch";
 import { ApplicantsStatistics } from "./ApplicantsStatistics";
-import type { ApplicantStatus } from "./types";
+import type { ApplicantStatus } from "@/types/applicants";
 
 interface Applicant {
   id: number;
@@ -137,6 +137,8 @@ export const ApplicantsTableWithSearch = ({
   );
 
   useEffect(() => {
+    if (!jobPostingId) return;
+
     const fetchApplicants = async () => {
       try {
         const response = await axios.get(
@@ -153,6 +155,7 @@ export const ApplicantsTableWithSearch = ({
         setApplicants(formatted);
       } catch (error) {
         console.error("지원자 조회 실패:", error);
+        setApplicants([]); // 실패해도 빈 배열 유지
       }
     };
 
@@ -164,6 +167,7 @@ export const ApplicantsTableWithSearch = ({
       <ApplicantsStatistics
         onStatusSelect={setStatusFilter}
         selectedStatus={statusFilter}
+        jobPostingId={jobPostingId || 0}
       />
       <ApplicantsSearch onSearch={setSearchQuery} />
       <ApplicantsTable

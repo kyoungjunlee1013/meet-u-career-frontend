@@ -28,7 +28,9 @@ const StatCard = ({
   const handleClick = () => {
     if (onStatusSelect) {
       if (status === "all") onStatusSelect(null);
-      else onStatusSelect(isSelected ? null : status);
+      else if (status !== undefined) {
+        onStatusSelect(isSelected ? null : status);
+      }
     }
   };
 
@@ -55,7 +57,7 @@ interface ApplicantsStatisticsProps {
 export const ApplicantsStatistics = ({
   onStatusSelect,
   selectedStatus,
-  jobPostingId = 1,
+  jobPostingId = 0,
 }: ApplicantsStatisticsProps) => {
   const [stats, setStats] = useState<Record<string, number>>({
     total: 0,
@@ -66,21 +68,29 @@ export const ApplicantsStatistics = ({
   });
 
   useEffect(() => {
+    if (!jobPostingId) return;
+
     const fetchStats = async () => {
       try {
         const token = sessionStorage.getItem("accessToken");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
         const response = await axios.get(
           `/api/business/applicants/${jobPostingId}/stats`,
           {
             headers,
           }
         );
-
         setStats(response.data.data);
       } catch (error) {
         console.error("통계 정보 불러오기 실패:", error);
+        // 실패 시 기본값 유지
+        setStats({
+          total: 0,
+          서류검토중: 0,
+          서류합격: 0,
+          서류불합격: 0,
+          면접완료: 0,
+        });
       }
     };
 

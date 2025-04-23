@@ -17,8 +17,13 @@ export const BusinessApplicantsManagement = () => {
       <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-6">
         <ApplicantsHeader />
         <JobPostingCard onSelectJob={setSelectedJobPostingId} />
-        {selectedJobPostingId && (
+
+        {selectedJobPostingId ? (
           <ApplicantsTableWithSearch jobPostingId={selectedJobPostingId} />
+        ) : (
+          <div className="mt-10 text-center text-gray-500 text-sm border border-gray-200 rounded-md py-10 bg-white">
+            채용공고를 먼저 선택해 주세요.
+          </div>
         )}
       </main>
     </div>

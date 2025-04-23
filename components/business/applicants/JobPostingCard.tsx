@@ -29,29 +29,36 @@ export const JobPostingCard = ({ onSelectJob }: JobPostingCardProps) => {
 
   useEffect(() => {
     const fetchJobPostings = async () => {
-      const response = await axios.get("/api/business/applicants");
-      const data = response.data.data;
-      const formatted = data.map((job: any) => ({
-        id: job.id,
-        title: job.title,
-        department: job.department || "부서 미정",
-        deadline: job.expirationDate?.split("T")[0] || "미정",
-        applicants: job.applicantCount || 0,
-      }));
-      setJobPostings(formatted);
-      const firstId = formatted[0]?.id?.toString() ?? "";
-      setSelectedJobId(firstId);
-      onSelectJob(Number(firstId));
+      try {
+        const token = sessionStorage.getItem("accessToken");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.get("/api/business/applicants", {
+          headers,
+        });
+
+        const data = response.data.data;
+        const formatted = data.map((job: any) => ({
+          id: job.id,
+          title: job.title,
+          department: job.department || "부서 미정",
+          deadline: job.expirationDate?.split("T")[0] || "미정",
+          applicants: job.applicantCount || 0,
+        }));
+
+        setJobPostings(formatted);
+        if (formatted.length > 0) {
+          const firstId = formatted[0].id.toString();
+          setSelectedJobId(firstId);
+          onSelectJob(Number(firstId));
+        }
+      } catch (error) {
+        console.error("채용공고 목록 조회 실패:", error);
+      }
     };
+
     fetchJobPostings();
-  }, []);
+  }, [onSelectJob]);
 
-  const handleChange = (value: string) => {
-    setSelectedJobId(value);
-    onSelectJob(Number(value));
-  };
-
-  // 🔥 선택된 JobPosting 객체를 구함
   const selectedJob = jobPostings.find(
     (job) => job.id.toString() === selectedJobId
   );
@@ -63,9 +70,15 @@ export const JobPostingCard = ({ onSelectJob }: JobPostingCardProps) => {
           <FileText className="h-5 w-5 text-gray-500" />
         </div>
         <div className="flex-1">
-          <Select value={selectedJobId} onValueChange={handleChange}>
+          <Select
+            value={selectedJobId}
+            onValueChange={(value) => {
+              setSelectedJobId(value);
+              onSelectJob(Number(value));
+            }}
+          >
             <SelectTrigger className="border-0 p-0 h-auto shadow-none text-lg font-medium focus:ring-0 focus:ring-offset-0">
-              <SelectValue placeholder="채용공고를 선택해주세요" />
+              <SelectValue placeholder="채용공고를 선택해 주세요" />
             </SelectTrigger>
             <SelectContent>
               {jobPostings.length > 0 ? (
