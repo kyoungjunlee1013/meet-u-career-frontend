@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import { Search, X, Building, Check } from "lucide-react"
-import axios from "axios"
-import { useUserStore } from "@/store/useUserStore"
+import { useEffect, useRef, useState } from "react";
+import { Search, X, Building, Check } from "lucide-react";
+import { apiClient } from "@/api/apiClient";
+import { useUserStore } from "@/store/useUserStore";
 
 interface Company {
-  id: number
-  name: string
-  industry: string
-  logo: string
-  size: string
-  location: string
+  id: number;
+  name: string;
+  industry: string;
+  logo: string;
+  size: string;
+  location: string;
 }
 
 interface BlockCompanyModalProps {
@@ -19,13 +19,16 @@ interface BlockCompanyModalProps {
   fetchBlockedCompanies: () => void;
 }
 
-export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompanyModalProps) {
-  const [keyword, setKeyword] = useState<string>("")
-  const [isSearching, setIsSearching] = useState<boolean>(false)
-  const [searchResults, setSearchResults] = useState<Company[]>([])
-  const [selectedCompanies, setSelectedCompanies] = useState<Company[]>([])
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-  const modalRef = useRef<HTMLDivElement>(null)
+export function BlockCompanyModal({
+  onClose,
+  fetchBlockedCompanies,
+}: BlockCompanyModalProps) {
+  const [keyword, setKeyword] = useState<string>("");
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchResults, setSearchResults] = useState<Company[]>([]);
+  const [selectedCompanies, setSelectedCompanies] = useState<Company[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (keyword.length > 1) {
@@ -33,18 +36,19 @@ export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompa
 
       const timeoutId = setTimeout(async () => {
         try {
-          const token = sessionStorage.getItem("accessToken");
-          const headers = token && useUserStore.getState().isLocalhost ? { "Authorization": `Bearer ${token}` } : {};
-
-          const response = await axios.post("/api/personal/companyblock/search", { keyword }, { headers });
+          const response = await apiClient.post(
+            "/api/personal/companyblock/search",
+            { keyword }
+          );
 
           const companies = response.data.data.map((company: any) => ({
             id: company.id,
             name: company.name,
             industry: company.industry ?? "업종 정보 없음",
             logo: company.logoUrl ?? "",
-            representativeName: company.representativeName ?? "대표자명 정보 없음",
-            location: company.address ?? "위치 정보 없음"
+            representativeName:
+              company.representativeName ?? "대표자명 정보 없음",
+            location: company.address ?? "위치 정보 없음",
           }));
 
           setSearchResults(companies);
@@ -63,55 +67,52 @@ export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompa
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose()
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [onClose])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
 
   const toggleCompanySelection = (company: Company) => {
     if (selectedCompanies.some((c) => c.id === company.id)) {
-      setSelectedCompanies(selectedCompanies.filter((c) => c.id !== company.id))
+      setSelectedCompanies(
+        selectedCompanies.filter((c) => c.id !== company.id)
+      );
     } else {
       if (selectedCompanies.length < 10) {
-        setSelectedCompanies([...selectedCompanies, company])
+        setSelectedCompanies([...selectedCompanies, company]);
       }
     }
-  }
+  };
 
   // 차단 설정
   const handleSubmit = async () => {
     if (selectedCompanies.length === 0) return;
-
     setIsSubmitting(true);
 
     try {
-      // 선택된 기업들의 ID만 배열로 추출
-      const companyIds = selectedCompanies.map(company => company.id);
+      const companyIds = selectedCompanies.map((company) => company.id);
 
-      const token = sessionStorage.getItem("accessToken");
-      const headers = token && useUserStore.getState().isLocalhost ? { "Authorization": `Bearer ${token}` } : {};
-
-      const response = await axios.post('/api/personal/companyblock/block', {
-        companyIds: companyIds,
-      }, { headers });
-
-      console.log('기업 차단 성공:', response.data);
+      await apiClient.post("/api/personal/companyblock/block", {
+        companyIds,
+      });
 
       fetchBlockedCompanies();
-
-      setIsSubmitting(false);
-      onClose();  // 모달 닫기
+      onClose();
     } catch (error) {
-      console.error('차단 설정 실패:', error);
+      console.error("차단 설정 실패:", error);
+    } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -124,7 +125,10 @@ export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompa
       >
         {/* Modal Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
-          <h2 id="block-company-modal-title" className="text-lg font-semibold text-gray-900">
+          <h2
+            id="block-company-modal-title"
+            className="text-lg font-semibold text-gray-900"
+          >
             차단 기업 추가
           </h2>
           <button
@@ -154,7 +158,9 @@ export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompa
           {/* Selected Companies */}
           {selectedCompanies.length > 0 && (
             <div className="mt-3">
-              <div className="text-sm font-medium text-gray-700 mb-2">선택된 기업 ({selectedCompanies.length}/10)</div>
+              <div className="text-sm font-medium text-gray-700 mb-2">
+                선택된 기업 ({selectedCompanies.length}/10)
+              </div>
               <div className="flex flex-wrap gap-2">
                 {selectedCompanies.map((company) => (
                   <div
@@ -176,24 +182,29 @@ export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompa
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : keyword && searchResults.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">검색 결과가 없습니다</div>
+            <div className="text-center py-8 text-gray-500">
+              검색 결과가 없습니다
+            </div>
           ) : searchResults.length > 0 ? (
             <div className="space-y-3">
               {searchResults.map((company) => (
                 <div
                   key={company.id}
                   onClick={() => toggleCompanySelection(company)}
-                  className={`flex items-start p-3 rounded-lg cursor-pointer transition-colors ${selectedCompanies.some((c) => c.id === company.id)
-                    ? "bg-blue-50 border border-blue-200"
-                    : "hover:bg-gray-50 border border-gray-200"
-                    }`}
+                  className={`flex items-start p-3 rounded-lg cursor-pointer transition-colors ${
+                    selectedCompanies.some((c) => c.id === company.id)
+                      ? "bg-blue-50 border border-blue-200"
+                      : "hover:bg-gray-50 border border-gray-200"
+                  }`}
                 >
                   <div className="flex-shrink-0 mt-0.5">
                     <Building className="h-5 w-5 text-gray-400" />
                   </div>
                   <div className="ml-3 flex-1">
                     <div className="flex justify-between">
-                      <h3 className="text-sm font-medium text-gray-900">{company.name}</h3>
+                      <h3 className="text-sm font-medium text-gray-900">
+                        {company.name}
+                      </h3>
                       {selectedCompanies.some((c) => c.id === company.id) && (
                         <Check className="h-5 w-5 text-blue-600" />
                       )}
@@ -206,7 +217,9 @@ export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompa
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">기업명을 검색해주세요</div>
+            <div className="text-center py-8 text-gray-500">
+              기업명을 검색해주세요
+            </div>
           )}
         </div>
 
@@ -221,10 +234,11 @@ export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompa
           <button
             onClick={handleSubmit}
             disabled={selectedCompanies.length === 0 || isSubmitting}
-            className={`px-4 py-2 rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedCompanies.length === 0 || isSubmitting
-              ? "bg-blue-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-              }`}
+            className={`px-4 py-2 rounded-md text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              selectedCompanies.length === 0 || isSubmitting
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             {isSubmitting ? (
               <span className="flex items-center">
@@ -238,5 +252,5 @@ export function BlockCompanyModal({ onClose, fetchBlockedCompanies }: BlockCompa
         </div>
       </div>
     </div>
-  )
+  );
 }
