@@ -30,11 +30,23 @@ export const JobsList = () => {
   const [sort, setSort] = useState<"newest"|"popular"|"recommended">("newest")
 
   const fetchJobs = async () => {
-    const params = new URLSearchParams({
-      ...Object.fromEntries(Object.entries(filters).filter(([,v])=>v!=null)),
-      sort,
-    } as any)
-    const res = await fetch(`/api/personal/job/list?${params}`)
+    const params = new URLSearchParams()
+
+    // 필터 적용
+    if (filters.industry) params.append("industry", filters.industry)
+    if (filters.experienceLevel !== undefined) params.append("experienceLevel", filters.experienceLevel.toString())
+    if (filters.educationLevel !== undefined) params.append("educationLevel", filters.educationLevel.toString())
+    if (filters.keyword) params.append("keyword", filters.keyword)
+  
+    // locationCode 여러 개 처리
+    if (filters.locationCode) {
+      const codes = filters.locationCode.split(",")
+      codes.forEach(code => params.append("locationCode", code))
+    }
+  
+    params.append("sort", sort)
+  
+    const res = await fetch(`/api/personal/job/list?${params.toString()}`)
     const json = await res.json()
     setJobs(json.data)
   }
