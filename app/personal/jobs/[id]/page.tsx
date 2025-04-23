@@ -8,7 +8,7 @@ import { JobDetailContent } from "@/components/personal/jobs/JobDetailContent";
 import { JobSidebar } from "@/components/personal/jobs/JobSidebar";
 import { Footer } from "@/components/home/Footer";
 import { useUserStore } from "@/store/useUserStore";
-import { MiniHeader } from "@/components/personal/jobs/MiniHeader";
+// import { MiniHeader } from "@/components/personal/jobs/MiniHeader";
 
 interface JobDetailPageProps {
   params: Promise<{ id: string }>;
@@ -52,14 +52,16 @@ export default function JobDetailPage({ params }: JobDetailPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {isScrolled ? (
+      {/* {isScrolled ? (
         <MiniHeader />
       ) : (
         <>
           {userInfo ? <LoginHeader /> : <Header />}
           <MainNavigation />
         </>
-      )}
+      )} */}
+      {userInfo ? <LoginHeader /> : <Header />}
+      <MainNavigation />
 
       {/* 본문 */}
       <main className="flex-1 bg-white">
