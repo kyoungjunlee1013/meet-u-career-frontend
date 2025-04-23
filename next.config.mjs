@@ -18,6 +18,10 @@ const nextConfig = {
         {
             destination: 'http://localhost:8080/api/:path*',
             source: '/api/:path*',
+        },
+        {
+            destination: 'https://api.meet-u-career.com/api/:path*',
+            source: '/api/:path*',
         }
     ]
 },
