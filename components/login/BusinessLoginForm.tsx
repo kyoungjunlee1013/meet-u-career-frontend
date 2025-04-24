@@ -4,13 +4,20 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
+import { fetchMyInfo } from "@/api/fetchMyInfo";
+import { useRouter } from "next/navigation";
 
 export const BusinessLoginForm = () => {
+  const router = useRouter();
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const [errorMessages, setErrorMessages] = useState<{ userId?: string; password?: string; message?: string }>({});
+  const [errorMessages, setErrorMessages] = useState<{
+    userId?: string;
+    password?: string;
+    message?: string;
+  }>({});
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,11 +37,31 @@ export const BusinessLoginForm = () => {
       });
 
       if (response.data.msg == "success") {
-        setSuccessMessage(response.data.message || "로그인 성공!");
-        // 로그인 성공 후 필요한 경우 리다이렉트 추가 가능
-        window.location.href = "/";
+        const { accessToken, refreshToken } = response.data.data || {};
+
+        if (accessToken && refreshToken) {
+          // 로그인 성공 후 아이디 저장
+          if (rememberMe) {
+            sessionStorage.setItem("savedUserId", userId);
+          } else {
+            sessionStorage.removeItem("savedUserId");
+          }
+
+          setSuccessMessage(response.data.message || "로그인 성공!");
+
+          await fetchMyInfo();
+
+          // 메인 페이지로 이동.
+          router.push("/");
+        } else {
+          setErrorMessages({
+            message: "문제가 발생했습니다. 다시 로그인 해주세요.",
+          });
+        }
       } else {
-        setErrorMessages({ message: response.data.msg || "로그인에 실패했습니다." });
+        setErrorMessages({
+          message: response.data.msg || "로그인에 실패했습니다.",
+        });
       }
     } catch (error: any) {
       if (error.response?.data?.errors) {
@@ -54,12 +81,16 @@ export const BusinessLoginForm = () => {
           type="text"
           name="userId"
           placeholder="기업 아이디"
+          autoComplete="off"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
-          className={`w-full px-3 py-2.5 border ${errorMessages.userId ? "border-red-500" : "border-gray-300"
-            } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          className={`w-full px-3 py-2.5 border ${
+            errorMessages.userId ? "border-red-500" : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
-        {errorMessages.userId && <p className="text-red-500 text-xs mt-1">{errorMessages.userId}</p>}
+        {errorMessages.userId && (
+          <p className="text-red-500 text-xs mt-1">{errorMessages.userId}</p>
+        )}
       </div>
 
       <div>
@@ -67,12 +98,16 @@ export const BusinessLoginForm = () => {
           type="password"
           name="password"
           placeholder="비밀번호"
+          autoComplete="off"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={`w-full px-3 py-2.5 border ${errorMessages.password ? "border-red-500" : "border-gray-300"
-            } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          className={`w-full px-3 py-2.5 border ${
+            errorMessages.password ? "border-red-500" : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
-        {errorMessages.password && <p className="text-red-500 text-xs mt-1">{errorMessages.password}</p>}
+        {errorMessages.password && (
+          <p className="text-red-500 text-xs mt-1">{errorMessages.password}</p>
+        )}
       </div>
 
       <div className="flex items-center">
@@ -84,8 +119,11 @@ export const BusinessLoginForm = () => {
           onChange={handleRememberMeChange}
           className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
         />
-        <label htmlFor="businessRememberMe" className="ml-2 text-xs text-gray-600">
-          로그인 유지
+        <label
+          htmlFor="businessRememberMe"
+          className="ml-2 text-xs text-gray-600"
+        >
+          아이디 저장
         </label>
         <div className="ml-auto flex gap-2 text-xs text-gray-500">
           <Link href="/find-id" className="hover:underline">
@@ -110,9 +148,13 @@ export const BusinessLoginForm = () => {
         )}
       </button>
 
-      {successMessage && <p className="text-green-600 text-sm text-center">{successMessage}</p>}
+      {successMessage && (
+        <p className="text-green-600 text-sm text-center">{successMessage}</p>
+      )}
       {errorMessages.message && !successMessage && (
-        <p className="text-red-600 text-sm text-center">{errorMessages.message}</p>
+        <p className="text-red-600 text-sm text-center">
+          {errorMessages.message}
+        </p>
       )}
     </form>
   );

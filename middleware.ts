@@ -9,6 +9,11 @@ export function middleware(request: NextRequest) {
   const token = request.cookies.get("accessToken")?.value;
   const { pathname } = request.nextUrl;
 
+  // 로그인 제외 예외 처리
+  if (pathname === "/admin/login") {
+    return NextResponse.next();
+  }
+
   const protectedPaths = ["/admin", "/business", "/personal/mypage", "/chat"];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
 

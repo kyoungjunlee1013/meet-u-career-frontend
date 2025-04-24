@@ -13,7 +13,7 @@ export const fetchMyInfo = async () => {
     const isLocalhost =
       typeof window !== "undefined" && window.location.hostname === "localhost";
 
-    const response = await apiClient.get<any>("/api/personal/me", {
+    const response = await apiClient.get<any>("/api/user/me", {
       withCredentials: !isLocalhost,
       headers: {
         Authorization: accessToken ? `Bearer ${accessToken}` : "",
