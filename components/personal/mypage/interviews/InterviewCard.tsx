@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { ReviewModal } from "./review/ReviewModal"; // ✅ 경로 문제 없음
+import { ReviewModal } from "./review/ReviewModal";
 
 interface Interview {
   id: number;
@@ -15,17 +15,22 @@ interface Interview {
   time?: string;
   interviewer?: string;
   hasReview?: boolean;
-  companyId: number; 
-  jobCategoryId: number; 
+  canWriteReview?: boolean;
 }
+
 
 interface InterviewCardProps {
   interview: Interview;
+  onEdit?: () => void; 
 }
 
 export function InterviewCard({ interview }: InterviewCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasReview, setHasReview] = useState(interview.hasReview ?? false); // ✅ 추가
+
+  // ✅ 작성 여부는 canWriteReview 우선 → false 또는 hasReview === true일 때 true로 간주
+  const [hasReview, setHasReview] = useState(
+    interview.canWriteReview === false || interview.hasReview === true
+  );
 
   const formattedDate = new Date(interview.date).toLocaleString("ko-KR", {
     year: "numeric",
@@ -35,27 +40,28 @@ export function InterviewCard({ interview }: InterviewCardProps) {
     minute: "2-digit",
   });
 
+  // ✅ 리뷰 작성 완료 시 호출됨
   const handleReviewComplete = (id: number) => {
     if (id === interview.id) {
-      setHasReview(true); // ✅ 상태를 업데이트
+      setHasReview(true); // 상태 업데이트
     }
   };
 
-  // 버튼 상태/텍스트 결정
+  // ✅ 버튼 조건 설정
   let buttonText = "";
   let buttonDisabled = true;
   let buttonStyle = "w-full py-2 px-4 rounded-md border text-sm font-semibold mt-6 ";
+
   if (interview.status === "scheduled") {
     buttonText = "후기 작성";
     buttonDisabled = true;
     buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed";
   } else if (interview.status === "completed") {
     if (hasReview) {
-      // ✅ 수정
       buttonText = "작성 완료";
       buttonDisabled = true;
       buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed";
-    } else {
+    } else if (interview.canWriteReview) {
       buttonText = "후기 작성";
       buttonDisabled = false;
       buttonStyle += "bg-blue-50 text-blue-600 border-blue-500 hover:bg-blue-100 cursor-pointer";
@@ -68,12 +74,13 @@ export function InterviewCard({ interview }: InterviewCardProps) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col h-full max-w-[350px] w-full mx-auto p-6">
-      {/* 상단: 상태 뱃지 & 날짜 */}
+      {/* 상태 뱃지 & 날짜 */}
       <div className="flex items-center justify-between mb-4">
         <InterviewStatusBadge status={interview.status} />
         <span className="text-xs text-gray-400 font-medium">{formattedDate.split(' ')[0]}</span>
       </div>
-      {/* 회사/포지션 */}
+
+      {/* 회사 및 포지션 */}
       <div className="flex items-center mb-2">
         <div className="h-10 w-10 rounded-md overflow-hidden flex-shrink-0 border border-gray-200 mr-3">
           <Image
@@ -90,7 +97,7 @@ export function InterviewCard({ interview }: InterviewCardProps) {
         </div>
       </div>
 
-      {/* 상세 정보 */}
+      {/* 면접 상세 정보 */}
       <div className="flex flex-col gap-1 text-sm text-gray-700 mb-6 mt-2">
         {interview.location && (
           <div className="flex items-center">
@@ -120,7 +127,7 @@ export function InterviewCard({ interview }: InterviewCardProps) {
         )}
       </div>
 
-      {/* 버튼 */}
+      {/* 후기 작성 버튼 */}
       <button
         className={buttonStyle}
         disabled={buttonDisabled}

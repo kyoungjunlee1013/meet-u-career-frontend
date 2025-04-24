@@ -5,7 +5,7 @@ export interface Interview {
     company: string;
     position: string;
     date: string;
-    status: number | string;
+    status: number;
     logo: string;
     location?: string;
     time?: string;
