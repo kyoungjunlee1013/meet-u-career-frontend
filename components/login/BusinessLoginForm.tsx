@@ -6,11 +6,11 @@ import Link from "next/link";
 import axios from "axios";
 
 export const BusinessLoginForm = () => {
-  const [companyId, setCompanyId] = useState("");
+  const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const [errorMessages, setErrorMessages] = useState<{ companyId?: string; password?: string; message?: string }>({});
+  const [errorMessages, setErrorMessages] = useState<{ userId?: string; password?: string; message?: string }>({});
   const [successMessage, setSuccessMessage] = useState("");
 
   const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,18 +24,17 @@ export const BusinessLoginForm = () => {
     setSuccessMessage("");
 
     try {
-      const response = await axios.post("/api/auth/business-login", {
-        companyId,
+      const response = await axios.post("/api/business/auth/login", {
+        userId,
         password,
-        rememberMe,
       });
 
-      if (response.data.success) {
+      if (response.data.msg == "success") {
         setSuccessMessage(response.data.message || "로그인 성공!");
         // 로그인 성공 후 필요한 경우 리다이렉트 추가 가능
-        // window.location.href = "/";
+        window.location.href = "/";
       } else {
-        setErrorMessages({ message: response.data.message || "로그인에 실패했습니다." });
+        setErrorMessages({ message: response.data.msg || "로그인에 실패했습니다." });
       }
     } catch (error: any) {
       if (error.response?.data?.errors) {
@@ -53,14 +52,14 @@ export const BusinessLoginForm = () => {
       <div>
         <input
           type="text"
-          name="companyId"
+          name="userId"
           placeholder="기업 아이디"
-          value={companyId}
-          onChange={(e) => setCompanyId(e.target.value)}
-          className={`w-full px-3 py-2.5 border ${errorMessages.companyId ? "border-red-500" : "border-gray-300"
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
+          className={`w-full px-3 py-2.5 border ${errorMessages.userId ? "border-red-500" : "border-gray-300"
             } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
-        {errorMessages.companyId && <p className="text-red-500 text-xs mt-1">{errorMessages.companyId}</p>}
+        {errorMessages.userId && <p className="text-red-500 text-xs mt-1">{errorMessages.userId}</p>}
       </div>
 
       <div>
