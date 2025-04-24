@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BusinessHeader } from "@/components/business/layout/BusinessHeader";
 import { PaymentsStatistics } from "@/components/business/payments/PaymentsStatistics";
 import { PaymentsSearch } from "@/components/business/payments/PaymentsSearch";
@@ -7,60 +7,48 @@ import { PaymentsTabs, PaymentsTabValue } from "@/components/business/payments/P
 import { PaymentsCardList } from "@/components/business/payments/PaymentsCardList";
 import { PaymentCardData } from "@/components/business/payments/PaymentsCard";
 
+import { ReceiptModal } from "@/components/business/payments/ReceiptModal";
+
 export default function BusinessPaymentsPage() {
-  // mock 결제 내역 데이터
-  const payments: PaymentCardData[] = [
-    {
-      id: 1,
-      transactionId: "ORD-20250422-0001",
-      createdAt: "2025-04-22 14:30",
-      accountName: "홍길동",
-      advertisementTitle: "프론트엔드 채용광고",
-      advertisementPeriod: "7일",
-      advertisementStatus: "진행 중",
-      amount: 120000,
-      status: 1, // 성공
-      method: "카드",
-      advertisementLink: "#",
-    },
-    {
-      id: 2,
-      transactionId: "ORD-20250422-0002",
-      createdAt: "2025-04-21 10:10",
-      accountName: "김영희",
-      advertisementTitle: "백엔드 채용광고",
-      advertisementPeriod: "14일",
-      advertisementStatus: "종료",
-      amount: 90000,
-      status: 2, // 진행 중
-      method: "카카오페이",
-      advertisementLink: "#",
-    },
-    {
-      id: 3,
-      transactionId: "ORD-20250420-0003",
-      createdAt: "2025-04-20 09:00",
-      accountName: "이철수",
-      advertisementTitle: "디자인 채용광고",
-      advertisementPeriod: "7일",
-      advertisementStatus: "종료",
-      amount: 70000,
-      status: 3, // 종료
-      method: "토스",
-      advertisementLink: "#",
-    },
-  ];
+  useEffect(() => {
+    fetch("/api/business/payment/history")
+      .then(res => res.json())
+      .then(data => {
+        console.log("결제 내역 API 응답:", data);
+      })
+      .catch(err => {
+        console.error("결제 내역 API 에러:", err);
+      });
+  }, []);
 
+  const [payments, setPayments] = useState<PaymentCardData[]>([]);
   const [activeTab, setActiveTab] = useState<PaymentsTabValue>("all");
+  // 모달 상태 관리
+  const [receiptPayment, setReceiptPayment] = useState<PaymentCardData|null>(null);
 
-  // 결제 상태별 필터링
+  useEffect(() => {
+    fetch("/api/business/payment/history")
+      .then(res => res.json())
+      .then(data => {
+        setPayments(data.data);
+      })
+      .catch(err => {
+        console.error("결제 내역 API 에러:", err);
+      });
+  }, []);
+
+  // 광고 상태별 필터링
   const statusFilterMap: Record<PaymentsTabValue, number[]|null> = {
     all: null,
-    progress: [2], // 진행 중
-    ended: [3],    // 종료
+    progress: [1], // 진행 중 광고 advertisementStatus === 1
+    ended: [3],    // 종료 광고 advertisementStatus === 3
   };
   const filter = statusFilterMap[activeTab];
-  const filteredPayments = !filter ? payments : payments.filter(p => filter.includes(p.status));
+  const filteredPayments = !filter ? payments : payments.filter(p => filter.includes(p.advertisementStatus));
+
+  // 영수증 모달 열기/닫기 핸들러
+  const handleOpenReceipt = (payment: PaymentCardData) => setReceiptPayment(payment);
+  const handleCloseReceipt = () => setReceiptPayment(null);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -70,8 +58,9 @@ export default function BusinessPaymentsPage() {
         <PaymentsStatistics payments={payments} />
         <PaymentsSearch />
         <PaymentsTabs activeTab={activeTab} onTabChange={setActiveTab} />
-        <PaymentsCardList payments={filteredPayments} />
+        <PaymentsCardList payments={filteredPayments} onReceiptClick={handleOpenReceipt} />
       </main>
+      <ReceiptModal open={!!receiptPayment} payment={receiptPayment!} onClose={handleCloseReceipt} />
     </div>
   );
 }

@@ -5,9 +5,10 @@ interface PaymentsCardListProps {
   payments: PaymentCardData[];
   loading?: boolean;
   error?: string | null;
+  onReceiptClick?: (payment: PaymentCardData) => void;
 }
 
-export const PaymentsCardList: React.FC<PaymentsCardListProps> = ({ payments = [], loading = false, error = null }) => {
+export const PaymentsCardList: React.FC<PaymentsCardListProps> = ({ payments = [], loading = false, error = null, onReceiptClick }) => {
   if (loading) {
     return <div className="text-center py-8 text-gray-400">로딩 중...</div>;
   }
@@ -20,7 +21,7 @@ export const PaymentsCardList: React.FC<PaymentsCardListProps> = ({ payments = [
   return (
     <div className="flex flex-col gap-4 mt-4">
       {payments.map((payment) => (
-        <PaymentsCard key={payment.id} payment={payment} />
+        <PaymentsCard key={payment.id} payment={payment} onReceiptClick={onReceiptClick} />
       ))}
     </div>
   );
