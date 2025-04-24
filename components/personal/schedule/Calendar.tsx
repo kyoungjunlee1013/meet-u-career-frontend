@@ -29,10 +29,12 @@ export interface ScheduleItem {
 interface CalendarProps {
   schedules: ScheduleItem[];
   activeFilters: ScheduleEventType[];
-  onScheduleUpdate: (schedules: ScheduleItem[]) => void;
+  onScheduleUpdate: (schedule: ScheduleItem) => void;
+  onAddSchedule: (schedule: ScheduleItem) => void;
+  onDelete: (id: string) => void;
 }
 
-export const Calendar = ({ schedules, activeFilters, onScheduleUpdate }: CalendarProps) => {
+export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSchedule, onDelete }: CalendarProps) => {
   const [view, setView] = useState<"month" | "week" | "day">("month")
   const [currentDate, setCurrentDate] = useState(new Date())
   const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth())
@@ -49,8 +51,8 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate }: Calenda
     // Get the first day of the month (0-6, where 0 is Sunday)
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay()
 
-    // Convert from Sunday-based (0-6) to Monday-based (0-6)
-    const firstDayIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1
+    // 일요일(0)부터 시작하도록 변경
+    const firstDayIndex = firstDayOfMonth; // 0:일, 1:월, ..., 6:토
 
     // Get the last day of the month
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
@@ -103,7 +105,7 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate }: Calenda
 
   const calendarData = getCalendarData()
 
-  const weekdays = ["월", "화", "수", "목", "금", "토", "일"]
+  const weekdays = ["일", "월", "화", "수", "목", "금", "토"]
 
   const goToPreviousMonth = () => {
     if (currentMonth === 0) {
@@ -185,8 +187,9 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate }: Calenda
         description: "",
         relatedId: undefined,
         company: null,
-        startDateTime: formatDateString(new Date(currentYear, currentMonth, day)),
-        endDateTime: formatDateString(new Date(currentYear, currentMonth, day)),
+        // 클릭한 날짜를 'YYYY-MM-DDT00:00'으로 세팅
+        startDateTime: formatDateString(new Date(currentYear, currentMonth, day)) + 'T00:00',
+        endDateTime: formatDateString(new Date(currentYear, currentMonth, day)) + 'T00:00',
         isAllDay: false,
         updatedAt: formatDateString(new Date()),
       })
@@ -232,15 +235,12 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate }: Calenda
       }
 
       if (isEditing) {
-        onScheduleUpdate(
-          schedules.map((s: ScheduleItem) => (s.id === schedule.id ? updatedSchedule : s))
-        );
+        // 수정: 단일 일정만 전달
+        onScheduleUpdate(updatedSchedule);
       } else {
+        // 추가: 새로운 일정 객체 생성 후 onAddSchedule로 전달
         const newId = Date.now().toString();
-        onScheduleUpdate([
-          ...schedules,
-          { ...updatedSchedule, id: newId }
-        ]);
+        onAddSchedule({ ...updatedSchedule, id: newId });
       }
     } catch (error) {
       console.error("Error saving schedule:", error)
@@ -252,8 +252,14 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate }: Calenda
     return schedules.filter((event: ScheduleItem) => {
       if (month !== "current") return false;
       if (activeFilters.length > 0 && !activeFilters.includes(event.eventType)) return false;
+      // 날짜를 로컬 Date 객체로 비교 (타임존 문제 방지)
       const eventDate = new Date(event.startDateTime);
-      return eventDate.getDate() === day && eventDate.getMonth() === currentMonth && eventDate.getFullYear() === currentYear;
+      const cellDate = new Date(currentYear, currentMonth, day);
+      return (
+        eventDate.getFullYear() === cellDate.getFullYear() &&
+        eventDate.getMonth() === cellDate.getMonth() &&
+        eventDate.getDate() === cellDate.getDate()
+      );
     });
   }
 
@@ -371,6 +377,7 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate }: Calenda
         onSave={handleSaveSchedule}
         schedule={selectedSchedule}
         isEditing={isEditing}
+        onDelete={onDelete}
       />
     </div>
   )

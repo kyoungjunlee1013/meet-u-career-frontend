@@ -5,73 +5,199 @@ import { ScheduleHeader } from "./ScheduleHeader"
 import { Calendar, type ScheduleEventType, type ScheduleItem } from "./Calendar"
 import { ScheduleSidebar } from "./ScheduleSidebar"
 
-function mapDtoToScheduleItem(dto: any): ScheduleItem {
-  return {
-    id: String(dto.id),
-    eventType: dto.eventType,
-    title: dto.title,
-    description: dto.description ?? "",
-    relatedId: dto.relatedId ? String(dto.relatedId) : undefined,
-    company: dto.companyId
-      ? { id: String(dto.companyId), name: dto.companyName }
-      : null,
-    startDateTime: dto.startDateTime,
-    endDateTime: dto.endDateTime,
-    isAllDay: dto.isAllDay,
-    updatedAt: dto.updatedAt,
+// 일정 수정 API 호출 함수
+async function updatePersonalSchedule(schedule: ScheduleItem) {
+  const numericId = Number(schedule.id);
+  const payload = {
+    eventType: schedule.eventType,
+    title: schedule.title,
+    description: schedule.description,
+    relatedId: schedule.relatedId ?? null,
+    companyId: schedule.company?.id ?? null,
+    companyName: schedule.company?.name ?? null,
+    startDateTime: schedule.startDateTime.length === 16
+      ? schedule.startDateTime + ':00'
+      : schedule.startDateTime,
+    endDateTime: schedule.endDateTime.length === 16
+      ? schedule.endDateTime + ':00'
+      : schedule.endDateTime,
+    isAllDay: schedule.isAllDay,
   };
+  const res = await fetch(`/api/personal/calendar/update/${numericId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error('일정 수정 실패');
+  }
+  return await res.json();
+}
+
+function toIsoString(date: any): string {
+  // LocalDateTime(Java) → ISO string 변환 보장
+  if (!date) return new Date().toISOString();
+  if (typeof date === 'string') return date;
+  if (date instanceof Date) return date.toISOString();
+  // dayjs, moment, 또는 {year, month, day, ...} 등 다양한 구조 방어
+  if (typeof date === 'object' && date.year && date.month && date.day) {
+    try {
+      return new Date(date.year, date.month - 1, date.day, date.hour || 0, date.minute || 0, date.second || 0).toISOString();
+    } catch {
+      return new Date().toISOString();
+    }
+  }
+  return String(date);
+}
+
+function mapDtoToScheduleItem(dto: any): ScheduleItem {
+  // CalendarPersonalDTO (로그인)와 PublicCalendarItemDTO(비로그인) 모두 대응
+  if (dto.eventType !== undefined) {
+    // CalendarPersonalDTO
+    return {
+      id: String(dto.id ?? `${dto.eventType}-${dto.relatedId ?? dto.title}`),
+      eventType: dto.eventType,
+      title: dto.title,
+      description: dto.description ?? "",
+      relatedId: dto.relatedId ? String(dto.relatedId) : undefined,
+      company: dto.companyId && dto.companyName
+        ? { id: String(dto.companyId), name: dto.companyName }
+        : null,
+      startDateTime: toIsoString(dto.startDateTime),
+      endDateTime: toIsoString(dto.endDateTime),
+      isAllDay: dto.isAllDay ?? true,
+      updatedAt: toIsoString(dto.updatedAt),
+    };
+  } else if (dto.expirationDate && dto.companyName) {
+    // PublicCalendarItemDTO (비로그인)
+    return {
+      id: `public-${dto.title}-${toIsoString(dto.expirationDate)}`,
+      eventType: 1, // APPLICATION_DEADLINE 등 기본값 (임의 지정)
+      title: dto.title,
+      description: '',
+      relatedId: undefined,
+      company: { id: 'public', name: dto.companyName },
+      startDateTime: toIsoString(dto.expirationDate),
+      endDateTime: toIsoString(dto.expirationDate),
+      isAllDay: true,
+      updatedAt: toIsoString(dto.expirationDate),
+    };
+  } else {
+    // 알 수 없는 구조 방어
+    return {
+      id: `unknown-${Math.random()}`,
+      eventType: 4, // PERSONAL_EVENT 등 임의값
+      title: dto.title ?? '알 수 없는 일정',
+      description: '',
+      relatedId: undefined,
+      company: null,
+      startDateTime: toIsoString(dto.startDateTime),
+      endDateTime: toIsoString(dto.endDateTime),
+      isAllDay: true,
+      updatedAt: toIsoString(dto.updatedAt),
+    };
+  }
+}
+
+async function createPersonalSchedule(schedule: ScheduleItem) {
+  const payload = {
+    eventType: 4,
+    title: schedule.title,
+    description: schedule.description,
+    relatedId: schedule.relatedId ?? null,
+    companyId: schedule.company?.id ?? null,
+    companyName: schedule.company?.name ?? null,
+    startDateTime: schedule.startDateTime.length === 16
+      ? schedule.startDateTime + ':00'
+      : schedule.startDateTime,
+    endDateTime: schedule.endDateTime.length === 16
+      ? schedule.endDateTime + ':00'
+      : schedule.endDateTime,
+    isAllDay: schedule.isAllDay,
+  };
+
+  const res = await fetch('/api/personal/calendar/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error('일정 등록 실패');
+  }
+  return await res.json();
 }
 
 export const ScheduleContent = () => {
-  const [activeFilters, setActiveFilters] = useState<ScheduleEventType[]>([])
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([
-    {
-      id: "1",
-      eventType: 1, // APPLICATION_DEADLINE
-      title: "카카오 채용 지원 마감",
-      description: "서류 제출 마지막 날!",
-      relatedId: "555",
-      company: { id: "32", name: "Kakao Corp" },
-      startDateTime: "2025-04-30T23:59:00",
-      endDateTime: "2025-04-30T23:59:00",
-      isAllDay: true,
-      updatedAt: "2025-04-20T12:00:00",
-    },
-    {
-      id: "2",
-      eventType: 4, // PERSONAL_EVENT
-      title: "모각코",
-      description: "토요일 개발자 스터디",
-      relatedId: undefined,
-      company: null,
-      startDateTime: "2025-04-27T14:00:00",
-      endDateTime: "2025-04-27T17:00:00",
-      isAllDay: false,
-      updatedAt: "2025-04-21T10:33:00",
-    },
-    {
-      id: "3",
-      eventType: 2, // BOOKMARK_DEADLINE
-      title: "라인 인턴십 마감",
-      description: "라인 북마크 공고 지원 마감일",
-      relatedId: undefined,
-      company: { id: "c2", name: "라인" },
-      startDateTime: "2025-04-10T23:59:59",
-      endDateTime: "2025-04-10T23:59:59",
-      isAllDay: true,
-      updatedAt: "2025-04-03T10:00:00",
-    },
-  ])
+  const [activeFilters, setActiveFilters] = useState<ScheduleEventType[]>([]);
+  const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // useEffect(() => {
-  //   fetch("/api/calendar/list")
-  //     .then(res => res.json())
-  //     .then(json => {
-  //       const arr = Array.isArray(json.data) ? json.data : [];
-  //       const mapped = arr.map(mapDtoToScheduleItem);
-  //       setSchedules(mapped);
-  //     });
-  // }, []);
+  // 일정 추가 핸들러 (백엔드 연동)
+  const handleAddSchedule = async (schedule: ScheduleItem) => {
+    try {
+      await createPersonalSchedule(schedule);
+      setLoading(true);
+      setError(null);
+      fetch("/api/personal/calendar/list")
+        .then(res => {
+          if (!res.ok) throw new Error("일정 데이터를 불러오지 못했습니다.");
+          return res.json();
+        })
+        .then(json => {
+          const arr = Array.isArray(json.data) ? json.data : [];
+          setSchedules(arr.map(mapDtoToScheduleItem));
+        })
+        .catch((err) => setError(err.message || "데이터 로딩 오류"))
+        .finally(() => setLoading(false));
+    } catch (error) {
+      alert("일정 등록 실패: " + (error as Error).message);
+    }
+  };
+
+  // 일정 수정 핸들러 (백엔드 연동)
+  const handleUpdateSchedule = async (schedule: ScheduleItem) => {
+    try {
+      await updatePersonalSchedule(schedule);
+      setLoading(true);
+      setError(null);
+      fetch("/api/personal/calendar/list")
+        .then(res => {
+          if (!res.ok) throw new Error("일정 데이터를 불러오지 못했습니다.");
+          return res.json();
+        })
+        .then(json => {
+          const arr = Array.isArray(json.data) ? json.data : [];
+          setSchedules(arr.map(mapDtoToScheduleItem));
+        })
+        .catch((err) => setError(err.message || "데이터 로딩 오류"))
+        .finally(() => setLoading(false));
+    } catch (error) {
+      alert("일정 수정 실패: " + (error as Error).message);
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    fetch("/api/personal/calendar/list")
+      .then(res => {
+        if (!res.ok) throw new Error("일정 데이터를 불러오지 못했습니다.");
+        return res.json();
+      })
+      .then(json => {
+        const arr = Array.isArray(json.data) ? json.data : [];
+        console.log('[일정 API 응답]', arr);
+        const mapped = arr.map(mapDtoToScheduleItem);
+        console.log('[일정 변환 결과]', mapped);
+        setSchedules(mapped);
+      })
+      .catch((err) => {
+        setError(err.message || "데이터 로딩 오류");
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleFilterChange = (filters: ScheduleEventType[]) => {
     setActiveFilters(filters)
@@ -81,8 +207,25 @@ export const ScheduleContent = () => {
     setSchedules(updatedSchedules)
   }
 
-  const handleDeleteSchedule = (id: string) => {
-    setSchedules(schedules.filter((schedule) => schedule.id !== id))
+  const handleDeleteSchedule = async (id: string) => {
+    console.log('[handleDeleteSchedule 호출]', id, typeof id);
+    const numericId = Number(id);
+    console.log('[handleDeleteSchedule] numericId:', numericId, typeof numericId);
+    try {
+      console.log('[handleDeleteSchedule] fetch 시작', `/api/personal/calendar/delete/${numericId}`);
+      const res = await fetch(`/api/personal/calendar/delete/${numericId}`, {
+        method: 'POST',
+      });
+      console.log('[handleDeleteSchedule] fetch 완료', res.status);
+      if (!res.ok) {
+        throw new Error('일정 삭제 실패');
+      }
+      setSchedules(schedules.filter((schedule) => schedule.id !== id));
+      console.log('[handleDeleteSchedule] setSchedules 반영', id);
+    } catch (error) {
+      console.error('[handleDeleteSchedule] 에러', error);
+      alert('일정 삭제 실패: ' + (error as Error).message);
+    }
   }
 
   // Sort schedules by startDateTime for the upcoming events section
@@ -93,19 +236,32 @@ export const ScheduleContent = () => {
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-6">
       <ScheduleHeader />
-      <div className="flex flex-col md:flex-row gap-6 mt-6">
-        <div className="flex-1">
-          <Calendar schedules={schedules} activeFilters={activeFilters} onScheduleUpdate={handleScheduleUpdate} />
+      {loading ? (
+        <div className="text-center py-12 text-gray-500">일정 데이터를 불러오는 중...</div>
+      ) : error ? (
+        <div className="text-center py-12 text-red-500">{error}</div>
+      ) : (
+        <div className="flex flex-col md:flex-row gap-6 mt-6">
+          <div className="flex-1">
+            <Calendar
+              schedules={schedules}
+              activeFilters={activeFilters}
+              onScheduleUpdate={handleUpdateSchedule}
+              onAddSchedule={handleAddSchedule}
+              onDelete={handleDeleteSchedule}
+            />
+          </div>
+          <div className="w-full md:w-64">
+            <ScheduleSidebar
+              activeFilters={activeFilters}
+              onFilterChange={handleFilterChange}
+              upcomingEvents={sortedSchedules}
+              onDeleteSchedule={handleDeleteSchedule}
+            />
+          </div>
         </div>
-        <div className="w-full md:w-64">
-          <ScheduleSidebar
-            activeFilters={activeFilters}
-            onFilterChange={handleFilterChange}
-            upcomingEvents={sortedSchedules}
-            onDeleteSchedule={handleDeleteSchedule}
-          />
-        </div>
-      </div>
+      )}
     </div>
-  )
+  );
 }
+

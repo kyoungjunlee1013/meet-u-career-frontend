@@ -6,6 +6,7 @@ import { useState, useEffect } from "react"
 import { X, Calendar, Building, CheckSquare } from "lucide-react"
 
 import { ScheduleEventType, ScheduleItem } from "./Calendar";
+import { useToast } from "@/hooks/use-toast";
 
 interface ScheduleModalProps {
   isOpen: boolean;
@@ -13,9 +14,11 @@ interface ScheduleModalProps {
   onSave: (schedule: ScheduleItem) => void;
   schedule?: ScheduleItem;
   isEditing?: boolean;
+  onDelete?: (id: string) => void;
 }
 
-export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = false }: ScheduleModalProps) => {
+export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = false, onDelete }: ScheduleModalProps & { onDelete?: (id: string) => void }) => {
+  const { toast, dismiss } = useToast();
   const [title, setTitle] = useState("");
   const [eventType, setEventType] = useState<ScheduleEventType>(ScheduleEventType.PERSONAL_EVENT);
   const [startDateTime, setStartDateTime] = useState("");
@@ -47,15 +50,25 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // 일정 유형은 무조건 PERSONAL_EVENT로 고정
+    let fixedStart = startDateTime;
+    let fixedEnd = endDateTime;
+    if (isAllDay) {
+      // 날짜만 입력된 경우(YYYY-MM-DD), 시간 자동 세팅
+      const startDate = startDateTime.slice(0, 10);
+      const endDate = endDateTime.slice(0, 10);
+      fixedStart = `${startDate}T00:00:00`;
+      fixedEnd = `${endDate}T23:59:59`;
+    }
     onSave({
       id: schedule?.id || Date.now().toString(),
-      eventType,
+      eventType: ScheduleEventType.PERSONAL_EVENT,
       title,
       description,
       relatedId: schedule?.relatedId,
       company,
-      startDateTime,
-      endDateTime,
+      startDateTime: fixedStart,
+      endDateTime: fixedEnd,
       isAllDay,
       updatedAt: new Date().toISOString(),
     });
@@ -63,6 +76,8 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
   }
 
   if (!isOpen) return null
+
+  console.log('[ScheduleModal 렌더] onDelete:', typeof onDelete, onDelete, 'schedule?.id:', schedule?.id);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -75,67 +90,30 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
         </div>
 
         <form onSubmit={handleSubmit}>
+          {/* 일정 유형(상세보기: 전체, 작성/수정: 개인 일정만 활성) */}
           <div className="mb-5">
             <label className="block text-sm font-medium text-gray-700 mb-2">일정 유형</label>
             <div className="flex gap-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="scheduleType"
-                  value={ScheduleEventType.APPLICATION_DEADLINE}
-                  checked={eventType === ScheduleEventType.APPLICATION_DEADLINE}
-                  onChange={() => setEventType(ScheduleEventType.APPLICATION_DEADLINE)}
-                  className="sr-only"
-                />
-                <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    eventType === ScheduleEventType.APPLICATION_DEADLINE ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  <Calendar className="h-4 w-4" />
-                </div>
-                <span className="text-sm">채용 지원 일정</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="scheduleType"
-                  value={ScheduleEventType.BOOKMARK_DEADLINE}
-                  checked={eventType === ScheduleEventType.BOOKMARK_DEADLINE}
-                  onChange={() => setEventType(ScheduleEventType.BOOKMARK_DEADLINE)}
-                  className="sr-only"
-                />
-                <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    eventType === ScheduleEventType.BOOKMARK_DEADLINE ? "bg-yellow-500 text-white" : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  <Building className="h-4 w-4" />
-                </div>
-                <span className="text-sm">관심 공고 마감일</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="scheduleType"
-                  value={ScheduleEventType.PERSONAL_EVENT}
-                  checked={eventType === ScheduleEventType.PERSONAL_EVENT}
-                  onChange={() => setEventType(ScheduleEventType.PERSONAL_EVENT)}
-                  className="sr-only"
-                />
-                <div
-                  className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    eventType === ScheduleEventType.PERSONAL_EVENT ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  <CheckSquare className="h-4 w-4" />
-                </div>
-                <span className="text-sm">개인 일정</span>
-              </label>
+              {[
+                { type: ScheduleEventType.APPLICATION_DEADLINE, label: "지원 마감" },
+                { type: ScheduleEventType.BOOKMARK_DEADLINE, label: "스크랩 마감" },
+                { type: ScheduleEventType.COMPANY_EVENT, label: "기업 행사" },
+                { type: ScheduleEventType.PERSONAL_EVENT, label: "개인 일정" },
+              ].map(({ type, label }) => (
+                <label key={type} className="flex items-center gap-1">
+                  <input
+                    type="radio"
+                    name="eventType"
+                    checked={eventType === type}
+                    disabled={isEditing ? type !== ScheduleEventType.PERSONAL_EVENT : true}
+                    readOnly
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
             </div>
           </div>
+
 
           <div className="mb-5">
             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
@@ -149,6 +127,7 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="일정 제목을 입력하세요"
               required
+              disabled={eventType !== ScheduleEventType.PERSONAL_EVENT}
             />
           </div>
 
@@ -163,6 +142,7 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
               onChange={(e) => setStartDateTime(e.target.value)}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
               required
+              disabled={isAllDay || eventType !== ScheduleEventType.PERSONAL_EVENT}
             />
           </div>
 
@@ -177,6 +157,7 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
               onChange={(e) => setEndDateTime(e.target.value)}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
               required
+              disabled={isAllDay || eventType !== ScheduleEventType.PERSONAL_EVENT}
             />
           </div>
 
@@ -185,7 +166,24 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
               type="checkbox"
               id="isAllDay"
               checked={isAllDay}
-              onChange={(e) => setIsAllDay(e.target.checked)}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setIsAllDay(checked);
+                if (checked) {
+                  // 종일 일정 체크 시, 시간 자동 세팅
+                  const startDate = startDateTime.slice(0, 10);
+                  const endDate = endDateTime.slice(0, 10);
+                  setStartDateTime(`${startDate}T00:00`);
+                  setEndDateTime(`${endDate}T23:59`);
+                } else {
+                  // 해제 시, 시간 입력 복원(00:00)
+                  const startDate = startDateTime.slice(0, 10);
+                  const endDate = endDateTime.slice(0, 10);
+                  setStartDateTime(`${startDate}T00:00`);
+                  setEndDateTime(`${endDate}T00:00`);
+                }
+              }}
+              disabled={eventType !== ScheduleEventType.PERSONAL_EVENT}
             />
             <label htmlFor="isAllDay" className="text-sm">종일 일정</label>
           </div>
@@ -200,6 +198,7 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 h-24 resize-none"
               placeholder="일정에 대한 추가 설명을 입력하세요"
+              disabled={eventType !== ScheduleEventType.PERSONAL_EVENT}
             />
           </div>
 
@@ -211,9 +210,46 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
             >
               취소
             </button>
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-              {isEditing ? "수정하기" : "추가하기"}
-            </button>
+            {(eventType === ScheduleEventType.PERSONAL_EVENT) && (
+              <>
+                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                  {isEditing ? "수정하기" : "추가하기"}
+                </button>
+                {isEditing && schedule?.id && (
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                    onClick={() => {
+  console.log('[삭제하기 버튼] 클릭됨', schedule?.id, typeof onDelete);
+  const t = toast({
+    title: "정말 삭제하시겠습니까?",
+    description: "삭제된 일정은 복구할 수 없습니다.",
+    action: (
+      <button
+        className="ml-4 px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+        onClick={() => {
+          console.log('[삭제 확인] 클릭', schedule?.id, typeof onDelete);
+          if (onDelete && schedule?.id) {
+            onDelete(schedule.id);
+          } else {
+            console.log('[삭제 실패] onDelete 또는 id 없음', onDelete, schedule?.id);
+          }
+          toast({ title: "일정이 삭제되었습니다." });
+          if (typeof t?.id !== 'undefined') dismiss(t.id);
+          onClose();
+        }}
+      >
+        삭제 확인
+      </button>
+    ),
+  });
+}}
+                  >
+                    삭제하기
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </form>
       </div>
