@@ -102,6 +102,7 @@ export const PersonalLoginForm = () => {
           type="text"
           name="userId"
           placeholder="아이디"
+          autoComplete="off"
           value={userId}
           onChange={(e) => {
             setUserId(e.target.value);
@@ -122,6 +123,7 @@ export const PersonalLoginForm = () => {
           type="password"
           name="password"
           placeholder="비밀번호"
+          autoComplete="off"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);

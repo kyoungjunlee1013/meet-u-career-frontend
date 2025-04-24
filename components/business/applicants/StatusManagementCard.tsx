@@ -1,89 +1,59 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Mail, Phone } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { toast } from "@/components/ui/use-toast"
-import { type ApplicantStatus, statusColors } from "./types"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import type { ApplicantStatus } from "@/types/applicants";
 
 interface StatusManagementCardProps {
-  currentStatus: ApplicantStatus
-  onStatusChange: (status: ApplicantStatus) => void
+  currentStatus: ApplicantStatus;
+  onStatusChange: (status: ApplicantStatus) => void;
 }
 
-export const StatusManagementCard = ({ currentStatus, onStatusChange }: StatusManagementCardProps) => {
-  const [isUpdating, setIsUpdating] = useState(false)
+const STATUSES: ApplicantStatus[] = [
+  "서류검토중",
+  "서류합격",
+  "서류불합격",
+  "면접완료",
+];
 
-  const handleStatusChange = async (newStatus: ApplicantStatus) => {
-    setIsUpdating(true)
+export const StatusManagementCard = ({
+  currentStatus,
+  onStatusChange,
+}: StatusManagementCardProps) => {
+  const [selected, setSelected] = useState<ApplicantStatus>(currentStatus);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+  const handleChange = (value: string) => {
+    setSelected(value as ApplicantStatus);
+  };
 
-    onStatusChange(newStatus)
-    setIsUpdating(false)
-    toast({
-      title: "상태 업데이트 완료",
-      description: `지원자 상태가 ${newStatus}(으)로 변경되었습니다.`,
-    })
-  }
+  const handleSave = () => {
+    onStatusChange(selected);
+  };
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle>지원자 상태 관리</CardTitle>
+        <CardTitle>지원 상태 변경</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <p className="text-sm text-gray-500">현재 상태</p>
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[currentStatus]}`}>
-            {currentStatus}
-          </span>
-        </div>
+      <CardContent>
+        <RadioGroup value={selected} onValueChange={handleChange}>
+          {STATUSES.map((status) => (
+            <div key={status} className="flex items-center space-x-2 mb-2">
+              <RadioGroupItem value={status} id={status} />
+              <Label htmlFor={status}>{status}</Label>
+            </div>
+          ))}
+        </RadioGroup>
 
-        <div className="space-y-2">
-          <p className="text-sm text-gray-500">상태 변경</p>
-          <Select
-            value={currentStatus}
-            onValueChange={(value) => handleStatusChange(value as ApplicantStatus)}
-            disabled={isUpdating}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="상태 선택" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="서류검토중">서류검토중</SelectItem>
-              <SelectItem value="서류합격">서류합격</SelectItem>
-              <SelectItem value="서류불합격">서류불합격</SelectItem>
-              <SelectItem value="면접예정">면접예정</SelectItem>
-              <SelectItem value="면접완료">면접완료</SelectItem>
-              <SelectItem value="최종합격">최종합격</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Separator />
-
-        <div className="space-y-2">
-          <p className="font-medium">빠른 액션</p>
-          <div className="grid grid-cols-1 gap-2">
-            <Button variant="outline" className="justify-start">
-              <Mail className="h-4 w-4 mr-2" />
-              이메일 보내기
-            </Button>
-            <Button variant="outline" className="justify-start">
-              <Phone className="h-4 w-4 mr-2" />
-              전화하기
-            </Button>
-            <Button variant="default" className="justify-start">
-              면접 일정 잡기
-            </Button>
-          </div>
+        <div className="mt-4">
+          <Button onClick={handleSave} className="w-full">
+            저장
+          </Button>
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
