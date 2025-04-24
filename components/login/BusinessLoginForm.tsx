@@ -6,6 +6,7 @@ import Link from "next/link";
 import axios from "axios";
 import { fetchMyInfo } from "@/api/fetchMyInfo";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export const BusinessLoginForm = () => {
   const router = useRouter();
@@ -19,6 +20,7 @@ export const BusinessLoginForm = () => {
     message?: string;
   }>({});
   const [successMessage, setSuccessMessage] = useState("");
+  const { setTokens } = useAuthStore();
 
   const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRememberMe(e.target.checked);
@@ -40,6 +42,8 @@ export const BusinessLoginForm = () => {
         const { accessToken, refreshToken } = response.data.data || {};
 
         if (accessToken && refreshToken) {
+          setTokens(accessToken, refreshToken);
+
           // 로그인 성공 후 아이디 저장
           if (rememberMe) {
             sessionStorage.setItem("savedUserId", userId);
@@ -47,25 +51,23 @@ export const BusinessLoginForm = () => {
             sessionStorage.removeItem("savedUserId");
           }
 
-          setSuccessMessage(response.data.message || "로그인 성공!");
-
           await fetchMyInfo();
 
           // 메인 페이지로 이동.
           router.push("/");
         } else {
           setErrorMessages({
-            message: "문제가 발생했습니다. 다시 로그인 해주세요.",
+            message: response.data.msg,
           });
         }
       } else {
         setErrorMessages({
-          message: response.data.msg || "로그인에 실패했습니다.",
+          message: response.data.msg,
         });
       }
     } catch (error: any) {
-      if (error.response?.data?.errors) {
-        setErrorMessages(error.response.data.errors);
+      if (error.response?.data?.msg) {
+        setErrorMessages({ message: error.response.data.msg });
       } else {
         setErrorMessages({ message: "로그인 중 오류가 발생했습니다." });
       }
@@ -84,9 +86,8 @@ export const BusinessLoginForm = () => {
           autoComplete="off"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
-          className={`w-full px-3 py-2.5 border ${
-            errorMessages.userId ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          className={`w-full px-3 py-2.5 border ${errorMessages.userId ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
         {errorMessages.userId && (
           <p className="text-red-500 text-xs mt-1">{errorMessages.userId}</p>
@@ -101,9 +102,8 @@ export const BusinessLoginForm = () => {
           autoComplete="off"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={`w-full px-3 py-2.5 border ${
-            errorMessages.password ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          className={`w-full px-3 py-2.5 border ${errorMessages.password ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
         {errorMessages.password && (
           <p className="text-red-500 text-xs mt-1">{errorMessages.password}</p>

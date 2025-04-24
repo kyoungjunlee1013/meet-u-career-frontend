@@ -16,7 +16,6 @@ export function middleware(request: NextRequest) {
 
   const protectedPaths = ["/admin", "/business", "/personal/mypage", "/chat"];
   const isProtected = protectedPaths.some((path) => pathname.startsWith(path));
-
   if (!isProtected) return NextResponse.next();
 
   // 로그인 안된 경우
@@ -24,24 +23,30 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 토큰 디코드하여 role 검사
   try {
     const decoded = jwtDecode<DecodedToken>(token);
     const role = decoded.role?.toLowerCase();
 
-    // 경로별 role 인가 제한
-    if (pathname.startsWith("/admin") && role !== "admin") {
+    // 관리자 및 슈퍼관리자 권한 체크
+    if (
+      pathname.startsWith("/admin") &&
+      !(role === "admin" || role === "super")
+    ) {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
+    // 기업회원 권한 체크
     if (pathname.startsWith("/business") && role !== "business") {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
+    // 개인회원 마이페이지 권한 체크
     if (pathname.startsWith("/personal/mypage") && role !== "personal") {
       return NextResponse.redirect(new URL("/unauthorized", request.url));
     }
-    // /chat은 로그인만 되어 있으면 허용
+    // /chat: 로그인만 되어 있으면 허용
+
   } catch (e) {
-    return NextResponse.redirect(new URL("/login", request.url)); // 디코딩 실패 시 로그인으로
+    // 토큰 디코딩 오류 또는 만료 시 로그인 페이지로
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return NextResponse.next();

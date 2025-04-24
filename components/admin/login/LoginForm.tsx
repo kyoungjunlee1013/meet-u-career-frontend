@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
-import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
 import { fetchMyInfo } from "@/api/fetchMyInfo";
 
 export const LoginForm = () => {
@@ -46,25 +46,18 @@ export const LoginForm = () => {
 
     setIsLoading(true);
     try {
-      const response = await axios.post(
-        "/api/admin/auth/login",
-        {
-          userId: email,
-          password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post("/api/admin/auth/login", {
+        userId: email,
+        password,
+      });
+
       if (response.data.msg === "success") {
         const { accessToken, refreshToken } = response.data.data || {};
+
         if (accessToken && refreshToken) {
           setTokens(accessToken, refreshToken);
 
-          // 아이디 저장
+          // 로그인 성공 후 아이디 저장
           if (rememberMe) {
             sessionStorage.setItem("savedAdminEmail", email);
           } else {
@@ -76,14 +69,14 @@ export const LoginForm = () => {
           // 대시보드 페이지로 이동.
           router.push("/admin/dashboard");
         } else {
-          setServerError("토큰 발급 실패. 다시 로그인 해주세요.");
+          setServerError(response.data.msg);
         }
       } else {
-        setServerError(response.data.message || "로그인 실패");
+        setServerError(response.data.msg);
       }
     } catch (error: any) {
       setServerError(
-        error.response?.data?.message || "로그인 중 오류가 발생했습니다."
+        error.response?.data?.msg
       );
     } finally {
       setIsLoading(false);
@@ -111,15 +104,14 @@ export const LoginForm = () => {
           name="email"
           type="email"
           autoComplete="off"
-          placeholder="your@email.com"
+          placeholder="이메일"
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
             if (emailError) setEmailError("");
           }}
-          className={`w-full px-3 py-2 border ${
-            emailError ? "border-red-500" : "border-gray-300"
-          } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+          className={`w-full px-3 py-2 border ${emailError ? "border-red-500" : "border-gray-300"
+            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           aria-invalid={!!emailError}
           aria-describedby={emailError ? "email-error" : undefined}
         />
@@ -142,14 +134,14 @@ export const LoginForm = () => {
           name="password"
           type="password"
           autoComplete="off"
+          placeholder="비밀번호"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
             if (passwordError) setPasswordError("");
           }}
-          className={`w-full px-3 py-2 border ${
-            passwordError ? "border-red-500" : "border-gray-300"
-          } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+          className={`w-full px-3 py-2 border ${passwordError ? "border-red-500" : "border-gray-300"
+            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           aria-invalid={!!passwordError}
           aria-describedby={passwordError ? "password-error" : undefined}
         />

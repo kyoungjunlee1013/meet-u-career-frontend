@@ -9,7 +9,7 @@ import ApplicationStatusDashboard from "@/components/admin/dashboard/Application
 import { Tabs } from "@/components/admin/dashboard/Tabs";
 
 export default function AdminDashboardPage() {
-  const isChecking = useAuthGuard("admin"); // admin만 접근 가능
+  const isChecking = useAuthGuard(["admin", "super"]); // ["admin","super"] 둘 다 허용
 
   const [activeTab, setActiveTab] = useState("user");
 
