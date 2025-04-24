@@ -1,95 +1,118 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import { Search, X, Building, Check } from "lucide-react"
+import { useEffect, useRef, useState } from "react";
+import { Search, X, Building, Check } from "lucide-react";
+import { apiClient } from "@/api/apiClient";
+import { useUserStore } from "@/store/useUserStore";
 
 interface Company {
-  id: number
-  name: string
-  industry: string
-  size: string
-  location: string
+  id: number;
+  name: string;
+  industry: string;
+  logo: string;
+  size: string;
+  location: string;
 }
 
 interface BlockCompanyModalProps {
-  onClose: () => void
+  onClose: () => void;
+  fetchBlockedCompanies: () => void;
 }
 
-export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isSearching, setIsSearching] = useState(false)
-  const [searchResults, setSearchResults] = useState<Company[]>([])
-  const [selectedCompanies, setSelectedCompanies] = useState<Company[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const modalRef = useRef<HTMLDivElement>(null)
+export function BlockCompanyModal({
+  onClose,
+  fetchBlockedCompanies,
+}: BlockCompanyModalProps) {
+  const [keyword, setKeyword] = useState<string>("");
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchResults, setSearchResults] = useState<Company[]>([]);
+  const [selectedCompanies, setSelectedCompanies] = useState<Company[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  // Mock companies data
-  const mockCompanies: Company[] = [
-    { id: 1, name: "네이버", industry: "IT/웹/통신", size: "대기업", location: "경기 성남시" },
-    { id: 2, name: "카카오", industry: "IT/웹/통신", size: "대기업", location: "제주 제주시" },
-    { id: 3, name: "라인플러스", industry: "IT/웹/통신", size: "대기업", location: "경기 성남시" },
-    { id: 4, name: "쿠팡", industry: "유통/무역/상사", size: "대기업", location: "서울 송파구" },
-    { id: 5, name: "우아한형제들", industry: "IT/웹/통신", size: "중견기업", location: "서울 송파구" },
-    { id: 6, name: "당근마켓", industry: "IT/웹/통신", size: "중견기업", location: "서울 강남구" },
-    { id: 7, name: "토스", industry: "금융", size: "중견기업", location: "서울 강남구" },
-    { id: 8, name: "야놀자", industry: "IT/웹/통신", size: "중견기업", location: "서울 강남구" },
-  ]
-
-  // Handle search
   useEffect(() => {
-    if (searchTerm.length > 0) {
-      setIsSearching(true)
-      // Simulate API call with setTimeout
-      const timeoutId = setTimeout(() => {
-        const results = mockCompanies.filter((company) => company.name.toLowerCase().includes(searchTerm.toLowerCase()))
-        setSearchResults(results)
-        setIsSearching(false)
-      }, 500)
+    if (keyword.length > 1) {
+      setIsSearching(true);
 
-      return () => clearTimeout(timeoutId)
+      const timeoutId = setTimeout(async () => {
+        try {
+          const response = await apiClient.post(
+            "/api/personal/companyblock/search",
+            { keyword }
+          );
+
+          const companies = response.data.data.map((company: any) => ({
+            id: company.id,
+            name: company.name,
+            industry: company.industry ?? "업종 정보 없음",
+            logo: company.logoUrl ?? "",
+            representativeName:
+              company.representativeName ?? "대표자명 정보 없음",
+            location: company.address ?? "위치 정보 없음",
+          }));
+
+          setSearchResults(companies);
+        } catch (error) {
+          console.error("기업 검색 실패:", error);
+        } finally {
+          setIsSearching(false);
+        }
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
     } else {
-      setSearchResults([])
+      setSearchResults([]);
     }
-  }, [searchTerm])
+  }, [keyword]);
 
-  // Handle outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose()
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [onClose])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
 
-  // Handle company selection
   const toggleCompanySelection = (company: Company) => {
     if (selectedCompanies.some((c) => c.id === company.id)) {
-      setSelectedCompanies(selectedCompanies.filter((c) => c.id !== company.id))
+      setSelectedCompanies(
+        selectedCompanies.filter((c) => c.id !== company.id)
+      );
     } else {
       if (selectedCompanies.length < 10) {
-        setSelectedCompanies([...selectedCompanies, company])
+        setSelectedCompanies([...selectedCompanies, company]);
       }
     }
-  }
+  };
 
-  // Handle form submission
-  const handleSubmit = () => {
-    if (selectedCompanies.length === 0) return
+  // 차단 설정
+  const handleSubmit = async () => {
+    if (selectedCompanies.length === 0) return;
+    setIsSubmitting(true);
 
-    setIsSubmitting(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false)
-      onClose()
-      // Here you would typically update the state in the parent component
-      // or trigger a refetch of the blocked companies list
-    }, 1000)
-  }
+    try {
+      const companyIds = selectedCompanies.map((company) => company.id);
+
+      await apiClient.post("/api/personal/companyblock/block", {
+        companyIds,
+      });
+
+      fetchBlockedCompanies();
+      onClose();
+    } catch (error) {
+      console.error("차단 설정 실패:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -102,7 +125,10 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
       >
         {/* Modal Header */}
         <div className="flex justify-between items-center p-4 border-b border-gray-200">
-          <h2 id="block-company-modal-title" className="text-lg font-semibold text-gray-900">
+          <h2
+            id="block-company-modal-title"
+            className="text-lg font-semibold text-gray-900"
+          >
             차단 기업 추가
           </h2>
           <button
@@ -124,15 +150,17 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
               type="text"
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               placeholder="기업명을 입력하세요"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
             />
           </div>
 
           {/* Selected Companies */}
           {selectedCompanies.length > 0 && (
             <div className="mt-3">
-              <div className="text-sm font-medium text-gray-700 mb-2">선택된 기업 ({selectedCompanies.length}/10)</div>
+              <div className="text-sm font-medium text-gray-700 mb-2">
+                선택된 기업 ({selectedCompanies.length}/10)
+              </div>
               <div className="flex flex-wrap gap-2">
                 {selectedCompanies.map((company) => (
                   <div
@@ -140,13 +168,6 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
                     className="flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm"
                   >
                     <span>{company.name}</span>
-                    <button
-                      onClick={() => toggleCompanySelection(company)}
-                      className="ml-1 text-blue-600 hover:text-blue-800 focus:outline-none"
-                      aria-label={`${company.name} 선택 취소`}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
                   </div>
                 ))}
               </div>
@@ -160,8 +181,10 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
             <div className="flex justify-center items-center h-32">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
-          ) : searchTerm && searchResults.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">검색 결과가 없습니다</div>
+          ) : keyword && searchResults.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              검색 결과가 없습니다
+            </div>
           ) : searchResults.length > 0 ? (
             <div className="space-y-3">
               {searchResults.map((company) => (
@@ -179,7 +202,9 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
                   </div>
                   <div className="ml-3 flex-1">
                     <div className="flex justify-between">
-                      <h3 className="text-sm font-medium text-gray-900">{company.name}</h3>
+                      <h3 className="text-sm font-medium text-gray-900">
+                        {company.name}
+                      </h3>
                       {selectedCompanies.some((c) => c.id === company.id) && (
                         <Check className="h-5 w-5 text-blue-600" />
                       )}
@@ -192,7 +217,9 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">기업명을 검색해주세요</div>
+            <div className="text-center py-8 text-gray-500">
+              기업명을 검색해주세요
+            </div>
           )}
         </div>
 
@@ -225,5 +252,5 @@ export function BlockCompanyModal({ onClose }: BlockCompanyModalProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
