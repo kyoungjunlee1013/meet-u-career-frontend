@@ -16,6 +16,11 @@ interface Interview {
   interviewer?: string;
   hasReview?: boolean;
   canWriteReview?: boolean;
+
+  companyId: number;
+  jobCategoryId: number;
+  applicationId: number;
+  createdAt?: string;
 }
 
 
