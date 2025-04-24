@@ -6,7 +6,7 @@ import { Calendar, type ScheduleEventType, type ScheduleItem } from "./Calendar"
 import { ScheduleSidebar } from "./ScheduleSidebar"
 
 // 일정 수정 API 호출 함수
-async function updatePersonalSchedule(schedule: ScheduleItem) {
+export async function updatePersonalSchedule(schedule: ScheduleItem) {
   const numericId = Number(schedule.id);
   const payload = {
     eventType: schedule.eventType,
@@ -50,7 +50,7 @@ function toIsoString(date: any): string {
   return String(date);
 }
 
-function mapDtoToScheduleItem(dto: any): ScheduleItem {
+export function mapDtoToScheduleItem(dto: any): ScheduleItem {
   // CalendarPersonalDTO (로그인)와 PublicCalendarItemDTO(비로그인) 모두 대응
   if (dto.eventType !== undefined) {
     // CalendarPersonalDTO
@@ -99,7 +99,7 @@ function mapDtoToScheduleItem(dto: any): ScheduleItem {
   }
 }
 
-async function createPersonalSchedule(schedule: ScheduleItem) {
+export async function createPersonalSchedule(schedule: ScheduleItem) {
   const payload = {
     eventType: 4,
     title: schedule.title,
@@ -128,11 +128,31 @@ async function createPersonalSchedule(schedule: ScheduleItem) {
   return await res.json();
 }
 
-export const ScheduleContent = () => {
+export const handleDeleteSchedule = async (id: string) => {
+  // 기존 삭제 로직 복사
+  try {
+    const numericId = Number(id);
+    const res = await fetch(`/api/personal/calendar/delete/${numericId}`, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      throw new Error('일정 삭제 실패');
+    }
+    // setSchedules는 컴포넌트 내부에서 처리
+  } catch (error) {
+    alert('일정 삭제 실패: ' + (error as Error).message);
+  }
+};
+
+const ScheduleContent = () => {
   const [activeFilters, setActiveFilters] = useState<ScheduleEventType[]>([]);
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Calendar view state lifted up
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
 
   // 일정 추가 핸들러 (백엔드 연동)
   const handleAddSchedule = async (schedule: ScheduleItem) => {
@@ -207,27 +227,7 @@ export const ScheduleContent = () => {
     setSchedules(updatedSchedules)
   }
 
-  const handleDeleteSchedule = async (id: string) => {
-    console.log('[handleDeleteSchedule 호출]', id, typeof id);
-    const numericId = Number(id);
-    console.log('[handleDeleteSchedule] numericId:', numericId, typeof numericId);
-    try {
-      console.log('[handleDeleteSchedule] fetch 시작', `/api/personal/calendar/delete/${numericId}`);
-      const res = await fetch(`/api/personal/calendar/delete/${numericId}`, {
-        method: 'POST',
-      });
-      console.log('[handleDeleteSchedule] fetch 완료', res.status);
-      if (!res.ok) {
-        throw new Error('일정 삭제 실패');
-      }
-      setSchedules(schedules.filter((schedule) => schedule.id !== id));
-      console.log('[handleDeleteSchedule] setSchedules 반영', id);
-    } catch (error) {
-      console.error('[handleDeleteSchedule] 에러', error);
-      alert('일정 삭제 실패: ' + (error as Error).message);
-    }
-  }
-
+  
   // Sort schedules by startDateTime for the upcoming events section
   const sortedSchedules = [...schedules].sort((a, b) => {
     return new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime()
@@ -249,6 +249,10 @@ export const ScheduleContent = () => {
               onScheduleUpdate={handleUpdateSchedule}
               onAddSchedule={handleAddSchedule}
               onDelete={handleDeleteSchedule}
+              currentMonth={currentMonth}
+              setCurrentMonth={setCurrentMonth}
+              currentYear={currentYear}
+              setCurrentYear={setCurrentYear}
             />
           </div>
           <div className="w-full md:w-64">
@@ -264,4 +268,5 @@ export const ScheduleContent = () => {
     </div>
   );
 }
+export { handleDeleteSchedule as deletePersonalSchedule };
 

@@ -20,10 +20,12 @@ export interface ScheduleItem {
   description?: string;
   relatedId?: string;
   company?: { id: string; name: string } | null;
+  companyId?: string;
+  companyName?: string;
   startDateTime: string; // ISO
   endDateTime: string;   // ISO
   isAllDay: boolean;
-  updatedAt: string;     // ISO
+  updatedAt?: string;     // ISO (기업 일정에는 없을 수 있음)
 }
 
 interface CalendarProps {
@@ -32,13 +34,14 @@ interface CalendarProps {
   onScheduleUpdate: (schedule: ScheduleItem) => void;
   onAddSchedule: (schedule: ScheduleItem) => void;
   onDelete: (id: string) => void;
+  currentMonth: number;
+  setCurrentMonth: React.Dispatch<React.SetStateAction<number>>;
+  currentYear: number;
+  setCurrentYear: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSchedule, onDelete }: CalendarProps) => {
+export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSchedule, onDelete, currentMonth, setCurrentMonth, currentYear, setCurrentYear }: CalendarProps) => {
   const [view, setView] = useState<"month" | "week" | "day">("month")
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth())
-  const [currentYear, setCurrentYear] = useState(currentDate.getFullYear())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedSchedule, setSelectedSchedule] = useState<ScheduleItem | undefined>(undefined)
   const [isEditing, setIsEditing] = useState(false)
