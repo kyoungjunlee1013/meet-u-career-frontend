@@ -4,23 +4,35 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { ScheduleModal } from "./ScheduleModal"
 
-export type ScheduleType = "interview" | "deadline" | "personal"
+// 엔티티 기반 일정 유형 상수(enum)
+export enum ScheduleEventType {
+  APPLICATION_DEADLINE = 1,   // 지원 마감
+  BOOKMARK_DEADLINE = 2,      // 스크랩 마감
+  COMPANY_EVENT = 3,          // 기업 행사
+  PERSONAL_EVENT = 4,         // 개인 커스텀 일정
+}
 
+// 엔티티 기반 ScheduleItem 타입
 export interface ScheduleItem {
-  id: string
-  title: string
-  date: string
-  type: ScheduleType
-  description?: string
-  day?: number
+  id: string;
+  eventType: ScheduleEventType;
+  title: string;
+  description?: string;
+  relatedId?: string;
+  company?: { id: string; name: string } | null;
+  startDateTime: string; // ISO
+  endDateTime: string;   // ISO
+  isAllDay: boolean;
+  updatedAt: string;     // ISO
 }
 
 interface CalendarProps {
-  activeFilters: ScheduleType[]
-  onScheduleUpdate: (schedules: ScheduleItem[]) => void
+  schedules: ScheduleItem[];
+  activeFilters: ScheduleEventType[];
+  onScheduleUpdate: (schedules: ScheduleItem[]) => void;
 }
 
-export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => {
+export const Calendar = ({ schedules, activeFilters, onScheduleUpdate }: CalendarProps) => {
   const [view, setView] = useState<"month" | "week" | "day">("month")
   const [currentDate, setCurrentDate] = useState(new Date())
   const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth())
@@ -28,55 +40,10 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedSchedule, setSelectedSchedule] = useState<ScheduleItem | undefined>(undefined)
   const [isEditing, setIsEditing] = useState(false)
-  const [selectedDay, setSelectedDay] = useState<number | null>(null)
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([
-    {
-      id: "1",
-      title: "카카오 프론트엔드 면접",
-      date: "2025-04-04",
-      type: "interview",
-      day: 4,
-    },
-    {
-      id: "2",
-      title: "라인 자기소개서 제출",
-      date: "2025-04-06",
-      type: "personal",
-      day: 6,
-    },
-    {
-      id: "3",
-      title: "라인 인턴십 마감",
-      date: "2025-04-10",
-      type: "deadline",
-      day: 10,
-    },
-    {
-      id: "4",
-      title: "토플 시험접수 마감",
-      date: "2025-04-12",
-      type: "personal",
-      day: 12,
-    },
-    {
-      id: "5",
-      title: "삼성 테크인턴 지원",
-      date: "2025-04-15",
-      type: "interview",
-      day: 15,
-    },
-    {
-      id: "6",
-      title: "네이버 서류 합격자 발표",
-      date: "2025-04-20",
-      type: "interview",
-      day: 20,
-    },
-  ])
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  useEffect(() => {
-    onScheduleUpdate(schedules)
-  }, [schedules, onScheduleUpdate])
+
+  
 
   const getCalendarData = () => {
     // Get the first day of the month (0-6, where 0 is Sunday)
@@ -208,43 +175,36 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
 
   const openAddModal = (day?: number) => {
     if (day) {
-      setSelectedDay(day)
-
-      // Use today as default
-      const today = new Date()
-      let formattedDate = formatDateString(today)
-
-      try {
-        // Create a valid date for the selected day
-        const selectedDate = createValidDate(currentYear, currentMonth, day)
-
-        // Verify the date is valid
-        if (!isNaN(selectedDate.getTime())) {
-          formattedDate = formatDateString(selectedDate)
-        }
-      } catch (error) {
-        console.error("Error creating date:", error)
-        // Continue with today's date as fallback
-      }
+      setSelectedDate(new Date(currentYear, currentMonth, day))
 
       // Create a new schedule with the formatted date
       setSelectedSchedule({
         id: "",
+        eventType: ScheduleEventType.PERSONAL_EVENT,
         title: "",
-        date: formattedDate,
-        type: "interview",
-        day: day,
+        description: "",
+        relatedId: undefined,
+        company: null,
+        startDateTime: formatDateString(new Date(currentYear, currentMonth, day)),
+        endDateTime: formatDateString(new Date(currentYear, currentMonth, day)),
+        isAllDay: false,
+        updatedAt: formatDateString(new Date()),
       })
     } else {
-      setSelectedDay(null)
+      setSelectedDate(null)
       // When no day is selected, create a schedule for today
       const today = new Date()
       setSelectedSchedule({
         id: "",
+        eventType: ScheduleEventType.PERSONAL_EVENT,
         title: "",
-        date: formatDateString(today),
-        type: "interview",
-        day: today.getDate(),
+        description: "",
+        relatedId: undefined,
+        company: null,
+        startDateTime: formatDateString(today),
+        endDateTime: formatDateString(today),
+        isAllDay: false,
+        updatedAt: formatDateString(today),
       })
     }
 
@@ -260,7 +220,7 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
 
   const handleSaveSchedule = (schedule: ScheduleItem) => {
     try {
-      const scheduleDate = new Date(schedule.date)
+      const scheduleDate = new Date(schedule.startDateTime)
 
       // Verify the date is valid
       if (isNaN(scheduleDate.getTime())) {
@@ -269,15 +229,18 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
 
       const updatedSchedule = {
         ...schedule,
-        day: scheduleDate.getDate(),
       }
 
       if (isEditing) {
-        setSchedules(schedules.map((s) => (s.id === schedule.id ? updatedSchedule : s)))
+        onScheduleUpdate(
+          schedules.map((s: ScheduleItem) => (s.id === schedule.id ? updatedSchedule : s))
+        );
       } else {
-        // Generate a unique ID for new schedules
-        const newId = Date.now().toString()
-        setSchedules([...schedules, { ...updatedSchedule, id: newId }])
+        const newId = Date.now().toString();
+        onScheduleUpdate([
+          ...schedules,
+          { ...updatedSchedule, id: newId }
+        ]);
       }
     } catch (error) {
       console.error("Error saving schedule:", error)
@@ -286,26 +249,12 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
   }
 
   const getFilteredSchedules = (day: number, month: string) => {
-    if (month !== "current") return []
-
-    // For current month events
-    return schedules.filter((schedule) => {
-      try {
-        const scheduleDate = new Date(schedule.date)
-
-        // Skip invalid dates
-        if (isNaN(scheduleDate.getTime())) return false
-
-        const isMatchingDay = scheduleDate.getDate() === day
-        const isMatchingMonth = scheduleDate.getMonth() === currentMonth
-        const isMatchingYear = scheduleDate.getFullYear() === currentYear
-        const isMatchingDate = isMatchingDay && isMatchingMonth && isMatchingYear
-
-        return isMatchingDate && (activeFilters.length === 0 || activeFilters.includes(schedule.type))
-      } catch (error) {
-        return false
-      }
-    })
+    return schedules.filter((event: ScheduleItem) => {
+      if (month !== "current") return false;
+      if (activeFilters.length > 0 && !activeFilters.includes(event.eventType)) return false;
+      const eventDate = new Date(event.startDateTime);
+      return eventDate.getDate() === day && eventDate.getMonth() === currentMonth && eventDate.getFullYear() === currentYear;
+    });
   }
 
   return (
@@ -374,21 +323,28 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
               onClick={() => day.month === "current" && openAddModal(day.day)}
             >
               <div className={`text-sm mb-2 ${isToday ? "font-bold text-blue-600" : ""}`}>{day.day}</div>
-              {getFilteredSchedules(day.day, day.month).map((event) => {
-                let bgColor = "bg-blue-100 text-blue-800"
-                let borderColor = "border-blue-200"
+              {getFilteredSchedules(day.day, day.month).map((event: ScheduleItem) => {
+                let bgColor = "bg-blue-100 text-blue-800";
+                let borderColor = "border-blue-200";
 
-                if (event.type === "interview") {
-                  bgColor = "bg-blue-100 text-blue-800"
-                  borderColor = "border-blue-200"
-                }
-                if (event.type === "deadline") {
-                  bgColor = "bg-yellow-100 text-yellow-800"
-                  borderColor = "border-yellow-200"
-                }
-                if (event.type === "personal") {
-                  bgColor = "bg-green-100 text-green-800"
-                  borderColor = "border-green-200"
+                // eventType(enum) 기반 색상 매핑
+                switch (event.eventType) {
+                  case ScheduleEventType.APPLICATION_DEADLINE:
+                    bgColor = "bg-blue-100 text-blue-800";
+                    borderColor = "border-blue-200";
+                    break;
+                  case ScheduleEventType.BOOKMARK_DEADLINE:
+                    bgColor = "bg-yellow-100 text-yellow-800";
+                    borderColor = "border-yellow-200";
+                    break;
+                  case ScheduleEventType.COMPANY_EVENT:
+                    bgColor = "bg-purple-100 text-purple-800";
+                    borderColor = "border-purple-200";
+                    break;
+                  case ScheduleEventType.PERSONAL_EVENT:
+                    bgColor = "bg-green-100 text-green-800";
+                    borderColor = "border-green-200";
+                    break;
                 }
 
                 return (
@@ -396,13 +352,13 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
                     key={event.id}
                     className={`${bgColor} text-xs p-1.5 rounded border ${borderColor} mb-1 truncate cursor-pointer hover:opacity-80`}
                     onClick={(e) => {
-                      e.stopPropagation()
-                      openEditModal(event)
+                      e.stopPropagation();
+                      openEditModal(event);
                     }}
                   >
                     {event.title}
                   </div>
-                )
+                );
               })}
             </div>
           )

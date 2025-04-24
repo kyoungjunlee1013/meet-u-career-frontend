@@ -1,10 +1,11 @@
 "use client"
 import { Calendar, CheckSquare, Building, Trash2 } from "lucide-react"
-import type { ScheduleType, ScheduleItem } from "./Calendar"
+import { ScheduleEventType } from "./Calendar"
+import type { ScheduleItem } from "./Calendar"
 
 interface ScheduleSidebarProps {
-  activeFilters: ScheduleType[]
-  onFilterChange: (filters: ScheduleType[]) => void
+  activeFilters: ScheduleEventType[]
+  onFilterChange: (filters: ScheduleEventType[]) => void
   upcomingEvents: ScheduleItem[]
   onDeleteSchedule: (id: string) => void
 }
@@ -15,7 +16,7 @@ export const ScheduleSidebar = ({
   upcomingEvents,
   onDeleteSchedule,
 }: ScheduleSidebarProps) => {
-  const toggleFilter = (type: ScheduleType) => {
+  const toggleFilter = (type: ScheduleEventType) => {
     if (activeFilters.includes(type)) {
       onFilterChange(activeFilters.filter((t) => t !== type))
     } else {
@@ -23,7 +24,7 @@ export const ScheduleSidebar = ({
     }
   }
 
-  const isFilterActive = (type: ScheduleType) => {
+  const isFilterActive = (type: ScheduleEventType) => {
     return activeFilters.length === 0 || activeFilters.includes(type)
   }
 
@@ -36,29 +37,38 @@ export const ScheduleSidebar = ({
         <div className="space-y-2">
           <div
             className={`flex items-center gap-2 p-2 ${
-              isFilterActive("interview") ? "bg-blue-50" : "bg-gray-50"
+              isFilterActive(1) ? "bg-blue-50" : "bg-gray-50"
             } rounded-md text-sm cursor-pointer`}
-            onClick={() => toggleFilter("interview")}
+            onClick={() => toggleFilter(1)}
           >
-            <Calendar className={`h-4 w-4 ${isFilterActive("interview") ? "text-blue-500" : "text-gray-400"}`} />
-            <span>채용 지원 일정</span>
+            <Calendar className={`h-4 w-4 ${isFilterActive(1) ? "text-blue-500" : "text-gray-400"}`} />
+            <span>지원 마감</span>
           </div>
           <div
             className={`flex items-center gap-2 p-2 ${
-              isFilterActive("deadline") ? "bg-yellow-50" : "bg-gray-50"
+              isFilterActive(2) ? "bg-yellow-50" : "bg-gray-50"
             } rounded-md text-sm cursor-pointer`}
-            onClick={() => toggleFilter("deadline")}
+            onClick={() => toggleFilter(2)}
           >
-            <Building className={`h-4 w-4 ${isFilterActive("deadline") ? "text-yellow-500" : "text-gray-400"}`} />
-            <span>관심 공고 마감일</span>
+            <Building className={`h-4 w-4 ${isFilterActive(2) ? "text-yellow-500" : "text-gray-400"}`} />
+            <span>스크랩 마감</span>
           </div>
           <div
             className={`flex items-center gap-2 p-2 ${
-              isFilterActive("personal") ? "bg-green-50" : "bg-gray-50"
+              isFilterActive(3) ? "bg-purple-50" : "bg-gray-50"
             } rounded-md text-sm cursor-pointer`}
-            onClick={() => toggleFilter("personal")}
+            onClick={() => toggleFilter(3)}
           >
-            <CheckSquare className={`h-4 w-4 ${isFilterActive("personal") ? "text-green-500" : "text-gray-400"}`} />
+            <Building className={`h-4 w-4 ${isFilterActive(3) ? "text-purple-500" : "text-gray-400"}`} />
+            <span>기업 행사</span>
+          </div>
+          <div
+            className={`flex items-center gap-2 p-2 ${
+              isFilterActive(4) ? "bg-green-50" : "bg-gray-50"
+            } rounded-md text-sm cursor-pointer`}
+            onClick={() => toggleFilter(4)}
+          >
+            <CheckSquare className={`h-4 w-4 ${isFilterActive(4) ? "text-green-500" : "text-gray-400"}`} />
             <span>개인 일정</span>
           </div>
         </div>
@@ -88,21 +98,36 @@ export const ScheduleSidebar = ({
           ) : (
             <div className="space-y-4">
               {upcomingEvents.slice(0, 4).map((event) => {
-                const eventDate = new Date(event.date)
-                const formattedDate = `${eventDate.getMonth() + 1}/${eventDate.getDate()} (${["일", "월", "화", "수", "목", "금", "토"][eventDate.getDay()]})`
+                const eventDate = new Date(event.startDateTime);
+                const formattedDate = `${eventDate.getMonth() + 1}/${eventDate.getDate()} (${["일", "월", "화", "수", "목", "금", "토"][eventDate.getDay()]})`;
 
-                let eventTypeClass = "bg-blue-50"
-                let eventTypeIcon = <Calendar className="h-4 w-4 text-blue-500 mr-2" />
-                let eventTypeName = "채용 지원 일정"
+                let eventTypeClass = "bg-blue-50";
+                let eventTypeIcon = <Calendar className="h-4 w-4 text-blue-500 mr-2" />;
+                let eventTypeName = "채용 지원 일정";
 
-                if (event.type === "deadline") {
-                  eventTypeClass = "bg-yellow-50"
-                  eventTypeIcon = <Building className="h-4 w-4 text-yellow-500 mr-2" />
-                  eventTypeName = "관심 공고 마감일"
-                } else if (event.type === "personal") {
-                  eventTypeClass = "bg-green-50"
-                  eventTypeIcon = <CheckSquare className="h-4 w-4 text-green-500 mr-2" />
-                  eventTypeName = "개인 일정"
+                switch (event.eventType) {
+                  case 2:
+                  case ScheduleEventType.BOOKMARK_DEADLINE:
+                    eventTypeClass = "bg-yellow-50";
+                    eventTypeIcon = <Building className="h-4 w-4 text-yellow-500 mr-2" />;
+                    eventTypeName = "관심 공고 마감일";
+                    break;
+                  case 3:
+                  case ScheduleEventType.COMPANY_EVENT:
+                    eventTypeClass = "bg-purple-50";
+                    eventTypeIcon = <Building className="h-4 w-4 text-purple-500 mr-2" />;
+                    eventTypeName = "기업 행사";
+                    break;
+                  case 4:
+                  case ScheduleEventType.PERSONAL_EVENT:
+                    eventTypeClass = "bg-green-50";
+                    eventTypeIcon = <CheckSquare className="h-4 w-4 text-green-500 mr-2" />;
+                    eventTypeName = "개인 일정";
+                    break;
+                  default:
+                    eventTypeClass = "bg-blue-50";
+                    eventTypeIcon = <Calendar className="h-4 w-4 text-blue-500 mr-2" />;
+                    eventTypeName = "채용 지원 일정";
                 }
 
                 return (
@@ -120,7 +145,7 @@ export const ScheduleSidebar = ({
                         </div>
                       )}
                       <div className="flex justify-between items-center mt-1">
-                        <div className="text-xs text-gray-500">{event.time || ""}</div>
+
                         <button
                           className="text-gray-400 hover:text-red-500"
                           onClick={(e) => {

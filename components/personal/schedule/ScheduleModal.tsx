@@ -5,55 +5,61 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { X, Calendar, Building, CheckSquare } from "lucide-react"
 
-type ScheduleType = "interview" | "deadline" | "personal"
-
-interface ScheduleItem {
-  id: string
-  title: string
-  date: string
-  type: ScheduleType
-  description?: string
-}
+import { ScheduleEventType, ScheduleItem } from "./Calendar";
 
 interface ScheduleModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (schedule: ScheduleItem) => void
-  schedule?: ScheduleItem
-  isEditing?: boolean
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (schedule: ScheduleItem) => void;
+  schedule?: ScheduleItem;
+  isEditing?: boolean;
 }
 
 export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = false }: ScheduleModalProps) => {
-  const [title, setTitle] = useState("")
-  const [date, setDate] = useState("")
-  const [type, setType] = useState<ScheduleType>("interview")
-  const [description, setDescription] = useState("")
+  const [title, setTitle] = useState("");
+  const [eventType, setEventType] = useState<ScheduleEventType>(ScheduleEventType.PERSONAL_EVENT);
+  const [startDateTime, setStartDateTime] = useState("");
+  const [endDateTime, setEndDateTime] = useState("");
+  const [isAllDay, setIsAllDay] = useState(false);
+  const [description, setDescription] = useState("");
+  const [company, setCompany] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     if (schedule) {
-      setTitle(schedule.title || "")
-      setDate(schedule.date || new Date().toISOString().split("T")[0])
-      setType(schedule.type || "interview")
-      setDescription(schedule.description || "")
+      setTitle(schedule.title || "");
+      setEventType(schedule.eventType);
+      setStartDateTime(schedule.startDateTime || new Date().toISOString().split("T")[0]);
+      setEndDateTime(schedule.endDateTime || new Date().toISOString().split("T")[0]);
+      setIsAllDay(schedule.isAllDay || false);
+      setDescription(schedule.description || "");
+      setCompany(schedule.company || null);
     } else {
-      // Set default values for new schedule
-      setTitle("")
-      setDate(new Date().toISOString().split("T")[0])
-      setType("interview")
-      setDescription("")
+      setTitle("");
+      setEventType(ScheduleEventType.PERSONAL_EVENT);
+      const today = new Date().toISOString().split("T")[0];
+      setStartDateTime(today);
+      setEndDateTime(today);
+      setIsAllDay(false);
+      setDescription("");
+      setCompany(null);
     }
-  }, [schedule, isOpen])
+  }, [schedule, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     onSave({
       id: schedule?.id || Date.now().toString(),
+      eventType,
       title,
-      date,
-      type,
       description,
-    })
-    onClose()
+      relatedId: schedule?.relatedId,
+      company,
+      startDateTime,
+      endDateTime,
+      isAllDay,
+      updatedAt: new Date().toISOString(),
+    });
+    onClose();
   }
 
   if (!isOpen) return null
@@ -76,14 +82,14 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
                 <input
                   type="radio"
                   name="scheduleType"
-                  value="interview"
-                  checked={type === "interview"}
-                  onChange={() => setType("interview")}
+                  value={ScheduleEventType.APPLICATION_DEADLINE}
+                  checked={eventType === ScheduleEventType.APPLICATION_DEADLINE}
+                  onChange={() => setEventType(ScheduleEventType.APPLICATION_DEADLINE)}
                   className="sr-only"
                 />
                 <div
                   className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    type === "interview" ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500"
+                    eventType === ScheduleEventType.APPLICATION_DEADLINE ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-500"
                   }`}
                 >
                   <Calendar className="h-4 w-4" />
@@ -95,14 +101,14 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
                 <input
                   type="radio"
                   name="scheduleType"
-                  value="deadline"
-                  checked={type === "deadline"}
-                  onChange={() => setType("deadline")}
+                  value={ScheduleEventType.BOOKMARK_DEADLINE}
+                  checked={eventType === ScheduleEventType.BOOKMARK_DEADLINE}
+                  onChange={() => setEventType(ScheduleEventType.BOOKMARK_DEADLINE)}
                   className="sr-only"
                 />
                 <div
                   className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    type === "deadline" ? "bg-yellow-500 text-white" : "bg-gray-100 text-gray-500"
+                    eventType === ScheduleEventType.BOOKMARK_DEADLINE ? "bg-yellow-500 text-white" : "bg-gray-100 text-gray-500"
                   }`}
                 >
                   <Building className="h-4 w-4" />
@@ -114,14 +120,14 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
                 <input
                   type="radio"
                   name="scheduleType"
-                  value="personal"
-                  checked={type === "personal"}
-                  onChange={() => setType("personal")}
+                  value={ScheduleEventType.PERSONAL_EVENT}
+                  checked={eventType === ScheduleEventType.PERSONAL_EVENT}
+                  onChange={() => setEventType(ScheduleEventType.PERSONAL_EVENT)}
                   className="sr-only"
                 />
                 <div
                   className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                    type === "personal" ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500"
+                    eventType === ScheduleEventType.PERSONAL_EVENT ? "bg-green-500 text-white" : "bg-gray-100 text-gray-500"
                   }`}
                 >
                   <CheckSquare className="h-4 w-4" />
@@ -147,17 +153,41 @@ export const ScheduleModal = ({ isOpen, onClose, onSave, schedule, isEditing = f
           </div>
 
           <div className="mb-5">
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-              날짜
+            <label htmlFor="startDateTime" className="block text-sm font-medium text-gray-700 mb-2">
+              시작 날짜 및 시간
             </label>
             <input
-              type="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              type="datetime-local"
+              id="startDateTime"
+              value={startDateTime}
+              onChange={(e) => setStartDateTime(e.target.value)}
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
               required
             />
+          </div>
+
+          <div className="mb-5">
+            <label htmlFor="endDateTime" className="block text-sm font-medium text-gray-700 mb-2">
+              종료 날짜 및 시간
+            </label>
+            <input
+              type="datetime-local"
+              id="endDateTime"
+              value={endDateTime}
+              onChange={(e) => setEndDateTime(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <div className="mb-5 flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="isAllDay"
+              checked={isAllDay}
+              onChange={(e) => setIsAllDay(e.target.checked)}
+            />
+            <label htmlFor="isAllDay" className="text-sm">종일 일정</label>
           </div>
 
           <div className="mb-6">
