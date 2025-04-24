@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { AdBadge } from "@/components/business/common/AdBadge"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -90,33 +91,15 @@ export const JobCard = ({ job }: JobCardProps) => {
             <ChevronDown className="h-5 w-5 text-gray-400" />
           </div>
 
-          {/* 광고 배지 (조건부 표시, 명세 개선) */}
+          {/* 광고 배지 부분을 AdBadge 컴포넌트로 교체 */}
           <div className="flex items-center text-sm mb-2 gap-2">
             <span className={`mr-2 font-medium ${getStatusColor(job.statusLabel as string)}`}>{job.statusLabel}</span>
             {job.daysLeft && (
               <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-medium">{job.daysLeft}</span>
             )}
-            {/* 광고 정보가 모두 있을 때만 배지 노출 */}
-            {job.isAdvertised && job.adType && job.adStartDate && job.adEndDate && (
-              <span
-                className={
-                  `inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold border ` +
-                  (job.adType === 1
-                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                    : job.adType === 2
-                    ? 'bg-green-50 text-green-700 border-green-200'
-                    : job.adType === 3
-                    ? 'bg-red-50 text-red-700 border-red-200'
-                    : 'bg-blue-50 text-blue-700 border-blue-200')
-                }
-              >
-                {/* 광고 타입 영문 표기 */}
-                {job.adType === 1 && 'BASIC'}
-                {job.adType === 2 && 'STANDARD'}
-                {job.adType === 3 && 'PREMIUM'}
-                {" | "}
-                {job.adStartDate.slice(0, 10)} ~ {job.adEndDate.slice(0, 10)}
-              </span>
+            {/* 광고 배지: 공고 관리/결제 내역에서 동일하게 사용 */}
+            {job.adType && job.adStartDate && job.adEndDate && (
+              <AdBadge adType={job.adType} period={job.adEndDate && job.adStartDate ? Math.ceil((new Date(job.adEndDate).getTime() - new Date(job.adStartDate).getTime()) / (1000*60*60*24)) : 0} />
             )}
           </div>
 

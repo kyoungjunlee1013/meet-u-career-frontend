@@ -1,6 +1,8 @@
 import React from "react";
 import { ReceiptText, ExternalLink } from "lucide-react";
 
+import { AdBadge } from "@/components/business/common/AdBadge";
+
 export interface PaymentCardData {
   id: number;
   transactionId: string;
@@ -13,6 +15,9 @@ export interface PaymentCardData {
   status: number; // 0: 실패, 1: 성공
   method: number; // API: number
   advertisementLink?: string;
+  adType: 1 | 2 | 3;
+  adStartDate?: string;
+  adEndDate?: string;
 }
 
 interface PaymentsCardProps {
@@ -62,12 +67,8 @@ export const PaymentsCard: React.FC<PaymentsCardProps> = ({ payment, onReceiptCl
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-semibold text-lg truncate">{payment.advertisementTitle}</span>
-          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-            {payment.advertisementPeriod}일
-          </span>
-          <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[payment.advertisementStatus] || "bg-gray-100 text-gray-800"}`}>
-            {advertisementStatusMap[payment.advertisementStatus] ?? payment.advertisementStatus}
-          </span>
+          {/* 광고 배지: JobCard와 동일한 UI로 재사용 */}
+          <AdBadge adType={payment.adType} period={payment.advertisementPeriod} />
           {payment.advertisementLink && (
             <a href={payment.advertisementLink} target="_blank" rel="noopener noreferrer" className="ml-2 text-blue-500 hover:underline flex items-center gap-1">
               <ExternalLink className="w-4 h-4" /> 상세
