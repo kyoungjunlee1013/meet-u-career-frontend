@@ -59,7 +59,7 @@ export const JobsFilter = ({ onApply }: JobsFilterProps) => {
   }, [openDropdown])
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/locations")
+    fetch("/api/locations")
       .then((res) => res.json())
       .then((data) => setAllLocations(data))
   }, [])
@@ -76,15 +76,13 @@ export const JobsFilter = ({ onApply }: JobsFilterProps) => {
       locationCode: locations.map(l => l.id).join(","),
       keyword: keyword || undefined,
     }
-    console.log("선택된 지역:", filters);
+    console.log("선택된 값:", filters);
     onApply(filters)
   }
 
-  const jobOptions: FilterItem[] = [
-    { id: "backend", label: "백엔드" },
-    { id: "frontend", label: "프론트엔드" },
-    { id: "devops", label: "DevOps" },
-  ]
+  useEffect(() => {
+    applyFilters()
+  }, [selectedJobs, locations, education, experience, career, keyword])
 
   const educationOptions: FilterItem[] = [
     { id: "0", label: "학력무관" },
@@ -105,6 +103,19 @@ export const JobsFilter = ({ onApply }: JobsFilterProps) => {
     { id: "10", label: "10년 이상" },
   ]
 
+  const industryGroups: Record<string, string[]> = {
+    "서비스업": ["호텔·여행·항공", "외식업·식음료", "시설관리·경비·용역", "레저·스포츠·여가", "AS·카센터·주유", "렌탈·임대", "웨딩·장례·이벤트", "기타서비스업", "뷰티·미용"],
+    "제조·화학": ["전기·전자·제어", "기계·설비·자동차", "석유·화학·에너지", "섬유·의류·패션", "화장품·뷰티", "생활용품·소비재·사무", "가구·목재·제지", "농업·어업·광업·임업", "금속·재료·철강·요업", "조선·항공·우주", "기타제조업", "식품가공·개발", "반도체·광학·LCD", "환경"],
+    "IT·웹·통신": ["솔루션·SI·ERP·CRM", "웹에이젼시", "쇼핑몰·오픈마켓", "포털·인터넷·컨텐츠", "네트워크·통신·모바일", "하드웨어·장비", "정보보안·백신", "IT컨설팅", "게임"],
+    "은행·금융업": ["은행·금융·저축", "대출·캐피탈·여신", "기타금융", "증권·보험·카드"],
+    "미디어·디자인": ["신문·잡지·언론사", "방송사·케이블", "연예·엔터테인먼트", "광고·홍보·전시", "영화·배급·음악", "공연·예술·문화", "출판·인쇄·사진", "캐릭터·애니메이션", "디자인·설계"],
+    "교육업": ["초중고·대학", "학원·어학원", "유아·유치원", "교재·학습지", "전문·기능학원"],
+    "의료·제약·복지": ["의료(진료과목별)", "의료(병원종류별)", "제약·보건·바이오", "사회복지"],
+    "판매·유통": ["판매(매장종류별)", "판매(상품품목별)", "유통·무역·상사", "운송·운수·물류"],
+    "건설업": ["건설·건축·토목·시공", "실내·인테리어·조경", "환경·설비", "부동산·임대·중개"],
+    "기관·협회": ["정부·공공기관·공기업", "협회·단체", "법률·법무·특허", "세무·회계", "연구소·컨설팅·조사"]
+  }
+
   const resetAllFilters = () => {
     setSelectedJobs([])
     setLocations([])
@@ -116,46 +127,99 @@ export const JobsFilter = ({ onApply }: JobsFilterProps) => {
   return (
     <div className="border rounded-md p-4 mb-8">
       <div className="flex flex-wrap gap-4 mb-4">
-        {/* 직무 */}
+        {/* 산업 필터 */}
         <div className="relative" ref={dropdownRefs.job}>
           <button
             onClick={() => setOpenDropdown(openDropdown === "job" ? null : "job")}
-            className={`flex items-center justify-between w-32 px-3 py-1.5 border rounded-md bg-white ${openDropdown === "job" ? "border-blue-500" : ""}`}
+            className={`flex items-center justify-between w-32 px-3 py-1.5 border rounded-md bg-white ${
+              openDropdown === "job" ? "border-blue-500" : ""
+            }`}
           >
             직무 <ChevronDown className="w-4 h-4 ml-1" />
           </button>
+
           {openDropdown === "job" && (
-            <div className="absolute top-full mt-1 w-80 bg-white border rounded-md shadow-lg z-10">
-              <div className="p-4 max-h-60 overflow-y-auto">
-                {jobOptions.map((item) => (
-                  <label key={item.id} className="flex items-center py-1.5 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="mr-2"
-                      checked={selectedJobs.some((j) => j.id === item.id)}
-                      onChange={() =>
-                        setSelectedJobs((prev) =>
-                          prev.some((j) => j.id === item.id)
-                            ? prev.filter((j) => j.id !== item.id)
-                            : [...prev, item]
-                        )
-                      }
-                    />
-                    {item.label}
-                  </label>
-                ))}
+  <div className="absolute top-full mt-1 w-[380px] bg-white border rounded-md shadow-lg z-10 flex flex-col">
+    {/* 상위 ↔ 하위 묶음 */}
+    <div className="flex max-h-60 overflow-y-auto">
+      {/* ─ 상위 산업 리스트 */}
+      <div className="w-1/2 border-r p-4 overflow-y-auto">
+        {Object.keys(industryGroups).map((group) => {
+          const children = industryGroups[group]
+          const allSel = children.every(ind => selectedJobs.some(j => j.label === ind))
+          return (
+            <div key={group} className="mb-2">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sm font-medium">{group}</span>
+                <button
+                  className="text-xs text-blue-600 hover:underline"
+                  onClick={() => {
+                    const items = children.map(ind => ({ id: ind, label: ind }))
+                    setSelectedJobs(prev =>
+                      allSel
+                        ? prev.filter(j => !children.includes(j.label))
+                        : [...prev, ...items.filter(i => !prev.some(j => j.label === i.label))]
+                    )
+                  }}
+                >
+                  {allSel ? "해제" : "전체"}
+                </button>
               </div>
+              <button
+                className="text-xs text-gray-500 hover:underline"
+                onClick={() => setExpandedProvince(expandedProvince === group ? null : group)}
+              >
+                {group} 보기
+              </button>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ─ 하위 산업 리스트 */}
+      <div className="w-2/1 p-4 overflow-y-auto">
+        {expandedProvince
+          ? industryGroups[expandedProvince].map(ind => (
+              <label key={ind} className="flex items-center py-1 cursor-pointer text-sm">
+                <input
+                  type="checkbox"
+                  className="mr-2"
+                  checked={selectedJobs.some(j => j.label === ind)}
+                  onChange={() => {
+                    setSelectedJobs(prev =>
+                      prev.some(j => j.label === ind)
+                        ? prev.filter(j => j.label !== ind)
+                        : [...prev, { id: ind, label: ind }]
+                    )
+                  }}
+                />
+                {ind}
+              </label>
+            ))
+          : <div className="text-sm text-gray-500">상위 산업을 선택하세요</div>
+        }
+      </div>
+    </div>
+
+              {/* 초기화 / 적용 버튼 */}
               <div className="border-t px-4 py-2 flex justify-between">
-                <button className="text-sm text-gray-500" onClick={() => setSelectedJobs([])}>
+                <button
+                  className="text-sm text-gray-500"
+                  onClick={() => { setSelectedJobs([]); applyFilters() }}
+                >
                   초기화
                 </button>
-                <button className="px-4 py-1 bg-blue-500 text-white rounded-md text-sm" onClick={() => setOpenDropdown(null)}>
+                <button
+                  className="px-4 py-1 bg-blue-500 text-white rounded-md text-sm"
+                  onClick={() => { applyFilters(); setOpenDropdown(null) }}
+                >
                   적용
                 </button>
               </div>
             </div>
           )}
         </div>
+
 
         {/* 경력 */}
         <div className="relative" ref={dropdownRefs.career}>
@@ -220,86 +284,82 @@ export const JobsFilter = ({ onApply }: JobsFilterProps) => {
           </button>
 
           {openDropdown === "location" && (
-            <div className="absolute top-full mt-1 w-80 bg-white border rounded-md shadow-lg z-10">
-              <div className="p-4 max-h-60 overflow-y-auto">
-                {provinces.map((province) => {
-                  const isExpanded = expandedProvince === province.label
-                  const relatedCities = allLocations
-                    .filter((l) => l.province === province.label && l.city)
-                    .map((l) => ({ id: l.locationCode, label: l.fullLocation }))
+            <div className="absolute top-full mt-1 w-[400px] bg-white border rounded-md shadow-lg z-10 flex flex-col">
+              <div className="flex max-h-60 overflow-y-auto">
+                {/* 좌측: 시/도 리스트 */}
+                <div className="w-[50%] border-r p-4 overflow-y-auto">
+                  {provinces.map((province) => {
+                    const isExpanded = expandedProvince === province.label
+                    const relatedCities = allLocations
+                      .filter((l) => l.province === province.label && l.city)
+                      .map((l) => ({ id: l.locationCode, label: l.fullLocation }))
 
-                  const provinceItem = allLocations.find(
-                    (l) => l.province === province.label && l.city === null
-                  )
-                  const provinceId = provinceItem?.locationCode
+                    const provinceItem = allLocations.find(
+                      (l) => l.province === province.label && l.city === null
+                    )
+                    const provinceId = provinceItem?.locationCode
 
-                  return (
-                    <div key={province.id} className="mb-1">
-                      <div className="flex items-center justify-between w-full">
-                        <button
-                          type="button"
-                          className="text-sm font-medium py-1.5 text-left"
-                          onClick={() => {
-                            const isNowExpanded = expandedProvince === province.label
-                            setExpandedProvince(isNowExpanded ? null : province.label)
-
-                            // province 클릭 시 전체 지역 선택
-                            if (
-                              provinceItem &&
-                              !locations.some((l) => l.id === provinceItem.locationCode)
-                            ) {
-                              setLocations((prev) => [
-                                ...prev,
-                                {
-                                  id: provinceItem.locationCode,
-                                  label: provinceItem.fullLocation,
-                                },
-                              ])
-                            }
-                          }}
-                        >
-                          {province.label}
-                        </button>
-                        {provinceId && (
-                          <input
-                            type="checkbox"
-                            className="ml-2"
-                            checked={locations.some((l) => l.id === provinceId)}
-                            onChange={() =>
-                              setLocations((prev) =>
-                                prev.some((l) => l.id === provinceId)
-                                  ? prev.filter((l) => l.id !== provinceId)
-                                  : [...prev, { id: provinceId, label: province.label }]
-                              )
-                            }
-                          />
-                        )}
-                      </div>
-
-                      {isExpanded &&
-                        relatedCities.map((item) => (
-                          <label key={item.id} className="flex items-center ml-3 py-1 cursor-pointer">
+                    return (
+                      <div key={province.id} className="mb-2">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">{province.label}</span>
+                          {provinceId && (
                             <input
                               type="checkbox"
-                              className="mr-2"
-                              checked={locations.some((l) => l.id === item.id)}
+                              className="ml-2"
+                              checked={locations.some((l) => l.id === provinceId)}
                               onChange={() =>
                                 setLocations((prev) =>
-                                  prev.some((l) => l.id === item.id)
-                                    ? prev.filter((l) => l.id !== item.id)
-                                    : [...prev, item]
+                                  prev.some((l) => l.id === provinceId)
+                                    ? prev.filter((l) => l.id !== provinceId)
+                                    : [...prev, { id: provinceId, label: province.label }]
                                 )
                               }
                             />
-                            <span className="text-sm">{item.label}</span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="text-xs text-gray-500 hover:underline"
+                          onClick={() =>
+                            setExpandedProvince(isExpanded ? null : province.label)
+                          }
+                        >
+                          {province.label} 보기
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* 우측: 시/군/구 리스트 */}
+                <div className="w-[60%] p-4 overflow-y-auto text-sm">
+                  {expandedProvince
+                    ? allLocations
+                        .filter((l) => l.province === expandedProvince && l.city)
+                        .map((city) => (
+                          <label key={city.locationCode} className="flex items-center py-1 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="mr-2"
+                              checked={locations.some((l) => l.id === city.locationCode)}
+                              onChange={() =>
+                                setLocations((prev) =>
+                                  prev.some((l) => l.id === city.locationCode)
+                                    ? prev.filter((l) => l.id !== city.locationCode)
+                                    : [...prev, { id: city.locationCode, label: city.fullLocation }]
+                                )
+                              }
+                            />
+                            {city.fullLocation}
                           </label>
-                        ))}
-                    </div>
-                  )
-                })}
+                        ))
+                    : <div className="text-sm text-gray-500">시·도를 선택하세요</div>
+                  }
+                </div>
               </div>
 
-              {/* 초기화 / 적용 버튼 */}
+              {/* 초기화/적용 버튼 */}
               <div className="border-t px-4 py-2 flex justify-between">
                 <button
                   className="text-sm text-gray-500"
@@ -313,7 +373,7 @@ export const JobsFilter = ({ onApply }: JobsFilterProps) => {
                 <button
                   className="px-4 py-1 bg-blue-500 text-white rounded-md text-sm"
                   onClick={() => {
-                    applyFilters()          
+                    applyFilters()
                     setOpenDropdown(null)
                   }}
                 >
@@ -322,7 +382,10 @@ export const JobsFilter = ({ onApply }: JobsFilterProps) => {
               </div>
             </div>
           )}
+
         </div>
+
+
         {/* 학력 */}
         <div className="relative" ref={dropdownRefs.education}>
           <button
@@ -452,3 +515,6 @@ export const JobsFilter = ({ onApply }: JobsFilterProps) => {
     </div>
   )
 }
+
+
+

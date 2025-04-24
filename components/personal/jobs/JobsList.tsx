@@ -69,7 +69,7 @@ export const JobsList = () => {
           <button
             className={sort==="recommended"?"underline":""}
             onClick={()=>setSort("recommended")}
-          >추천채용순</button>
+          >마감일순</button>
         </div>
       </div>
 
