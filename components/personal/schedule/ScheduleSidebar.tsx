@@ -35,6 +35,7 @@ export const ScheduleSidebar = ({
         <h2 className="text-lg font-medium mb-4">일정 유형 필터링</h2>
         <p className="text-xs text-gray-500 mb-4">보고 싶은 일정 유형을 선택하세요</p>
 
+        {/* 개인회원은 별도의 설명 없이 필터 버튼만 노출 */}
         <div className="space-y-2">
           <div
             className={`flex items-center gap-2 p-2 ${
@@ -61,7 +62,7 @@ export const ScheduleSidebar = ({
             onClick={() => toggleFilter(3)}
           >
             <Building className={`h-4 w-4 ${isFilterActive(3) ? "text-purple-500" : "text-gray-400"}`} />
-            <span>기업 행사</span>
+            <span>관심기업 공고 일정</span>
           </div>
           <div
             className={`flex items-center gap-2 p-2 ${
@@ -82,6 +83,10 @@ export const ScheduleSidebar = ({
           <div className="flex items-start">
             <span className="w-3 h-3 rounded-full bg-yellow-500 mt-1 mr-2 flex-shrink-0"></span>
             <p>관심 공고 마감일: 북마크한 채용 공고의 지원 마감일</p>
+          </div>
+          <div className="flex items-start">
+            <span className="w-3 h-3 rounded-full bg-purple-500 mt-1 mr-2 flex-shrink-0"></span>
+            <p>관심기업 공고 일정: 북마크한 기업의 주요 일정</p>
           </div>
           <div className="flex items-start">
             <span className="w-3 h-3 rounded-full bg-green-500 mt-1 mr-2 flex-shrink-0"></span>
@@ -105,7 +110,11 @@ export const ScheduleSidebar = ({
             const EVENTS_PER_PAGE = 5;
             const [page, setPage] = useState(0);
             const totalPages = Math.ceil(futureEvents.length / EVENTS_PER_PAGE);
-            const pagedEvents = futureEvents.slice(page * EVENTS_PER_PAGE, (page + 1) * EVENTS_PER_PAGE);
+            // activeFilters로 필터링 적용
+            const filteredEvents = futureEvents.filter(event =>
+              activeFilters.length === 0 || activeFilters.includes(event.eventType)
+            );
+            const pagedEvents = filteredEvents.slice(page * EVENTS_PER_PAGE, (page + 1) * EVENTS_PER_PAGE);
             return pagedEvents.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-4">표시할 일정이 없습니다</p>
             ) : (

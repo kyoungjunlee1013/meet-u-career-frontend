@@ -38,9 +38,10 @@ interface CalendarProps {
   setCurrentMonth: React.Dispatch<React.SetStateAction<number>>;
   currentYear: number;
   setCurrentYear: React.Dispatch<React.SetStateAction<number>>;
+  readOnly?: boolean;
 }
 
-export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSchedule, onDelete, currentMonth, setCurrentMonth, currentYear, setCurrentYear }: CalendarProps) => {
+export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSchedule, onDelete, currentMonth, setCurrentMonth, currentYear, setCurrentYear, readOnly = false }: CalendarProps) => {
   const [view, setView] = useState<"month" | "week" | "day">("month")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedSchedule, setSelectedSchedule] = useState<ScheduleItem | undefined>(undefined)
@@ -255,20 +256,20 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSche
     return schedules.filter((event: ScheduleItem) => {
       if (month !== "current") return false;
       if (activeFilters.length > 0 && !activeFilters.includes(event.eventType)) return false;
-      // 날짜를 로컬 Date 객체로 비교 (타임존 문제 방지)
-      const eventDate = new Date(event.startDateTime);
-      const cellDate = new Date(currentYear, currentMonth, day);
-      return (
-        eventDate.getFullYear() === cellDate.getFullYear() &&
-        eventDate.getMonth() === cellDate.getMonth() &&
-        eventDate.getDate() === cellDate.getDate()
-      );
+      // 기간 일정 연속 표시: 셀 날짜가 일정의 시작~종료 사이에 포함되는지 (날짜만 비교)
+      const cellDate = new Date(currentYear, currentMonth, day, 0, 0, 0, 0);
+      const start = new Date(event.startDateTime);
+      const end = new Date(event.endDateTime);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      // 셀 날짜가 기간 내에 포함되면 표시
+      return start <= cellDate && cellDate <= end;
     });
   }
 
   return (
     <div className="bg-white border rounded-md p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-2 mb-6">
         <div className="flex gap-2">
           <button
             className={`px-3 py-1 text-sm rounded-md ${view === "month" ? "bg-gray-200" : "hover:bg-gray-100"}`}
@@ -289,7 +290,7 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSche
             다음
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-center">
           <button className="p-1 rounded-md hover:bg-gray-100" onClick={goToPreviousMonth}>
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -299,14 +300,16 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSche
           <button className="p-1 rounded-md hover:bg-gray-100" onClick={goToNextMonth}>
             <ChevronRight className="h-5 w-5" />
           </button>
+          {!readOnly && (
+            <button
+              className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700"
+              onClick={() => openAddModal()}
+            >
+              <Plus className="h-4 w-4" />
+              <span className="text-sm">일정 추가</span>
+            </button>
+          )}
         </div>
-        <button
-          className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700"
-          onClick={() => openAddModal()}
-        >
-          <Plus className="h-4 w-4" />
-          <span className="text-sm">일정 추가</span>
-        </button>
       </div>
 
       <div className="grid grid-cols-7 gap-0 border-t border-l">
@@ -329,7 +332,7 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSche
               className={`min-h-[100px] p-2 border-r border-b relative 
               ${day.month !== "current" ? "bg-gray-100" : ""} 
               ${isToday ? "bg-blue-50" : ""}`}
-              onClick={() => day.month === "current" && openAddModal(day.day)}
+              onClick={() => !readOnly && day.month === "current" && openAddModal(day.day)}
             >
               <div className={`text-sm mb-2 ${isToday ? "font-bold text-blue-600" : ""}`}>{day.day}</div>
               {getFilteredSchedules(day.day, day.month).map((event: ScheduleItem) => {
@@ -359,8 +362,9 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSche
                 return (
                   <div
                     key={event.id}
-                    className={`${bgColor} text-xs p-1.5 rounded border ${borderColor} mb-1 truncate cursor-pointer hover:opacity-80`}
+                    className={`${bgColor} text-xs p-1.5 rounded border ${borderColor} mb-1 truncate ${!readOnly ? 'cursor-pointer hover:opacity-80' : 'cursor-default opacity-60'}`}
                     onClick={(e) => {
+                      if (readOnly) return;
                       e.stopPropagation();
                       openEditModal(event);
                     }}

@@ -1,4 +1,4 @@
-import { Building, CheckSquare } from "lucide-react";
+import { Building, CheckSquare, Calendar as CalendarIcon } from "lucide-react";
 import { ScheduleEventType } from "@/components/personal/schedule/Calendar";
 import type { ScheduleItem } from "@/components/personal/schedule/Calendar";
 
@@ -32,6 +32,8 @@ export const BusinessScheduleSidebar = ({
       <div className="bg-white border rounded-md p-4 mb-6">
         <h2 className="text-lg font-medium mb-4">일정 유형 필터링</h2>
         <p className="text-xs text-gray-500 mb-4">보고 싶은 일정 유형을 선택하세요</p>
+
+
 
         <div className="space-y-2">
           <div
@@ -104,16 +106,30 @@ function UpcomingEventsList({ upcomingEvents }: { upcomingEvents: ScheduleItem[]
           let eventTypeName = "기업 행사";
 
           switch (event.eventType) {
+            case 1:
+              eventTypeClass = "bg-blue-50";
+              eventTypeIcon = <CalendarIcon className="h-4 w-4 text-blue-500 mr-2" />;
+              eventTypeName = "지원 마감";
+              break;
+            case 2:
+              eventTypeClass = "bg-yellow-50";
+              eventTypeIcon = <Building className="h-4 w-4 text-yellow-500 mr-2" />;
+              eventTypeName = "스크랩 마감";
+              break;
+            case 3:
+              eventTypeClass = "bg-purple-50";
+              eventTypeIcon = <Building className="h-4 w-4 text-purple-500 mr-2" />;
+              eventTypeName = "기업 행사";
+              break;
             case 4:
               eventTypeClass = "bg-green-50";
               eventTypeIcon = <CheckSquare className="h-4 w-4 text-green-500 mr-2" />;
               eventTypeName = "개인 일정";
               break;
-            case 3:
             default:
-              eventTypeClass = "bg-purple-50";
-              eventTypeIcon = <Building className="h-4 w-4 text-purple-500 mr-2" />;
-              eventTypeName = "기업 행사";
+              eventTypeClass = "bg-gray-50";
+              eventTypeIcon = <CalendarIcon className="h-4 w-4 text-gray-400 mr-2" />;
+              eventTypeName = "기타";
               break;
           }
 

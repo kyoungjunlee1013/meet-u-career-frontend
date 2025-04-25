@@ -19,6 +19,7 @@ export default function SchedulePage() {
       <MainNavigation />
       <main className="flex-1 bg-gray-50">
         <UnifiedScheduleContent
+          userType="personal"
           apiEndpoint="/api/personal/calendar/list"
           createSchedule={createPersonalSchedule}
           updateSchedule={updatePersonalSchedule}
