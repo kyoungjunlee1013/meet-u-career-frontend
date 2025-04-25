@@ -1,67 +1,55 @@
-"use client"
+"use client";
 
-import { Info } from "lucide-react"
-import { useFormContext } from "react-hook-form"
+import { Info } from "lucide-react";
+import { useFormContext } from "react-hook-form";
 
 export function StepTwo() {
   const {
     register,
+    watch,
     formState: { errors },
-  } = useFormContext()
+  } = useFormContext();
+
+  const selectedImpression = watch("overallImpression");
 
   return (
-    <div>
-      <div className="bg-blue-50 p-4 rounded-md mb-6">
-        <div className="flex items-start">
-          <Info className="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
-          <p className="text-sm text-blue-800">면접 정보 입력</p>
-        </div>
-        <p className="text-sm text-blue-800 ml-7">면접에 대한 정보를 입력해주세요.</p>
-      </div>
+    <div className="flex flex-col h-full w-full max-w-3xl sm:max-w-4xl overflow-visible px-4 sm:px-6 md:px-8 py-5 items-center">
 
-      <div className="space-y-6">
+      <div className="w-full space-y-4">
+        {/* 전반적인 평가 */}
         <div>
-          <label className="block mb-4 text-sm font-medium">
+          <label className="block mb-4 text-sl font-medium">
             전반적인 평가 <span className="text-red-500">*</span>
           </label>
           <div className="flex justify-between items-center max-w-md">
+            {/* 긍정적 */}
             <label className="flex flex-col items-center cursor-pointer group">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-2 group-hover:bg-green-200 transition-colors">
-                <svg
-                  className="w-10 h-10 text-green-500"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+              <div className={`
+                w-16 h-16 rounded-full flex items-center justify-center mb-2
+                ${selectedImpression === "positive" ? "bg-green-300" : "bg-green-100"}
+                group-hover:bg-green-200
+                transition-colors
+              `}>
+                <svg className="w-10 h-10 text-green-500" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                  <path
-                    d="M8 13C8.5 14.5 10 16 12 16C14 16 15.5 14.5 16 13"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
+                  <path d="M8 13C8.5 14.5 10 16 12 16C14 16 15.5 14.5 16 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   <circle cx="8.5" cy="9.5" r="1.5" fill="currentColor" />
                   <circle cx="15.5" cy="9.5" r="1.5" fill="currentColor" />
                 </svg>
               </div>
-              <input
-                type="radio"
-                value="positive"
-                className="sr-only"
-                {...register("overallImpression")}
-                defaultChecked
-              />
+              <input type="radio" value="positive" className="sr-only" {...register("overallImpression")} defaultChecked />
               <span className="text-sm">긍정적</span>
             </label>
 
+            {/* 보통 */}
             <label className="flex flex-col items-center cursor-pointer group">
-              <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mb-2 group-hover:bg-yellow-200 transition-colors">
-                <svg
-                  className="w-10 h-10 text-yellow-500"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+              <div className={`
+                w-16 h-16 rounded-full flex items-center justify-center mb-2
+                ${selectedImpression === "neutral" ? "bg-yellow-300" : "bg-yellow-100"}
+                group-hover:bg-yellow-200
+                transition-colors
+              `}>
+                <svg className="w-10 h-10 text-yellow-500" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
                   <path d="M8 14H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   <circle cx="8.5" cy="9.5" r="1.5" fill="currentColor" />
@@ -72,23 +60,19 @@ export function StepTwo() {
               <span className="text-sm">보통</span>
             </label>
 
+            {/* 부정적 */}
             <label className="flex flex-col items-center cursor-pointer group">
-              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-2 group-hover:bg-red-200 transition-colors">
-                <svg
-                  className="w-10 h-10 text-red-500"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
+              <div className={`
+                w-16 h-16 rounded-full flex items-center justify-center mb-2
+                ${selectedImpression === "negative" ? "bg-red-300" : "bg-red-100"}
+                group-hover:bg-red-200
+                transition-colors
+              `}>
+                <svg className="w-10 h-10 text-red-500" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                  <path
-                    d="M16 11C15.5 9.5 14 8 12 8C10 8 8.5 9.5 8 11"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="8.5" cy="14.5" r="1.5" fill="currentColor" />
-                  <circle cx="15.5" cy="14.5" r="1.5" fill="currentColor" />
+                  <path d="M8 15C8.5 13.5 10 12 12 12C14 12 15.5 13.5 16 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  <circle cx="8.5" cy="9.5" r="1.5" fill="currentColor" />
+                  <circle cx="15.5" cy="9.5" r="1.5" fill="currentColor" />
                 </svg>
               </div>
               <input type="radio" value="negative" className="sr-only" {...register("overallImpression")} />
@@ -97,8 +81,11 @@ export function StepTwo() {
           </div>
         </div>
 
+        <div className="border-b border-gray-200 pb-4 mb-4"></div>
+
+        {/* 난이도 선택 */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
+          <label className="block mb-2 text-sl font-medium">
             난이도 <span className="text-red-500">*</span>
           </label>
           <div className="flex space-x-6">
@@ -107,13 +94,7 @@ export function StepTwo() {
               <span className="ml-2">쉬움</span>
             </label>
             <label className="inline-flex items-center">
-              <input
-                type="radio"
-                value="moderate"
-                className="w-4 h-4 text-blue-600"
-                {...register("difficulty")}
-                defaultChecked
-              />
+              <input type="radio" value="moderate" className="w-4 h-4 text-blue-600" {...register("difficulty")} defaultChecked />
               <span className="ml-2">보통</span>
             </label>
             <label className="inline-flex items-center">
@@ -123,113 +104,59 @@ export function StepTwo() {
           </div>
         </div>
 
+        <div className="border-b border-gray-200 pb-4 mb-4"></div>
+
+        {/* 면접 및 전형 유형 (복수선택) */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
+          <label className="block mb-2 text-sl font-medium">
             면접 및 전형유형(복수 선택 가능) <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2">
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                value="직무/인성면접"
-                className="w-4 h-4 text-blue-600 rounded"
-                {...register("interviewFormats")}
-              />
-              <span className="ml-2">직무/인성면접</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                value="PT면접"
-                className="w-4 h-4 text-blue-600 rounded"
-                {...register("interviewFormats")}
-              />
-              <span className="ml-2">PT면접</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                value="토론면접"
-                className="w-4 h-4 text-blue-600 rounded"
-                {...register("interviewFormats")}
-              />
-              <span className="ml-2">토론면접</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                value="인적성 검사"
-                className="w-4 h-4 text-blue-600 rounded"
-                {...register("interviewFormats")}
-              />
-              <span className="ml-2">인적성 검사</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                value="실무 과제 및 시험"
-                className="w-4 h-4 text-blue-600 rounded"
-                {...register("interviewFormats")}
-              />
-              <span className="ml-2">실무 과제 및 시험</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                value="기타"
-                className="w-4 h-4 text-blue-600 rounded"
-                {...register("interviewFormats")}
-              />
-              <span className="ml-2">기타</span>
-            </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {["직무/인성면접", "PT면접", "토론면접", "인적성 검사", "실무 과제 및 시험", "기타"].map((type) => (
+              <label key={type} className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  value={type}
+                  className="w-4 h-4 text-blue-600 rounded"
+                  {...register("interviewFormats")}
+                />
+                <span className="ml-2">{type}</span>
+              </label>
+            ))}
           </div>
           {errors.interviewFormats && (
             <p className="text-red-500 text-xs mt-1">{errors.interviewFormats.message as string}</p>
           )}
         </div>
 
+        <div className="border-b border-gray-200 pb-4 mb-4"></div>
+
+        {/* 면접 인원 */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
+          <label className="block mb-2 text-sl font-medium">
             면접 인원 <span className="text-red-500">*</span>
           </label>
-          <div className="space-y-2">
+          <div className="flex space-x-6">
             <label className="inline-flex items-center">
-              <input
-                type="radio"
-                value="oneOnOne"
-                className="w-4 h-4 text-blue-600"
-                {...register("interviewStructure")}
-                defaultChecked
-              />
+              <input type="radio" value="oneOnOne" className="w-4 h-4 text-blue-600" {...register("interviewStructure")} defaultChecked />
               <span className="ml-2">1:1 면접</span>
             </label>
-            <div className="block">
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  value="panel"
-                  className="w-4 h-4 text-blue-600"
-                  {...register("interviewStructure")}
-                />
-                <span className="ml-2">지원자 1명, 면접관 다수</span>
-              </label>
-            </div>
-            <div className="block">
-              <label className="inline-flex items-center">
-                <input
-                  type="radio"
-                  value="group"
-                  className="w-4 h-4 text-blue-600"
-                  {...register("interviewStructure")}
-                />
-                <span className="ml-2">그룹면접</span>
-              </label>
-            </div>
+            <label className="inline-flex items-center">
+              <input type="radio" value="panel" className="w-4 h-4 text-blue-600" {...register("interviewStructure")} />
+              <span className="ml-2">지원자 1명, 면접관 다수</span>
+            </label>
+            <label className="inline-flex items-center">
+              <input type="radio" value="group" className="w-4 h-4 text-blue-600" {...register("interviewStructure")} />
+              <span className="ml-2">그룹면접</span>
+            </label>
           </div>
         </div>
 
+        <div className="border-b border-gray-200 pb-4 mb-4"></div>
+
+        {/* 면접 후기 입력 */}
         <div>
-          <label className="block mb-2 text-sm font-medium">
+          <label className="block mb-2 text-sl font-medium">
             면접 후기 <span className="text-red-500">*</span>
           </label>
           <textarea
@@ -244,7 +171,8 @@ export function StepTwo() {
             <p className="text-red-500 text-xs mt-1">{errors.interviewDetails.message as string}</p>
           )}
         </div>
+
       </div>
     </div>
-  )
+  );
 }

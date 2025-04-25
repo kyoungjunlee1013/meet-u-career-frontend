@@ -78,11 +78,11 @@ export const PersonalLoginForm = () => {
           setServerError("토큰 발급 실패. 다시 로그인 해주세요.");
         }
       } else {
-        setServerError(response.data.message || "로그인 실패");
+        setServerError(response.data.msg);
       }
     } catch (error: any) {
       setServerError(
-        error.response?.data?.message || "로그인 중 오류가 발생했습니다."
+        error.response?.data?.msg
       );
     }
   };

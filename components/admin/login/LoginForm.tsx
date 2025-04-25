@@ -1,87 +1,173 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useFormState } from "react-dom"
-import { loginAdminAction } from "@/app/admin/login/actions"
-import { Loader2 } from "lucide-react"
-
-interface LoginState {
-  success: boolean
-  errors: {
-    email?: string[]
-    password?: string[]
-  }
-}
-
-const initialState: LoginState = {
-  success: false,
-  errors: {},
-}
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/useAuthStore";
+import { fetchMyInfo } from "@/api/fetchMyInfo";
 
 export const LoginForm = () => {
-  const [isLoading, setIsLoading] = useState(false)
-  const [state, formAction] = useFormState(loginAdminAction, initialState)
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [serverError, setServerError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { setTokens } = useAuthStore();
+
+  // 세션에 저장된 이메일 복구
+  useEffect(() => {
+    const savedEmail = sessionStorage.getItem("savedAdminEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEmailError("");
+    setPasswordError("");
+    setServerError("");
+    let hasError = false;
+
+    if (!email) {
+      setEmailError("이메일을 입력해주세요.");
+      hasError = true;
+    }
+    if (!password) {
+      setPasswordError("비밀번호를 입력해주세요.");
+      hasError = true;
+    }
+    if (hasError) return;
+
+    setIsLoading(true);
+    try {
+      const response = await axios.post("/api/admin/auth/login", {
+        userId: email,
+        password,
+      });
+
+      if (response.data.msg === "success") {
+        const { accessToken, refreshToken } = response.data.data || {};
+
+        if (accessToken && refreshToken) {
+          setTokens(accessToken, refreshToken);
+
+          // 로그인 성공 후 아이디 저장
+          if (rememberMe) {
+            sessionStorage.setItem("savedAdminEmail", email);
+          } else {
+            sessionStorage.removeItem("savedAdminEmail");
+          }
+
+          await fetchMyInfo();
+
+          // 대시보드 페이지로 이동.
+          router.push("/admin/dashboard");
+        } else {
+          setServerError(response.data.msg);
+        }
+      } else {
+        setServerError(response.data.msg);
+      }
+    } catch (error: any) {
+      setServerError(
+        error.response?.data?.msg
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form className="space-y-6" onSubmit={handleLogin}>
+      {/* 서버 에러 메시지 */}
+      {serverError && (
+        <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
+          {serverError}
+        </div>
+      )}
       {/* 이메일 */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Email
         </label>
         <input
           id="email"
           name="email"
           type="email"
-          autoComplete="email"
-          placeholder="your@email.com"
-          required
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          aria-invalid={!!state.errors.email}
-          aria-describedby={state.errors.email ? "email-error" : undefined}
+          autoComplete="off"
+          placeholder="이메일"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (emailError) setEmailError("");
+          }}
+          className={`w-full px-3 py-2 border ${emailError ? "border-red-500" : "border-gray-300"
+            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+          aria-invalid={!!emailError}
+          aria-describedby={emailError ? "email-error" : undefined}
         />
-        {state.errors.email && (
+        {emailError && (
           <p id="email-error" className="mt-1 text-sm text-red-600">
-            {state.errors.email.join(", ")}
+            {emailError}
           </p>
         )}
       </div>
-
       {/* 비밀번호 */}
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+        <label
+          htmlFor="password"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
           Password
         </label>
         <input
           id="password"
           name="password"
           type="password"
-          autoComplete="current-password"
-          required
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          aria-invalid={!!state.errors.password}
-          aria-describedby={state.errors.password ? "password-error" : undefined}
+          autoComplete="off"
+          placeholder="비밀번호"
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (passwordError) setPasswordError("");
+          }}
+          className={`w-full px-3 py-2 border ${passwordError ? "border-red-500" : "border-gray-300"
+            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+          aria-invalid={!!passwordError}
+          aria-describedby={passwordError ? "password-error" : undefined}
         />
-        {state.errors.password && (
+        {passwordError && (
           <p id="password-error" className="mt-1 text-sm text-red-600">
-            {state.errors.password.join(", ")}
+            {passwordError}
           </p>
         )}
       </div>
-
       {/* 체크박스 */}
       <div className="flex items-center">
         <input
           id="rememberMe"
           name="rememberMe"
           type="checkbox"
+          checked={rememberMe}
+          onChange={(e) => setRememberMe(e.target.checked)}
           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
         />
-        <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-700">
+        <label
+          htmlFor="rememberMe"
+          className="ml-2 block text-sm text-gray-700"
+        >
           아이디 저장
         </label>
       </div>
-
       {/* 제출 버튼 */}
       <div>
         <button
@@ -100,5 +186,5 @@ export const LoginForm = () => {
         </button>
       </div>
     </form>
-  )
-}
+  );
+};
