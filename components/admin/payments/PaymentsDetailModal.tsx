@@ -2,6 +2,8 @@
 
 import { X } from "lucide-react"
 
+import { statusLabelMap, providerLabelMap, methodLabelMap, advertisementStatusLabelMap } from "@/utils/payment-types"
+
 interface PaymentDetailModalProps {
   payment: any
   onClose: () => void
@@ -24,64 +26,47 @@ export function PaymentDetailModal({ payment, onClose }: PaymentDetailModalProps
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h4 className="text-sm font-medium text-gray-500 mb-2">기본 정보</h4>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs text-gray-500">거래 ID</p>
-                  <p className="font-medium">{payment.transactionId}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">결제 상태</p>
-                  <div className="flex items-center">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs rounded-full ${
-                        payment.status === "완료"
-                          ? "bg-green-100 text-green-800"
-                          : payment.status === "대기중"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {payment.status}
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">결제 금액</p>
-                  <p className="font-medium">{payment.amount}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">결제 일시</p>
-                  <p className="font-medium">{payment.date}</p>
-                </div>
-              </div>
+          {/* 결제/광고 정보 2단 컬럼 */}
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500">거래 ID</p>
+              <p className="font-medium">{payment.transactionId ?? '-'}</p>
+              <p className="text-xs text-gray-500 mt-4">결제 일시</p>
+              <p className="font-medium">{payment.createdAt ? new Date(payment.createdAt).toLocaleString() : '-'}</p>
+              <p className="text-xs text-gray-500 mt-4">결제 금액</p>
+              <p className="font-medium">{payment.amount !== undefined && payment.amount !== null ? Number(payment.amount).toLocaleString() + '원' : '-'}</p>
+              <p className="text-xs text-gray-500 mt-4">결제 상태</p>
+              <span className={`inline-flex px-2 py-1 text-xs rounded-full ${
+                payment.status === 1
+                  ? "bg-green-100 text-green-800"
+                  : payment.status === 0
+                    ? "bg-red-100 text-red-800"
+                    : "bg-gray-100 text-gray-800"
+              }`}>
+                {statusLabelMap[payment.status as keyof typeof statusLabelMap] ?? payment.status ?? '-'}
+              </span>
+              <p className="text-xs text-gray-500 mt-4">결제사</p>
+              <p className="font-medium">{providerLabelMap[payment.provider as keyof typeof providerLabelMap] ?? payment.provider ?? '-'}</p>
+              <p className="text-xs text-gray-500 mt-4">결제 방법</p>
+              <p className="font-medium">{methodLabelMap[payment.method as keyof typeof methodLabelMap] ?? payment.method ?? '-'}</p>
+              <p className="text-xs text-gray-500 mt-4">기업명</p>
+              <p className="font-medium">{payment.companyName ?? '-'}</p>
             </div>
-
-            <div>
-              <h4 className="text-sm font-medium text-gray-500 mb-2">결제 정보</h4>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-xs text-gray-500">결제사</p>
-                  <p className="font-medium">{payment.provider}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">결제 방법</p>
-                  <p className="font-medium">{payment.method}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">결제자</p>
-                  <p className="font-medium">{payment.customer}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">결제 항목</p>
-                  <p className="font-medium">{payment.item}</p>
-                </div>
-              </div>
+            <div className="space-y-3">
+              <p className="text-xs text-gray-500">광고/공고명</p>
+              <p className="font-medium">{payment.advertisementTitle ?? '-'}</p>
+              <p className="text-xs text-gray-500 mt-4">광고 기간</p>
+              <p className="font-medium">{payment.advertisementPeriod ? payment.advertisementPeriod + '일' : '-'}</p>
+              <p className="text-xs text-gray-500 mt-4">광고 상태</p>
+              <p className="font-medium">{payment.advertisementStatus !== undefined && payment.advertisementStatus !== null ? advertisementStatusLabelMap[payment.advertisementStatus as keyof typeof advertisementStatusLabelMap] ?? payment.advertisementStatus : '-'}</p>
+              <p className="text-xs text-gray-500 mt-4">광고 시작일</p>
+              <p className="font-medium">{payment.advertisementStartDate ? new Date(payment.advertisementStartDate).toLocaleDateString() : '-'}</p>
+              <p className="text-xs text-gray-500 mt-4">광고 종료일</p>
+              <p className="font-medium">{payment.advertisementEndDate ? new Date(payment.advertisementEndDate).toLocaleDateString() : '-'}</p>
             </div>
           </div>
 
+          {/* 하단: 원본 payment JSON (운영자/개발자 참고용) */}
           <div>
             <h4 className="text-sm font-medium text-gray-500 mb-2">메타데이터</h4>
             <div className="bg-gray-50 p-4 rounded-md">
@@ -91,22 +76,24 @@ export function PaymentDetailModal({ payment, onClose }: PaymentDetailModalProps
                     paymentId: payment.transactionId,
                     customerId: "cust_" + Math.random().toString(36).substring(2, 10),
                     processingFee:
-                      "₩" + (Number.parseInt(payment.amount.replace(/[^\d]/g, "")) * 0.03).toLocaleString() + "원",
+                      typeof payment.amount === "number"
+                        ? "₩" + (payment.amount * 0.03).toLocaleString() + "원"
+                        : "₩" + (Number.parseInt(payment.amount.replace(/[^\d]/g, "")) * 0.03).toLocaleString() + "원",
                     taxAmount:
-                      "₩" + (Number.parseInt(payment.amount.replace(/[^\d]/g, "")) * 0.1).toLocaleString() + "원",
+                      typeof payment.amount === "number"
+                        ? "₩" + (payment.amount * 0.1).toLocaleString() + "원"
+                        : "₩" + (Number.parseInt(payment.amount.replace(/[^\d]/g, "")) * 0.1).toLocaleString() + "원",
                     receiptUrl: "https://receipts.example.com/" + payment.transactionId,
-                    cardInfo: payment.method.includes("카드")
+                    cardInfo: typeof payment.method === "string" && payment.method.includes("카드")
                       ? {
                           lastFour: Math.floor(1000 + Math.random() * 9000),
                           issuer: ["신한", "국민", "우리", "하나", "삼성"][Math.floor(Math.random() * 5)],
                           expiryDate: `${Math.floor(Math.random() * 12) + 1}/${Math.floor(Math.random() * 5) + 23}`,
                         }
                       : null,
-                    bankInfo: payment.method.includes("계좌")
+                    bankInfo: typeof payment.method === "string" && payment.method.includes("계좌")
                       ? {
-                          bankName: ["국민은행", "신한은행", "우리은행", "하나은행", "농협은행"][
-                            Math.floor(Math.random() * 5)
-                          ],
+                          bankName: ["국민은행", "신한은행", "우리은행", "하나은행", "농협은행"][Math.floor(Math.random() * 5)],
                           accountLastFour: Math.floor(1000 + Math.random() * 9000),
                         }
                       : null,
