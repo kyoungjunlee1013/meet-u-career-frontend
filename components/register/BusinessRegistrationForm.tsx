@@ -5,35 +5,47 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { Upload, X, Check, ChevronRight } from "lucide-react"
+import { apiClient } from "@/api/apiClient";
+import { useRouter } from "next/navigation";
 
+declare global {
+  interface Window {
+    daum: any;
+  }
+}
+
+
+// Zod 스키마 정의
 const businessRegisterSchema = z.object({
   businessNumber: z
     .string()
     .min(1, "사업자등록번호를 입력해주세요")
-    .regex(/^\d{3}-\d{2}-\d{5}$/, "올바른 사업자등록번호 형식이 아닙니다 (예: 123-45-67890)"),
+    .regex(/^[0-9]{3}-[0-9]{2}-[0-9]{5}$/, "올바른 형식: 123-45-67890"),
   companyName: z.string().min(1, "기업명을 입력해주세요"),
   representativeName: z.string().min(1, "대표자명을 입력해주세요"),
   companyAddress: z.string().min(1, "회사 주소를 입력해주세요"),
   detailAddress: z.string().optional(),
+  businessFileKey: z.string().optional(),
+  businessFileName: z.string().optional(),
   foundingDate: z
     .string()
-    .min(1, "설립일을 입력해주세요")
+    .min(8, "설립일을 입력해주세요")
     .regex(/^\d{8}$/, "YYYYMMDD 형식으로 입력해주세요"),
   companyType: z.enum(["일반", "벤처기업", "공공기관/비영리법인"]),
   userId: z
     .string()
     .min(4, "4~20자의 영문, 숫자, 특수문자 '_'사용가능")
     .max(20, "4~20자의 영문, 숫자, 특수문자 '_'사용가능")
-    .regex(/^[a-zA-Z0-9_]+$/, "4~20자의 영문, 숫자, 특수문자 '_'사용가능"),
+    .regex(/^[a-zA-Z0-9_]+$/, "올바른 아이디 형식이 아닙니다"),
   password: z
     .string()
     .min(8, "8~16자리/영문 대소문자, 숫자, 특수문자 조합")
     .max(16, "8~16자리/영문 대소문자, 숫자, 특수문자 조합")
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,16}$/,
-      "8~16자리/영문 대소문자, 숫자, 특수문자 조합",
+      "비밀번호 형식이 올바르지 않습니다"
     ),
-  email: z.string().email("이메일 주소를 입력해주세요."),
+  email: z.string().email("이메일 주소를 입력해주세요"),
   website: z.string().optional(),
   allConsent: z.boolean().optional(),
   serviceConsent: z.boolean().default(false),
@@ -41,20 +53,38 @@ const businessRegisterSchema = z.object({
   marketingEmailConsent: z.boolean().default(false),
   marketingSmsConsent: z.boolean().default(false),
   thirdPartyConsent: z.boolean().default(false),
-})
+});
 
-type BusinessRegisterFormData = z.infer<typeof businessRegisterSchema>
+export type BusinessRegisterFormData = z.infer<typeof businessRegisterSchema>
+
+const handleAddressSearch = (setValue: any) => {
+  if (typeof window === "undefined" || !window.daum || !window.daum.Postcode) {
+    alert("주소 검색 기능이 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
+    return;
+  }
+  new window.daum.Postcode({
+    oncomplete: function (data: any) {
+      const address = data.roadAddress || data.jibunAddress;
+      if (address) setValue("companyAddress", address);
+    },
+  }).open();
+};
+
 
 export const BusinessRegistrationForm = () => {
-  const [fileUploaded, setFileUploaded] = useState(false)
-  const [fileName, setFileName] = useState("")
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileUploaded, setFileUploaded] = useState(false);
+  const [fileName, setFileName] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [companyAddress, setCompanyAddress] = useState("");
+  
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
     setValue,
+    formState: { errors, isSubmitting },
     watch,
   } = useForm<BusinessRegisterFormData>({
     resolver: zodResolver(businessRegisterSchema),
@@ -67,38 +97,69 @@ export const BusinessRegistrationForm = () => {
       marketingSmsConsent: false,
       thirdPartyConsent: false,
     },
-  })
+  });
 
-  const businessNumber = watch("businessNumber")
   const allConsent = watch("allConsent")
+  const businessNumber = watch("businessNumber")
+
+
+  // 파일업로드 요청
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await apiClient.post<{ data: string }>("/api/account/business/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setValue("businessFileKey", res.data.data);
+      setValue("businessFileName", file.name);
+      setIsUploading(false);
+    } catch (e) {
+      alert("파일 업로드 실패");
+      setFileUploaded(false);
+      setFileName("");
+      setIsUploading(false);
+    }
+  };
+  
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const fileExtension = file.name.split(".").pop()?.toLowerCase()
-      const allowedExtensions = ["jpg", "jpeg", "png", "pdf", "tiff"]
-
-      if (allowedExtensions.includes(fileExtension || "")) {
-        setFileUploaded(true)
-        setFileName(file.name)
-      } else {
-        alert("JPG, PNG, PDF, TIFF 파일만 업로드 가능합니다.")
-        if (fileInputRef.current) {
-          fileInputRef.current.value = ""
-        }
-      }
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    const allowed = ["jpg", "jpeg", "png", "pdf", "tiff"];
+    if (!allowed.includes(ext || "")) {
+      alert("JPG, PNG, PDF, TIFF 파일만 업로드 가능합니다.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
     }
-  }
-
+    setFileUploaded(true);
+    setFileName(file.name);
+    handleFileUpload(file);
+  };
+  
+  
   const handleBusinessNumberChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setValue("businessNumber", value)
-
-    // Format the business number as user types (123-45-67890)
-    if (value.length === 10) {
-      setValue("businessNumber", `${value.slice(0, 3)}-${value.slice(3, 5)}-${value.slice(5)}`)
+    // 숫자만 추출
+    let value = e.target.value.replace(/[^0-9]/g, '');
+    
+    // 10자리를 넘어가면 잘라내기
+    if (value.length > 10) {
+      value = value.substring(0, 10);
     }
-  }
+    
+    // 하이픈 추가 형식 적용 (3-2-5)
+    let formattedValue = value;
+    if (value.length > 5) {
+      formattedValue = `${value.substring(0, 3)}-${value.substring(3, 5)}-${value.substring(5)}`;
+    } else if (value.length > 3) {
+      formattedValue = `${value.substring(0, 3)}-${value.substring(3)}`;
+    }
+    
+    setValue("businessNumber", formattedValue);
+  };
 
   const handleAllConsentChange = (e: ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked
@@ -118,13 +179,66 @@ export const BusinessRegistrationForm = () => {
     }
   }
 
-  const onSubmit = async (data: BusinessRegisterFormData) => {
-    console.log(data)
-    // Here you would normally submit the form data to your API
-    // For demo purposes, we'll just log it to the console
-    alert("기업회원 가입이 완료되었습니다.")
-  }
+  // 이메일 중복확인
+  const [emailCheckMsg, setEmailCheckMsg] = useState<string | null>(null);
 
+  const handleEmailCheck = async () => {
+    const email = watch("email");
+    if (!email) return alert("이메일을 입력해주세요.");
+    
+    try {
+      const res = await apiClient.post("/api/account/business/check/email", { email });
+      const isAvailable = !res.data.data;
+      setEmailCheckMsg(isAvailable ? "사용 가능한 이메일입니다." : "이미 등록된 이메일입니다.");
+    } catch (err) {
+      console.error("이메일 중복 확인 오류", err);
+      setEmailCheckMsg("확인 중 오류가 발생했습니다.");
+    }
+  };
+
+
+
+  // 상태 추가
+  const [laterVerification, setLaterVerification] = useState(false);
+
+  // 체크박스 이벤트 핸들러
+  const handleLaterVerificationChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setLaterVerification(e.target.checked);
+  };
+
+  // onSubmit 함수 수정
+  const onSubmit = async (data: BusinessRegisterFormData) => {
+    // 필수 약관 확인
+    if (!data.serviceConsent || !data.privacyConsent) {
+      alert("필수 약관에 모두 동의해야 가입할 수 있습니다.");
+      return;
+    }
+
+    // 파일 업로드 검증 (다음에 인증하지 않을 경우)
+    if (!laterVerification && !data.businessFileKey) {
+      alert("사업자등록증명원을 업로드하거나 '다음에 인증할게요'를 선택해주세요.");
+      return;
+    }
+    
+    try {
+      const response = await apiClient.post("/api/account/business/signup", {
+        ...data,
+        foundingDate: `${data.foundingDate.slice(0, 4)}-${data.foundingDate.slice(4, 6)}-${data.foundingDate.slice(6, 8)}`,
+        website: data.website || "",
+      });
+  
+      if (response.data.success && response.data.count === 1) {
+        alert("기업회원 가입이 완료되었습니다!");
+        router.push("/login"); // 로그인 또는 홈 등 원하는 위치
+      } else {
+        alert(response.data.msg || "회원가입에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("회원가입 오류", error);
+      alert("서버 오류가 발생했습니다.");
+    }
+  };
+  
   // Tip Section Component to avoid duplication
   const TipSection = () => (
     <div className="border rounded-md p-6">
@@ -184,9 +298,11 @@ export const BusinessRegistrationForm = () => {
     </div>
   )
 
+  
+
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
-      <h1 className="text-center text-xl font-medium mb-8">사람인 통합 기업회원 가입</h1>
+      <h1 className="text-center text-xl font-medium mb-8">통합 기업회원 가입</h1>
 
       {/* Main container with responsive layout */}
       <div className="flex flex-col lg:flex-row gap-8">
@@ -278,6 +394,8 @@ export const BusinessRegistrationForm = () => {
                     type="checkbox"
                     id="laterVerification"
                     className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                    checked={laterVerification}
+                    onChange={handleLaterVerificationChange}
                   />
                   <label htmlFor="laterVerification" className="ml-2 text-xs text-gray-600">
                     다음에 인증할게요
@@ -345,6 +463,7 @@ export const BusinessRegistrationForm = () => {
                 />
                 <button
                   type="button"
+                  onClick={handleAddressSearch}
                   className="ml-2 px-4 py-2.5 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50"
                 >
                   주소
@@ -461,8 +580,20 @@ export const BusinessRegistrationForm = () => {
                   errors.email ? "border-red-500" : "border-gray-300"
                 } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
                 {...register("email")}
+                onBlur={handleEmailCheck}
               />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
+
+              {emailCheckMsg && (
+              <p
+                className={`text-xs mt-1 ${
+                  emailCheckMsg.includes("사용 가능") ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {emailCheckMsg}
+              </p>
+            )}
+
             </div>
 
             {/* Website (Optional) */}
@@ -527,6 +658,7 @@ export const BusinessRegistrationForm = () => {
                           (필수) 개인정보 수집 및 이용에 동의
                         </label>
                       </div>
+        
                       <ChevronRight className="h-4 w-4 text-gray-400" />
                     </div>
                   </div>
@@ -567,6 +699,10 @@ export const BusinessRegistrationForm = () => {
                 </div>
               </div>
             </div>
+
+             {/* ✅ 파일 키와 이름을 숨겨서 포함 */}
+            <input type="hidden" {...register("businessFileKey")} />
+            <input type="hidden" {...register("businessFileName")} />
 
             {/* Submit Button */}
             <button
