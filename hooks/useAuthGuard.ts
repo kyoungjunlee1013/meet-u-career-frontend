@@ -14,9 +14,7 @@ const allowList: Record<RoleKey, string[]> = {
   super: ["super"],
 };
 
-export function useAuthGuard(
-  requiredTypes: RoleKey | RoleKey[] = "personal"
-) {
+export function useAuthGuard(requiredTypes: RoleKey | RoleKey[] = "personal") {
   const router = useRouter();
   const [isChecking, setIsChecking] = useState(true);
 
@@ -40,13 +38,14 @@ export function useAuthGuard(
         });
 
         const rawRole = data.data.role;
-        if (typeof rawRole !== "string") throw new Error("role 정보가 없습니다");
+        if (typeof rawRole !== "string")
+          throw new Error("role 정보가 없습니다");
 
         const role = rawRole.toLowerCase();
         // requiredArr 에 들어있는 각 키마다 allowList[키] 들을 모아서 허용 가능한 role 배열 생성
-        const allowedRoles = requiredArr.flatMap(k => allowList[k] || []);
+        const allowedRoles = requiredArr.flatMap((k) => allowList[k] || []);
 
-        console.log({ requiredArr, role, allowedRoles }); // 디버깅
+        // console.log({ requiredArr, role, allowedRoles });
 
         if (!allowedRoles.includes(role)) {
           router.replace("/unauthorized");

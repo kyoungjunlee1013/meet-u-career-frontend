@@ -1,77 +1,106 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useEffect, useRef, useState } from "react"
-import { X } from "lucide-react"
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
+import { apiClient } from "@/api/apiClient";
 
 interface TagModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSave: (tagData: { name: string; status: "활성" | "비활성" }) => void
-  editData?: { id: number; name: string; status: "활성" | "비활성" }
-  title?: string
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (tagData: { name: string; status: 0 | 1 }) => void;
+  editData?: { id: number; name: string; status: 0 | 1 };
+  title?: string;
+  onSuccess?: () => void;
 }
 
-export default function TagModal({ isOpen, onClose, onSave, editData, title = "새 태그 추가" }: TagModalProps) {
-  const [tagName, setTagName] = useState("")
-  const [status, setStatus] = useState<"활성" | "비활성">("활성")
-  const modalRef = useRef<HTMLDivElement>(null)
+export default function TagModal({
+  isOpen,
+  onClose,
+  onSave,
+  editData,
+  title = "새 태그 추가",
+  onSuccess,
+}: TagModalProps) {
+  const [tagName, setTagName] = useState("");
+  const [status, setStatus] = useState<0 | 1>(0);
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  // Reset form when opening the modal or when editData changes
   useEffect(() => {
     if (isOpen) {
       if (editData) {
-        setTagName(editData.name)
-        setStatus(editData.status)
+        setTagName(editData.name);
+        setStatus(editData.status);
       } else {
-        setTagName("")
-        setStatus("활성")
+        setTagName("");
+        setStatus(0);
       }
     }
-  }, [isOpen, editData])
+  }, [isOpen, editData]);
 
-  // Handle click outside to close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose()
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
-    }
+    };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [isOpen, onClose])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
-  // Handle ESC key to close
   useEffect(() => {
     const handleEscKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose()
+        onClose();
       }
-    }
+    };
 
     if (isOpen) {
-      document.addEventListener("keydown", handleEscKey)
+      document.addEventListener("keydown", handleEscKey);
     }
 
     return () => {
-      document.removeEventListener("keydown", handleEscKey)
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [isOpen, onClose]);
+
+  const handleSubmit = async () => {
+    if (!tagName.trim()) {
+      alert("태그명을 입력해 주세요.");
+      return;
     }
-  }, [isOpen, onClose])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave({ name: tagName, status })
-    onClose()
-  }
+    try {
+      const response = await apiClient.post("/api/admin/community/tags", {
+        name: tagName,
+        status: status,
+      });
 
-  if (!isOpen) return null
+      console.log("Res, ", response);
+
+      if (response.data.msg === "success") {
+        alert("태그가 성공적으로 등록되었습니다.");
+
+        onSuccess?.();
+      }
+
+      onClose();
+    } catch (error) {
+      console.error("태그 등록 실패:", error);
+      alert("태그 등록 중 오류가 발생했습니다.");
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -84,22 +113,34 @@ export default function TagModal({ isOpen, onClose, onSave, editData, title = "�
       >
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 id="modal-title" className="text-xl font-semibold text-gray-900">
+            <h2
+              id="modal-title"
+              className="text-xl font-semibold text-gray-900"
+            >
               {title}
             </h2>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-500" aria-label="닫기">
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-500"
+              aria-label="닫기"
+            >
               <X size={20} />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit}>
+          {/* form 태그 제거 */}
+          <div>
             <div className="mb-4">
-              <label htmlFor="tagName" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="tagName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 태그명
               </label>
               <input
                 type="text"
                 id="tagName"
+                autoComplete="off"
                 value={tagName}
                 onChange={(e) => setTagName(e.target.value)}
                 placeholder="태그명을 입력하세요"
@@ -109,18 +150,23 @@ export default function TagModal({ isOpen, onClose, onSave, editData, title = "�
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">상태</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                상태
+              </label>
               <div className="flex items-center space-x-6">
                 <div className="flex items-center">
                   <input
                     id="active"
                     type="radio"
                     name="status"
-                    checked={status === "활성"}
-                    onChange={() => setStatus("활성")}
+                    checked={status === 0}
+                    onChange={() => setStatus(0)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                   />
-                  <label htmlFor="active" className="ml-2 text-sm text-gray-700">
+                  <label
+                    htmlFor="active"
+                    className="ml-2 text-sm text-gray-700"
+                  >
                     활성
                   </label>
                 </div>
@@ -129,11 +175,14 @@ export default function TagModal({ isOpen, onClose, onSave, editData, title = "�
                     id="inactive"
                     type="radio"
                     name="status"
-                    checked={status === "비활성"}
-                    onChange={() => setStatus("비활성")}
+                    checked={status === 1}
+                    onChange={() => setStatus(1)}
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                   />
-                  <label htmlFor="inactive" className="ml-2 text-sm text-gray-700">
+                  <label
+                    htmlFor="inactive"
+                    className="ml-2 text-sm text-gray-700"
+                  >
                     비활성
                   </label>
                 </div>
@@ -149,15 +198,16 @@ export default function TagModal({ isOpen, onClose, onSave, editData, title = "�
                 취소
               </button>
               <button
-                type="submit"
+                type="button"
+                onClick={handleSubmit}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 저장
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

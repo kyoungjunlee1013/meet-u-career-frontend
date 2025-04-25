@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Tooltip as ReactTooltip } from "react-tooltip";
+import { Info } from "lucide-react";
+import { UserGrowthChartProps } from "@/types/admin/dashboard";
 import {
   LineChart,
   Line,
@@ -8,38 +10,35 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  Tooltip,
 } from "recharts";
-import { Maximize2 } from "lucide-react";
-import { UserGrowthChartProps } from "@/types/admin/dashboard";
-
-const data = [
-  { month: "1월", users: 12000 },
-  { month: "2월", users: 13500 },
-  { month: "3월", users: 15000 },
-  { month: "4월", users: 16500 },
-  { month: "5월", users: 18000 },
-  { month: "6월", users: 19500 },
-  { month: "7월", users: 21000 },
-  { month: "8월", users: 22500 },
-  { month: "9월", users: 24000 },
-  { month: "10월", users: 25500 },
-  { month: "11월", users: 27000 },
-  { month: "12월", users: 28500 },
-];
 
 export function UserGrowthChart({ data }: UserGrowthChartProps) {
-  const [expanded, setExpanded] = useState(false);
+  // 넘어오는 데이터를 형식에 맞게 수정.
+  const chartData = data.map((item) => ({
+    month: item.month,
+    users: item.userCount,
+  }));
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="font-medium">사용자 증가 추이</h3>
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="text-gray-400 hover:text-gray-600"
-        >
-          <Maximize2 size={18} />
-        </button>
+        <h3 className="font-medium flex items-baseline">
+          {" "}
+          사용자 증가 추이
+          {/* 느낌표 서클 아이콘 추가 */}
+          <span className="ml-2 cursor-pointer">
+            <Info
+              size={16}
+              className="text-gray-500"
+              data-tooltip-id="user-tooltip" // 수정: data-tooltip-id를 id로 변경
+            />
+            {/* Tooltip: 사용자 = 개인회원 + 기업회원 */}
+            <ReactTooltip id="user-tooltip" place="top">
+              사용자 = 개인회원 + 기업회원
+            </ReactTooltip>
+          </span>
+        </h3>
       </div>
 
       <div className="flex items-center mb-4">
@@ -52,19 +51,12 @@ export function UserGrowthChart({ data }: UserGrowthChartProps) {
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={data}
+            data={chartData}
             margin={{ top: 5, right: 20, bottom: 5, left: 0 }}
           >
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="month" axisLine={false} tickLine={false} />
-            <YAxis
-              domain={[12000, 30000]}
-              ticks={[
-                12000, 14000, 16000, 18000, 20000, 22000, 24000, 26000, 28000,
-              ]}
-              axisLine={false}
-              tickLine={false}
-            />
+            <YAxis domain={[0, "auto"]} axisLine={false} tickLine={false} />
             <Line
               type="monotone"
               dataKey="users"
@@ -72,6 +64,28 @@ export function UserGrowthChart({ data }: UserGrowthChartProps) {
               strokeWidth={2}
               dot={{ r: 4, strokeWidth: 2 }}
               activeDot={{ r: 6, strokeWidth: 2 }}
+            />
+            {/* Tooltip 추가 */}
+            <Tooltip
+              content={({ payload }) => {
+                if (payload && payload.length > 0) {
+                  const { month, users } = payload[0].payload;
+                  return (
+                    <div
+                      className="bg-black text-white p-2 rounded shadow-md"
+                      style={{
+                        backgroundColor: "black",
+                        color: "white",
+                      }}
+                    >
+                      <strong>
+                        {month} : {users}
+                      </strong>
+                    </div>
+                  );
+                }
+                return null;
+              }}
             />
           </LineChart>
         </ResponsiveContainer>

@@ -1,14 +1,8 @@
 import type React from "react";
-import {
-  Users,
-  Building2,
-  Briefcase,
-  MessageSquare,
-  MoreVertical,
-} from "lucide-react";
+import { Users, Building2, Briefcase, MessageSquare } from "lucide-react";
 import type { MetricCardsProps } from "@/types/admin/dashboard";
 
-export function MetricCards({
+export function MetricUserCards({
   userCount,
   companyCount,
   jobPostingCount,
@@ -59,9 +53,6 @@ interface MetricCardProps {
 function MetricCard({ icon, value, label, change, positive }: MetricCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 relative">
-      <button className="absolute top-2 right-2 text-gray-400 hover:text-gray-600">
-        <MoreVertical size={18} />
-      </button>
       <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg mb-4">
         {icon}
       </div>
