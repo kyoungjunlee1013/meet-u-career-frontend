@@ -31,6 +31,7 @@ export function BusinessSchedule() {
               updateSchedule={updateBusinessSchedule}
               deleteSchedule={deleteBusinessSchedule}
               mapDtoToScheduleItem={mapBusinessDtoToScheduleItem}
+              userType="business"
             />
           </div>
 
