@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
+import { fetchMyInfo } from "@/api/fetchMyInfo";
 
 export const PersonalLoginForm = () => {
+  const router = useRouter();
   const [userId, setUserId] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [rememberMe, setRememberMe] = useState<boolean>(false);
@@ -13,6 +16,15 @@ export const PersonalLoginForm = () => {
   const [passwordError, setPasswordError] = useState<string>("");
   const [serverError, setServerError] = useState<string>("");
   const { setTokens } = useAuthStore();
+
+  // 로드 시 저장된 아이디 복구
+  useEffect(() => {
+    const savedUserId = sessionStorage.getItem("savedUserId");
+    if (savedUserId) {
+      setUserId(savedUserId);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleLogin = async () => {
     let hasError = false;
@@ -32,7 +44,7 @@ export const PersonalLoginForm = () => {
 
     try {
       const response = await axios.post(
-        "/api/auth/login",
+        "/api/personal/auth/login",
         {
           userId,
           password,
@@ -50,6 +62,18 @@ export const PersonalLoginForm = () => {
 
         if (accessToken && refreshToken) {
           setTokens(accessToken, refreshToken);
+
+          // 로그인 성공 후 아이디 저장
+          if (rememberMe) {
+            sessionStorage.setItem("savedUserId", userId);
+          } else {
+            sessionStorage.removeItem("savedUserId");
+          }
+
+          await fetchMyInfo();
+
+          // 메인 페이지로 이동
+          router.push("/");
         } else {
           setServerError("토큰 발급 실패. 다시 로그인 해주세요.");
         }
@@ -83,11 +107,9 @@ export const PersonalLoginForm = () => {
             setUserId(e.target.value);
             if (userIdError) setUserIdError("");
           }}
-          className={`w-full px-3 py-2.5 border ${
-            userIdError ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 ${
-            userIdError ? "focus:ring-red-500" : "focus:ring-blue-500"
-          }`}
+          className={`w-full px-3 py-2.5 border ${userIdError ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 ${userIdError ? "focus:ring-red-500" : "focus:ring-blue-500"
+            }`}
         />
         {userIdError && (
           <p className="text-red-500 text-xs mt-1">{userIdError}</p>
@@ -105,18 +127,16 @@ export const PersonalLoginForm = () => {
             setPassword(e.target.value);
             if (passwordError) setPasswordError("");
           }}
-          className={`w-full px-3 py-2.5 border ${
-            passwordError ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 ${
-            passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"
-          }`}
+          className={`w-full px-3 py-2.5 border ${passwordError ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 ${passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"
+            }`}
         />
         {passwordError && (
           <p className="text-red-500 text-xs mt-1">{passwordError}</p>
         )}
       </div>
 
-      {/* 로그인 유지 체크박스 + 링크 */}
+      {/* 아이디 저장 체크박스 + 링크 */}
       <div className="flex items-center">
         <input
           type="checkbox"
@@ -127,7 +147,7 @@ export const PersonalLoginForm = () => {
           className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
         />
         <label htmlFor="rememberMe" className="ml-2 text-xs text-gray-600">
-          로그인 유지
+          아이디 저장
         </label>
         <div className="ml-auto flex gap-2 text-xs text-gray-500">
           <Link href="/find-id" className="hover:underline">
