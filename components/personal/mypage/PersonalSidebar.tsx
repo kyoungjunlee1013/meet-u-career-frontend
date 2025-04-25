@@ -15,7 +15,6 @@ import {
 } from "lucide-react";
 
 import { useSidebar } from "./SidebarProvider";
-import { useAuthStore } from "@/store/useAuthStore";
 import { useUserStore } from "@/store/useUserStore";
 
 interface PersonalSidebarProps {
@@ -32,6 +31,7 @@ export const PersonalSidebar = ({
   stats,
 }: PersonalSidebarProps) => {
   const { userInfo } = useUserStore();
+  console.log(JSON.stringify(userInfo));
 
   const { sidebarOpen: isOpen, setSidebarOpen } = useSidebar();
   const onClose = () => setSidebarOpen(false);
@@ -85,7 +85,7 @@ export const PersonalSidebar = ({
               </div>
               <div className="text-center">
                 <h2 className="text-lg font-semibold text-gray-800">
-                  {userInfo?.account.name}
+                  {userInfo?.name}
                 </h2>
               </div>
             </div>

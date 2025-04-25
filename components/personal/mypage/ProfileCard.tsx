@@ -48,7 +48,7 @@ export function ProfileCard({
               </Link>
             </div>
             <p className="text-base text-gray-600 mb-2">경력 {experience}년</p>
-            <div className="flex gap-2 mb-2 flex-wrap">
+            <div className="flex gap-2 mb-2 flex-wrap">              
               {skills.map((skill, idx) => (
                 <span
                   key={idx}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { apiClient } from "@/api/apiClient"
 import { Camera, User } from "lucide-react"
 import Image from "next/image"
+import { useUserStore } from "@/store/useUserStore"
 
 interface ProfileInfo {
   accountId: number
@@ -18,9 +19,11 @@ interface ProfileInfo {
 }
 
 export const ProfileInfoTab = () => {
+  
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const [form, setForm] = useState<ProfileInfo | null>(null)
-
+  const {userInfo} = useUserStore();
+  
   useEffect(() => {
     const fetchData = async () => {
       const res = await apiClient.get<{ data: ProfileInfo }>("/api/personal/profile/me?profileId=2")

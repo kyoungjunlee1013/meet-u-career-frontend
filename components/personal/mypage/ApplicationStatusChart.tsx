@@ -72,10 +72,10 @@ export function ApplicationStatusChart({ data }: Props) {
         <canvas ref={canvasRef} width="150" height="150" />
 
         <div className="grid grid-cols-2 gap-2 mt-4 text-sm w-full max-w-[180px]">
-          <LegendDot color="#10B981" label="서류 통과" value={data.passedDocument} />
-          <LegendDot color="#3B82F6" label="1차 면접" value={data.interview1st} />
-          <LegendDot color="#8B5CF6" label="최종 합격" value={data.finalAccepted} />
-          <LegendDot color="#EF4444" label="불합격" value={data.rejected} />
+          <LegendDot color="#569ad6" label="서류 통과" value={data.passedDocument} />
+          <LegendDot color="#d66156" label="1차 면접" value={data.interview1st} />
+          <LegendDot color="#d68556" label="최종 합격" value={data.finalAccepted} />
+          <LegendDot color="#8356d6" label="불합격" value={data.rejected} />
         </div>
       </div>
     </div>

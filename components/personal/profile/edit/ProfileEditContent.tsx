@@ -6,6 +6,7 @@ import { ProfileInfoTab } from "./tabs/ProfileInfoTab"
 import { PasswordChangeTab } from "./tabs/PasswordChangeTab"
 import { AccountSettingsTab } from "./tabs/AccountSettingsTab"
 import { AccountDeleteTab } from "./tabs/AccountDeleteTab"
+import { useUserStore } from "@/store/useUserStore"
 
 interface ProfileInfo {
   accountId: number
@@ -21,14 +22,12 @@ interface ProfileInfo {
 
 export const ProfileEditContent = () => {
   const [activeTab, setActiveTab] = useState<string>("기본 정보")
-  const [userInfo, setUserInfo] = useState<ProfileInfo | null>(null)
-
+  
   const tabs = ["기본 정보", "비밀번호 변경", "계정 설정", "회원 탈퇴"]
 
   useEffect(() => {
     const fetchUserInfo = async () => {
-      const res = await apiClient.get<{ data: ProfileInfo }>("/api/personal/profile/me?profileId=2")
-      setUserInfo(res.data.data)
+      const res = await apiClient.get<{ data: ProfileInfo }>("/api/personal/profile/me")
     }
     fetchUserInfo()
   }, [])
@@ -36,7 +35,7 @@ export const ProfileEditContent = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "기본 정보":
-        return userInfo ? <ProfileInfoTab data={userInfo} /> : null
+        return <ProfileInfoTab />
       case "비밀번호 변경":
         return <PasswordChangeTab />
       case "계정 설정":

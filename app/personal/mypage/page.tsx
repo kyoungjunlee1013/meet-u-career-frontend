@@ -19,7 +19,7 @@ export default function PersonalMyPage() {
     const fetchData = async () => {
       try {
         const res = await apiClient.get<{ data: PersonalMyPageInfo }>(
-          "/api/personal/mypage/2"
+          "/api/personal/mypage"
         );
         setData(res.data.data);
       } catch (err) {

@@ -8,13 +8,13 @@ import { RecentApplications } from "./RecentApplications"
 import { RecommendedJobs } from "./RecommendedJobs"
 
 export function PersonalMyPageContent() {
-  const [data, setData] = useState<PersonalMyPageInfo | null>(null)
+  const [data, setData] = useState<PersonalMyPageInfo>();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await apiClient.get<{ data: PersonalMyPageInfo }>("/api/personal/mypage/2")
-        setData(res.data.data)
+        const res = await apiClient.get<{ data: PersonalMyPageInfo }>("/api/personal/mypage")
+        setData(res.data.data);
       } catch (err) {
         console.error("❌ 마이페이지 데이터 불러오기 실패", err)
       }
@@ -30,7 +30,7 @@ export function PersonalMyPageContent() {
         profileImageUrl={data.profile.profileImageUrl}
         name={data.account.name}
         experience={data.profile.experienceLevel}
-        skills={data.profile.skills.split(",").map(s => s.trim())}
+        skills={data.profile.skills!= null ? data.profile.skills.split(",").map(s => s.trim()) : []}
         resumeViews={data.resumeViewCount}
         offerCount={data.offerCount}
         bookmarkCount={data.bookmarkCount}

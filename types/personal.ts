@@ -1,6 +1,16 @@
 // types/personal.ts
+
+export interface mypagePersonalInfo {
+    account: {
+        id: number;
+        email: string;
+        name: string;
+        profileImageKey: string;
+    };
+}
+
 export interface PersonalMyPageInfo {
-  account: {
+   account: {
     id: number;
     email: string;
     name: string;
