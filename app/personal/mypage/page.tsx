@@ -41,10 +41,6 @@ export default function PersonalMyPage() {
       >
         <PersonalSidebar
           activeItem="MY홈"
-          user={{
-            name: data.account.name,
-            profileImageUrl: data.profile.profileImageUrl,
-          }}
           stats={{
             applications: data.recentApplications.length,
             offers: data.offerCount,
