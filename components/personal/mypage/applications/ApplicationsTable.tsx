@@ -47,17 +47,30 @@ export const ApplicationsTable = ({ data }) => {
                 <td className="px-6 py-4">{app.resume}</td>
                 <td className="px-6 py-4">
                   <div className="flex justify-center space-x-2">
-                    <button
-                      type="button"
-                      className="p-1.5 text-gray-500 hover:text-gray-700 focus:outline-none"
-                      aria-label="보기"
-                    >
-                      <Eye className="w-5 h-5" />
-                    </button>
+                    {/* 삭제 버튼 클릭 시 지원 취소 API 호출 */}
                     <button
                       type="button"
                       className="p-1.5 text-gray-500 hover:text-red-500 focus:outline-none"
                       aria-label="삭제"
+                      onClick={async () => {
+                        // 한글 확인창
+                        if (!window.confirm("정말로 이 지원을 취소하시겠습니까?")) return;
+                        try {
+                          // profileId는 테스트용으로 2로 하드코딩
+                          await import("axios").then(({default: axios}) =>
+                            axios.put(
+                              `http://localhost:8080/api/personal/mypage/applications/delete/${app.id}?profileId=2`,
+                              {},
+                              { withCredentials: true }
+                            )
+                          );
+                          alert("지원이 취소되었습니다.");
+                          // 새로고침으로 목록 갱신
+                          window.location.reload();
+                        } catch (e: any) {
+                          alert("지원 취소 중 오류가 발생했습니다. 다시 시도해 주세요.");
+                        }
+                      }}
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>

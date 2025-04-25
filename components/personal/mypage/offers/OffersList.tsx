@@ -12,7 +12,7 @@ interface Offer {
 
 interface OffersListProps {
   offers: Offer[]
-  onActionComplete?: (nextTab: '수락함' | '거절함') => void // ✅ 반드시 있어야 함!
+  onActionComplete?: (id: number, nextTab: '수락함' | '거절함') => void // ✅ id 포함해야 맞음
 }
 
 export function OffersList({ offers, onActionComplete }: OffersListProps) {
@@ -24,10 +24,10 @@ export function OffersList({ offers, onActionComplete }: OffersListProps) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
       {offers.map((offer) => (
         <OfferCard
-          key={offer.id}
-          offer={offer}
-          onActionComplete={onActionComplete} // ✅ 전달
-        />
+        key={offer.id}
+        offer={offer}
+        onActionComplete={(id, nextTab) => onActionComplete?.(id, nextTab)} // ✅ 안전하게 호출
+      />      
       ))}
     </div>
   )

@@ -1,8 +1,26 @@
+"use client"
+
+import { Building, MapPin, Users } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { Building, MapPin, Users } from "lucide-react"
 
-export const CompanyProfile = () => {
+interface Props {
+  companyId: number
+  companyName: string
+  industry: string
+  address: string
+  foundedDate: string
+  employeeScale: string
+}
+
+export const CompanyProfile = ({
+  companyId,
+  companyName,
+  industry,
+  address,
+  foundedDate,
+  employeeScale,
+}: Props) => {
   return (
     <div className="bg-white rounded-md shadow-sm p-6 mb-6">
       <div className="flex items-start justify-between">
@@ -17,31 +35,32 @@ export const CompanyProfile = () => {
             />
           </div>
           <div>
-            <h1 className="text-lg font-medium">(주)서울인</h1>
+            <h1 className="text-lg font-medium">{companyName}</h1>
             <div className="flex items-center mt-2 text-sm text-gray-600">
               <div className="flex items-center mr-4">
                 <Building className="h-4 w-4 mr-1 text-blue-500" />
-                <span>IT/인터넷/서비스</span>
+                <span>{industry}</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="h-4 w-4 mr-1 text-blue-500" />
-                <span>서울 구로구 디지털로 34길 43</span>
+                <span>{address}</span>
               </div>
             </div>
             <div className="flex items-center mt-1 text-sm text-gray-600">
               <div className="flex items-center mr-4">
                 <Users className="h-4 w-4 mr-1 text-blue-500" />
-                <span>500명+</span>
+                <span>{employeeScale}</span>
               </div>
               <div className="flex items-center">
                 <span className="text-blue-500 mr-1">•</span>
-                <span>2004년 07월 설립</span>
+                <span>{foundedDate}</span>
               </div>
             </div>
           </div>
         </div>
+
         <Link
-          href="/business/profile"
+          href={`/business/profile/edit?companyId=${encodeURIComponent(companyId)}`}
           className="flex items-center text-sm text-gray-600 border border-gray-300 rounded-md px-3 py-1.5 hover:bg-gray-50"
         >
           <span className="mr-1">기업정보 수정</span>

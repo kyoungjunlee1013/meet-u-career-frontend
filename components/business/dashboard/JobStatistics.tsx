@@ -1,25 +1,34 @@
+"use client"
+
 import { FileText, AlertCircle, CheckCircle } from "lucide-react"
 
-export const JobStatistics = () => {
+interface Props {
+  total: number
+  active: number
+  nearing: number
+  closed: number
+}
+
+export const JobStatistics = ({ total, active, nearing, closed }: Props) => {
   const stats = [
     {
-      title: "진행 공고",
-      count: 12,
+      title: "전체 공고",
+      count: total,
       icon: <FileText className="h-5 w-5 text-gray-600" />,
     },
     {
       title: "진행중 공고",
-      count: 8,
+      count: active,
       icon: <FileText className="h-5 w-5 text-blue-500" />,
     },
     {
       title: "마감임박 공고",
-      count: 3,
+      count: nearing,
       icon: <AlertCircle className="h-5 w-5 text-red-500" />,
     },
     {
-      title: "일자리형 공고",
-      count: 1,
+      title: "마감된 공고",
+      count: closed,
       icon: <CheckCircle className="h-5 w-5 text-gray-600" />,
     },
   ]
@@ -41,3 +50,4 @@ export const JobStatistics = () => {
     </div>
   )
 }
+

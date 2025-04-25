@@ -19,18 +19,17 @@ export const MainNavigation = () => {
   ];
 
   return (
-    <nav className="bg-[#15274a] text-white overflow-hidden">
+    <nav className="bg-[#15274a] text-white overflow-hidden sticky top-[56px] z-40">
       <div className="max-w-[1200px] mx-auto px-4">
         <ul className="flex items-center h-[52px]">
           {navItems.map((item) => (
             <li key={item.href} className="mr-6">
               <Link
                 href={item.href}
-                className={`text-sm font-medium pb-3 border-b-2 ${
-                  isActive(item.href)
+                className={`text-sm font-medium pb-3 border-b-2 ${isActive(item.href)
                     ? "text-blue-600 border-blue-600 active:text-blue-600"
                     : "text-white border-transparent hover:text-blue-500 active:text-blue-600"
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>

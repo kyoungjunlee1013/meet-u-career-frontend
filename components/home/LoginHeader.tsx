@@ -64,7 +64,7 @@ export const LoginHeader = () => {
   }
 
   return (
-    <header className="border-b py-2.5">
+    <header className="border-b py-2.5 bg-white sticky top-0 z-50">
       <div className="max-w-[1200px] mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="text-blue-600 font-bold text-2xl">
@@ -138,7 +138,7 @@ export const LoginHeader = () => {
           </div>
         </div>
       </div>
-    </header>
+    </header >
   )
 }
 

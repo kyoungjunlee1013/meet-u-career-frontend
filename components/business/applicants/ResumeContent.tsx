@@ -1,15 +1,16 @@
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import type { Applicant } from "./types"
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import type { ResumeApplicationDetail } from "@/types/applicants";
 
 interface ResumeContentProps {
-  applicant: Applicant
+  applicant: ResumeApplicationDetail;
 }
 
 export const ResumeContent = ({ applicant }: ResumeContentProps) => {
   return (
     <div className="space-y-6">
+      {/* 학력 */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle>학력</CardTitle>
@@ -31,6 +32,7 @@ export const ResumeContent = ({ applicant }: ResumeContentProps) => {
         </CardContent>
       </Card>
 
+      {/* 경력 */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle>경력</CardTitle>
@@ -52,6 +54,7 @@ export const ResumeContent = ({ applicant }: ResumeContentProps) => {
         </CardContent>
       </Card>
 
+      {/* 프로젝트 */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle>프로젝트</CardTitle>
@@ -62,7 +65,9 @@ export const ResumeContent = ({ applicant }: ResumeContentProps) => {
               <div key={index} className="space-y-2">
                 <div className="flex justify-between">
                   <h3 className="font-semibold">{project.name}</h3>
-                  <span className="text-sm text-gray-500">{project.period}</span>
+                  <span className="text-sm text-gray-500">
+                    {project.period}
+                  </span>
                 </div>
                 <p className="text-sm font-medium">{project.role}</p>
                 <p className="text-sm">{project.description}</p>
@@ -73,6 +78,7 @@ export const ResumeContent = ({ applicant }: ResumeContentProps) => {
         </CardContent>
       </Card>
 
+      {/* 기술 스택 */}
       <Card>
         <CardHeader className="pb-2">
           <CardTitle>기술 스택</CardTitle>
@@ -88,6 +94,7 @@ export const ResumeContent = ({ applicant }: ResumeContentProps) => {
         </CardContent>
       </Card>
 
+      {/* 언어 & 자격증 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-2">
@@ -122,5 +129,5 @@ export const ResumeContent = ({ applicant }: ResumeContentProps) => {
         </Card>
       </div>
     </div>
-  )
-}
+  );
+};

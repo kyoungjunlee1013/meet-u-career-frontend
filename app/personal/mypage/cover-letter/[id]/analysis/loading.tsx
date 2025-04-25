@@ -1,7 +1,8 @@
 "use client";
-import { Skeleton } from "@/components/ui/skeleton"
-import { PersonalHeader } from "@/components/personal/mypage/PersonalHeader"
-import { PersonalSidebar } from "@/components/personal/mypage/PersonalSidebar"
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { PersonalHeader } from "@/components/personal/mypage/PersonalHeader";
+import { PersonalSidebar } from "@/components/personal/mypage/PersonalSidebar";
 
 export default function Loading() {
   return (
@@ -28,5 +29,5 @@ export default function Loading() {
         </div>
       </main>
     </div>
-  )
+  );
 }
