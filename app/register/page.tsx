@@ -18,7 +18,7 @@ export default function RegisterPage() {
       {/* 다음 주소 스크립트 추가 */}
       <Script
         src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
       
       <RegisterHeader />

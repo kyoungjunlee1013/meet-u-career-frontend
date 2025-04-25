@@ -2,11 +2,12 @@
 
 import { useState, useRef, type ChangeEvent } from "react"
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
+import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod"
 import { Upload, X, Check, ChevronRight } from "lucide-react"
 import { apiClient } from "@/api/apiClient";
 import { useRouter } from "next/navigation";
+
 
 declare global {
   interface Window {
@@ -52,23 +53,15 @@ const businessRegisterSchema = z.object({
   privacyConsent: z.boolean().default(false),
   marketingEmailConsent: z.boolean().default(false),
   marketingSmsConsent: z.boolean().default(false),
-  thirdPartyConsent: z.boolean().default(false),
+  thirdPartyConsent: z.boolean().default(false)
+
 });
+
+
+
 
 export type BusinessRegisterFormData = z.infer<typeof businessRegisterSchema>
 
-const handleAddressSearch = (setValue: any) => {
-  if (typeof window === "undefined" || !window.daum || !window.daum.Postcode) {
-    alert("주소 검색 기능이 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
-    return;
-  }
-  new window.daum.Postcode({
-    oncomplete: function (data: any) {
-      const address = data.roadAddress || data.jibunAddress;
-      if (address) setValue("companyAddress", address);
-    },
-  }).open();
-};
 
 
 export const BusinessRegistrationForm = () => {
@@ -78,6 +71,7 @@ export const BusinessRegistrationForm = () => {
   const [fileName, setFileName] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [companyAddress, setCompanyAddress] = useState("");
+  
   
 
   const {
@@ -98,6 +92,24 @@ export const BusinessRegistrationForm = () => {
       thirdPartyConsent: false,
     },
   });
+
+  const handleAddressSearch = () => {
+    if (typeof window === "undefined" || !window.daum || !window.daum.Postcode) {
+      alert("주소 검색 기능이 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+  
+    new window.daum.Postcode({
+      oncomplete: function (data: any) {
+        const addr = data.roadAddress || data.jibunAddress;
+        if (addr) {
+          setValue("companyAddress", addr); 
+          setCompanyAddress(addr);
+        }
+      },
+    }).open();
+  };
+  
 
   const allConsent = watch("allConsent")
   const businessNumber = watch("businessNumber")
@@ -257,10 +269,20 @@ export const BusinessRegistrationForm = () => {
             <p className="text-xs text-gray-700">
               <span className="font-medium">발급 받을 수 있는 서류</span>가 기재되어 있어요!
             </p>
-          </div>
-          <button className="w-full mt-2 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+          </div><button
+            type="button"
+            className="w-full mt-2 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
+            onClick={() =>
+              window.open(
+                "https://www.gov.kr/mw/AA020InfoCappView.do?CappBizCD=12100000016",
+                "_blank"
+              )
+            }
+          >
             사업자등록증명원 발급
           </button>
+
+
         </div>
 
         <div>
@@ -530,6 +552,27 @@ export const BusinessRegistrationForm = () => {
               </div>
             </div>
 
+            {/* ✅ 업종 */}
+            <div className="mb-6">
+              <label
+                htmlFor="industry"
+                className="block text-sm font-semibold text-gray-800 mb-2"
+              >
+                업종
+              </label>
+              <input
+                type="text"
+                id="industry"
+                {...register("industry", { required: "업종은 필수 입력입니다." })}
+                placeholder="예: IT, 제조업, 금융 등"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {errors.industry && (
+                <p className="text-sm text-red-500 mt-2">{errors.industry.message}</p>
+              )}
+            </div>
+
+
             {/* Username */}
             <div>
               <label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-1">
@@ -700,7 +743,7 @@ export const BusinessRegistrationForm = () => {
               </div>
             </div>
 
-             {/* ✅ 파일 키와 이름을 숨겨서 포함 */}
+             {/* 파일 키와 이름을 숨겨서 포함 */}
             <input type="hidden" {...register("businessFileKey")} />
             <input type="hidden" {...register("businessFileName")} />
 
