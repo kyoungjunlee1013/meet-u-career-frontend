@@ -5,6 +5,7 @@ import { Search, Plus } from "lucide-react";
 import TagsTable from "./TagsTable";
 import TagModal from "./TagModal";
 import { apiClient } from "@/api/apiClient";
+import CommunityPagination from "./CommunityPagination";
 
 export interface Tag {
   id: number;
@@ -17,59 +18,26 @@ export interface Tag {
 export default function TagsManagement() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [tags, setTags] = useState<Tag[]>([
-    {
-      id: 1,
-      name: "",
-      status: 0,
-      createdAt: "",
-      updatedAt: "",
-    },
-  ]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
 
-  const handleAddTag = (tagData: { name: string; status: 0 | 1 }) => {
-    const now = new Date().toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+  // Pagination
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 10;
 
-    const newTag: Tag = {
-      id: tags.length > 0 ? Math.max(...tags.map((tag) => tag.id)) + 1 : 1,
-      name: tagData.name,
-      status: tagData.status,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setTags([...tags, newTag]);
+  // 전체 태그 불러오기
+  const fetchTags = async () => {
+    try {
+      const response = await apiClient.get(`/api/admin/community/tags/all`);
+      setTags(response.data.data); // 전체 목록 저장
+    } catch (error) {
+      console.error("태그 목록 불러오기 실패", error);
+    }
   };
 
-  const handleEditTag = (tagData: { name: string; status: 0 | 1 }) => {
-    if (!editingTag) return;
-
-    const now = new Date().toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    const updatedTags = tags.map((tag) =>
-      tag.id === editingTag.id
-        ? { ...tag, name: tagData.name, status: tagData.status, updatedAt: now }
-        : tag
-    );
-
-    setTags(updatedTags);
-    setEditingTag(null);
-  };
+  useEffect(() => {
+    fetchTags();
+  }, []);
 
   const openAddModal = () => {
     setEditingTag(null);
@@ -81,44 +49,33 @@ export default function TagsManagement() {
     setIsModalOpen(true);
   };
 
-  const handleSaveTag = (tagData: { name: string; status: 0 | 1 }) => {
-    if (editingTag) {
-      handleEditTag(tagData);
-    } else {
-      handleAddTag(tagData);
+  const handleSaveTag = () => {
+    fetchTags(); // 새 태그 추가/수정 후 목록 새로고침
+  };
+
+  const handleToggleStatus = async (tagId: number) => {
+    try {
+      await apiClient.patch(`/api/admin/community/tags/${tagId}/status`);
+
+      // 목록 새로고침
+      await fetchTags();
+    } catch (error) {
+      console.error("태그 상태 토글 실패:", error);
+      alert("태그 상태 변경 중 오류가 발생했습니다.");
     }
   };
 
-  const handleToggleStatus = (tagId: number) => {
-    const updatedTags = tags.map((tag) => {
-      if (tag.id === tagId) {
-        const newStatus = tag.status === 0 ? 1 : 0;
-        return {
-          ...tag,
-          status: newStatus,
-          updatedAt: new Date().toLocaleString("ko-KR"),
-        };
-      }
-      return tag;
-    });
 
-    setTags(updatedTags);
+  // 검색어를 기준으로 필터링
+  const filteredTags = tags.filter((tag) => tag.name.includes(searchQuery));
+
+  //  페이지네이션 계산
+  const totalPages = Math.ceil(filteredTags.length / itemsPerPage);
+  const currentItems = filteredTags.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
-
-  const fetchTags = async () => {
-    const response = await apiClient.post(`/api/admin/community/tags/search`, {
-      status: 0,
-      page: 0,
-      size: 10,
-      sortBy: "createdAt",
-      direction: "DESC",
-    });
-    setTags(response.data.data.content);
-  };
-
-  useEffect(() => {
-    fetchTags();
-  }, []);
 
   return (
     <div>
@@ -132,7 +89,10 @@ export default function TagsManagement() {
             className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
             placeholder="태그명 검색"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1); // 검색할 때 페이지 초기화
+            }}
           />
         </div>
         <button
@@ -144,17 +104,33 @@ export default function TagsManagement() {
       </div>
 
       <TagsTable
-        tags={tags.filter((tag) => tag.name.includes(searchQuery))}
+        tags={currentItems}
         onEdit={openEditModal}
         onToggleStatus={handleToggleStatus}
       />
+
+      {totalPages > 1 && (
+        <CommunityPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
 
       <TagModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveTag}
         onSuccess={fetchTags}
-        editData={editingTag || undefined}
+        editData={
+          editingTag
+            ? {
+              id: editingTag.id,
+              name: editingTag.name,
+              status: editingTag.status as 0 | 1,
+            }
+            : undefined
+        }
         title={editingTag ? "태그 수정" : "새 태그 추가"}
       />
     </div>

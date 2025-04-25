@@ -80,23 +80,34 @@ export default function TagModal({
     }
 
     try {
-      const response = await apiClient.post("/api/admin/community/tags", {
-        name: tagName,
-        status: status,
-      });
+      let response;
+
+      if (title === "태그 수정" && editData) {
+        // 태그 수정
+        response = await apiClient.put("/api/admin/community/tags", {
+          id: editData.id,
+          name: tagName,
+          status: status,
+        });
+      } else {
+        // 태그 등록
+        response = await apiClient.post("/api/admin/community/tags", {
+          name: tagName,
+          status: status,
+        });
+      }
 
       console.log("Res, ", response);
 
       if (response.data.msg === "success") {
-        alert("태그가 성공적으로 등록되었습니다.");
-
+        alert("태그가 성공적으로 저장되었습니다.");
         onSuccess?.();
       }
 
       onClose();
     } catch (error) {
-      console.error("태그 등록 실패:", error);
-      alert("태그 등록 중 오류가 발생했습니다.");
+      console.error("태그 저장 실패:", error);
+      alert("태그 저장 중 오류가 발생했습니다.");
     }
   };
 
@@ -128,7 +139,6 @@ export default function TagModal({
             </button>
           </div>
 
-          {/* form 태그 제거 */}
           <div>
             <div className="mb-4">
               <label
