@@ -19,12 +19,12 @@ export interface Comment {
 }
 
 export default function CommentsManagement() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false)
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
 
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10
 
   // 전체 댓글 불러오기

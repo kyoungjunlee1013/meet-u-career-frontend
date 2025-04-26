@@ -2,7 +2,6 @@
 
 import { MetricJobPostingCards } from "@/components/admin/dashboard/MetricJobPostingCards";
 import { JobPostingGrowthChart } from "@/components/admin/dashboard/JobPostingGrowthChart";
-import { JobPostingByIndustryChart } from "@/components/admin/dashboard/JobPostingByIndustryChart";
 import { JobPostingByRegionChart } from "@/components/admin/dashboard/JobPostingByRegionChart";
 import { JobPostingStatus } from "@/components/admin/dashboard/JobPostingStatus";
 import { TopCompanies } from "@/components/admin/dashboard/TopCompanies";
@@ -12,7 +11,6 @@ import { apiClient } from "@/api/apiClient";
 import { DashboardJobPostingMetrics } from "@/types/admin/dashboard";
 
 export default function JobPostingDashboard() {
-  // 초기값을 타입에 맞춰 설정
   const [metrics, setMetrics] = useState<DashboardJobPostingMetrics>({
     totalJobPostings: {
       current: 0,
@@ -47,16 +45,13 @@ export default function JobPostingDashboard() {
     topCompanies: [],
     keywordStatistics: [],
   });
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await apiClient.get(
-          `/api/admin/dashboard/jobpostingstats`
-        );
+        const response = await apiClient.get(`/api/admin/dashboard/jobpostingstats`);
         const data = response.data?.data;
-
-        // 데이터가 넘어오면 상태 업데이트
         setMetrics({
           totalJobPostings: {
             current: data?.totalJobPostings.current,
@@ -93,11 +88,38 @@ export default function JobPostingDashboard() {
         });
       } catch (error) {
         console.error("채용 공고 통계 API 호출 실패:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-6 mt-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="h-24 bg-gray-200 rounded-lg" />
+          <div className="h-24 bg-gray-200 rounded-lg" />
+          <div className="h-24 bg-gray-200 rounded-lg" />
+          <div className="h-24 bg-gray-200 rounded-lg" />
+        </div>
+
+        <div className="h-64 bg-gray-200 rounded-lg" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-64 bg-gray-200 rounded-lg" />
+          <div className="h-64 bg-gray-200 rounded-lg" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-64 bg-gray-200 rounded-lg" />
+          <div className="h-64 bg-gray-200 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

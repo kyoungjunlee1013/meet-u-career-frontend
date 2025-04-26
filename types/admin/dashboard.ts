@@ -38,24 +38,24 @@ export interface DashboardJobPostingMetrics {
   activeJobPostings: MetricDTO; // 활성 채용공고 수
   participatingCompanies: MetricDTO; // 참여 기업 수
   totalViews: MetricDTO; // 조회수
-  jobPostingGrowthChart: MonthlyJobPostingCountDTO[]; // 월별 공고 증가 추이
-  locationStatistics: LocationJobPostingStatsDTO[]; // 지역별 공고
-  jobPostingStatistics: JobPostingStatisticsDTO; // 공고 상태별 통계
-  topCompanies: TopCompanyJobPostingsDTO[]; // 상위 기업 리스트
-  keywordStatistics: PopularKeywordJobPostingsDTO[]; // 인기 키워드
+  jobPostingGrowthChart: MonthlyJobPostingCount[]; // 월별 공고 증가 추이
+  locationStatistics: LocationJobPostingStats[]; // 지역별 공고
+  jobPostingStatistics: JobPostingStatistics; // 공고 상태별 통계
+  topCompanies: TopCompanyJobPostings[]; // 상위 기업 리스트
+  keywordStatistics: PopularKeywordJobPostings[]; // 인기 키워드
 }
 
-export interface MonthlyJobPostingCountDTO {
+export interface MonthlyJobPostingCount {
   month: string; // 월 (예: "1월", "2월", "3월" 등)
   jobPostingCount: number; // 해당 월의 공고 수
 }
 
-export interface LocationJobPostingStatsDTO {
+export interface LocationJobPostingStats {
   locationName: string; // 지역명 (예: "서울특별시")
   jobPostingCount: number; // 해당 지역의 공고 수
 }
 
-export interface JobPostingStatisticsDTO {
+export interface JobPostingStatistics {
   activeCount: number; // 활성 상태 공고 수
   expiredCount: number; // 마감된 상태 공고 수
   draftCount: number; // 임시저장 상태 공고 수
@@ -64,12 +64,12 @@ export interface JobPostingStatisticsDTO {
   averagePostingDays: number; // 평균 공고 게시 기간
 }
 
-export interface TopCompanyJobPostingsDTO {
+export interface TopCompanyJobPostings {
   companyName: string; // 기업명
   jobPostingCount: number; // 해당 기업의 공고 수
 }
 
-export interface PopularKeywordJobPostingsDTO {
+export interface PopularKeywordJobPostings {
   keyword: string; // 키워드 (예: "소프트웨어개발")
   count: number; // 해당 키워드의 공고 수
 }
@@ -102,7 +102,7 @@ export interface KeywordStats {
   count: number;
 }
 
-export interface ApplicationMetricDTO {
+export interface ApplicationMetric {
   current: number;
   previous: number;
   growthRate: number;
@@ -114,12 +114,12 @@ export interface ApplicationTrendDTO {
   growthRate: number;
 }
 
-export interface ApplicationAgeGroupDTO {
+export interface ApplicationAgeGroup {
   ageGroup: string;
   count: number;
 }
 
-export interface ApplicationTimeStatsDTO {
+export interface ApplicationTimeStats {
   timeSlot: string;
   applied: number;
   canceled: number;
@@ -131,7 +131,7 @@ export interface JobTypeData {
   jobPostingCount: number;
 }
 
-export interface DailyApplicationTrend {
+export interface ApplicationTrends {
   date: string;
   totalApplications: number;
   acceptedApplications: number;
@@ -139,13 +139,13 @@ export interface DailyApplicationTrend {
 }
 
 export interface DashboardApplicationMetrics {
-  totalApplications: ApplicationMetricDTO;
-  acceptedApplications: ApplicationMetricDTO;
-  rejectedApplications: ApplicationMetricDTO;
+  totalApplications: ApplicationMetric;
+  acceptedApplications: ApplicationMetric;
+  rejectedApplications: ApplicationMetric;
   conversionRates: { label: string; rate: number }[];
-  dailyApplicationTrend: DailyApplicationTrend[];
-  applicantAgeGroupChart: ApplicationAgeGroupDTO[];
-  top5Companies: any[];
-  applicationTimeStats: ApplicationTimeStatsDTO[];
+  applicationTrends: ApplicationTrends[];
+  applicantAgeGroupChart: ApplicationAgeGroup[];
+  top5Companies: TopCompanyJobPostings[];
+  applicationTimeStats: ApplicationTimeStats[];
   jobCategoryPostings: JobTypeData[];
 }

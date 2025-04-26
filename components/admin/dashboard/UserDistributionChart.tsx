@@ -19,14 +19,12 @@ export function UserDistributionChart({ data }: UserDistributionChartProps) {
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-medium flex items-baseline">
           사용자 유형 분포
-          {/* 느낌표 서클 아이콘 추가 */}
           <span className="ml-2 cursor-pointer">
             <Info
               size={16}
               className="text-gray-500"
-              data-tooltip-id="user-tooltip" // 수정: data-tooltip-id를 id로 변경
+              data-tooltip-id="user-tooltip"
             />
-            {/* Tooltip: 사용자 = 개인회원 + 기업회원 */}
             <ReactTooltip id="user-tooltip" place="top">
               사용자 = 개인회원 + 기업회원
             </ReactTooltip>
@@ -41,10 +39,10 @@ export function UserDistributionChart({ data }: UserDistributionChartProps) {
               data={filteredData}
               cx="50%"
               cy="50%"
-              innerRadius={60}
+              innerRadius={50}
               outerRadius={80}
               paddingAngle={5}
-              dataKey="count" // count 값 사용
+              dataKey="count"
             >
               {filteredData.map((entry, index) => (
                 <Cell
@@ -53,27 +51,28 @@ export function UserDistributionChart({ data }: UserDistributionChartProps) {
                 />
               ))}
             </Pie>
-            {/* Tooltip 추가 */}
             <Tooltip
               content={({ payload }) => {
                 if (payload && payload.length > 0) {
-                  const { name, value } = payload[0];
+                  const { payload: chartData } = payload[0];
+                  const label =
+                    chartData.accountType === 0
+                      ? "개인회원"
+                      : chartData.accountType === 1
+                        ? "기업회원"
+                        : "기타";
+
                   return (
                     <div
-                      className="bg-white p-2 rounded shadow-md"
+                      className="p-2 rounded shadow-md text-xs"
                       style={{
                         backgroundColor: "black",
                         color: "white",
                       }}
                     >
-                      <strong>
-                        {name === 0
-                          ? "개인회원"
-                          : name === 1
-                          ? "기업회원"
-                          : null}
-                        : {value}
-                      </strong>
+                      <div>
+                        <strong>{label}</strong>: {chartData.count}명
+                      </div>
                     </div>
                   );
                 }
@@ -95,8 +94,8 @@ export function UserDistributionChart({ data }: UserDistributionChartProps) {
               {entry.accountType === 0
                 ? "개인회원"
                 : entry.accountType === 1
-                ? "기업회원"
-                : null}
+                  ? "기업회원"
+                  : null}
             </span>
           </div>
         ))}

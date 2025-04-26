@@ -20,7 +20,7 @@ export const LoginForm = () => {
 
   // 세션에 저장된 이메일 복구
   useEffect(() => {
-    const savedEmail = sessionStorage.getItem("savedAdminEmail");
+    const savedEmail = localStorage.getItem("savedAdminId");
     if (savedEmail) {
       setEmail(savedEmail);
       setRememberMe(true);
@@ -59,9 +59,9 @@ export const LoginForm = () => {
 
           // 로그인 성공 후 아이디 저장
           if (rememberMe) {
-            sessionStorage.setItem("savedAdminEmail", email);
+            localStorage.setItem("savedAdminId", email);
           } else {
-            sessionStorage.removeItem("savedAdminEmail");
+            localStorage.removeItem("savedAdminId");
           }
 
           await fetchMyInfo();
@@ -85,13 +85,11 @@ export const LoginForm = () => {
 
   return (
     <form className="space-y-6" onSubmit={handleLogin}>
-      {/* 서버 에러 메시지 */}
       {serverError && (
         <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
           {serverError}
         </div>
       )}
-      {/* 이메일 */}
       <div>
         <label
           htmlFor="email"
@@ -121,7 +119,6 @@ export const LoginForm = () => {
           </p>
         )}
       </div>
-      {/* 비밀번호 */}
       <div>
         <label
           htmlFor="password"
@@ -151,7 +148,6 @@ export const LoginForm = () => {
           </p>
         )}
       </div>
-      {/* 체크박스 */}
       <div className="flex items-center">
         <input
           id="rememberMe"
@@ -168,7 +164,6 @@ export const LoginForm = () => {
           아이디 저장
         </label>
       </div>
-      {/* 제출 버튼 */}
       <div>
         <button
           type="submit"

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -10,16 +9,34 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Eye } from "lucide-react";
 import { JobPostingGrowthChartData } from "@/types/admin/dashboard";
+import type { TooltipProps } from "recharts";
 
 interface JobPostingGrowthChartProps {
   data: JobPostingGrowthChartData[];
 }
 
-export function JobPostingGrowthChart({ data }: JobPostingGrowthChartProps) {
-  const [period, setPeriod] = useState("month");
+// 커스텀 툴팁 컴포넌트
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: TooltipProps<number, string>) => {
+  if (active && payload && payload.length > 0) {
+    return (
+      <div
+        className="bg-black text-white text-xs px-3 py-2 rounded shadow-md"
+        style={{ lineHeight: "1.5" }}
+      >
+        <p>{label}</p>
+        <p>채용공고 수: {payload[0].value}</p>
+      </div>
+    );
+  }
+  return null;
+};
 
+export function JobPostingGrowthChart({ data }: JobPostingGrowthChartProps) {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
@@ -56,9 +73,7 @@ export function JobPostingGrowthChart({ data }: JobPostingGrowthChartProps) {
               tick={{ fontSize: 12, fill: "#9CA3AF" }}
               domain={[0, "auto"]}
             />
-            <Tooltip
-              formatter={(value) => `채용공고 수 : ${value}`} // 툴팁에 "채용공고 수 : n" 형태로 변경
-            />
+            <Tooltip content={<CustomTooltip />} />
             <Line
               type="monotone"
               dataKey="jobPostingCount"
