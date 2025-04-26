@@ -19,7 +19,7 @@ export function TopCompanies({ data }: TopCompaniesProps) {
           <div key={index} className="flex items-center">
             <div className="flex-shrink-0 mr-4">
               <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                <span className="text-gray-500 text-xs">(주)</span>
+                <span className="text-gray-500 text-xs">로고</span>
               </div>
             </div>
             <div className="flex-grow">

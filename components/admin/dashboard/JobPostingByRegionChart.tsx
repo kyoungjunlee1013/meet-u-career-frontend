@@ -1,3 +1,5 @@
+"use client";
+
 import {
   PieChart,
   Pie,
@@ -6,7 +8,6 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
-import { Eye } from "lucide-react";
 
 interface LocationStats {
   locationName: string;
@@ -17,41 +18,53 @@ interface JobPostingByRegionChartProps {
   data: LocationStats[];
 }
 
+// ✅ 색상 팔레트 (충분히 다양한 색상 제공)
 const COLORS = [
-  "#4F46E5",
-  "#38BDF8",
-  "#FB923C",
-  "#F87171",
-  "#A3A3A3",
-  "#D1D5DB",
+  "#4F46E5", "#38BDF8", "#FB923C", "#F87171", "#A3A3A3", "#10B981",
+  "#FBBF24", "#C084FC", "#EC4899", "#F43F5E", "#14B8A6", "#8B5CF6",
+  "#E879F9", "#6366F1", "#22D3EE", "#FACC15"
 ];
 
 /**
- * 데이터 가공: 상위 5개 지역을 표시하고, 나머지는 '그 외'로 처리
+ * 상위 10개 + 그 외 데이터 가공
  */
 const processData = (data: LocationStats[]) => {
-  const sortedData = [...data].sort(
-    (a, b) => b.jobPostingCount - a.jobPostingCount
-  );
-  const top5 = sortedData.slice(0, 5); // 상위 5개 지역
-  const others = sortedData.slice(5); // 나머지 지역
-  const othersCount = others.reduce(
-    (sum, item) => sum + item.jobPostingCount,
-    0
-  );
+  const sortedData = [...data].sort((a, b) => b.jobPostingCount - a.jobPostingCount);
+  const top10 = sortedData.slice(0, 10);
+  const others = sortedData.slice(10);
+  const othersCount = others.reduce((sum, item) => sum + item.jobPostingCount, 0);
 
-  // '그 외' 카테고리 추가
   if (othersCount > 0) {
-    top5.push({ locationName: "그 외", jobPostingCount: othersCount });
+    top10.push({ locationName: "그 외", jobPostingCount: othersCount });
   }
 
-  return top5;
+  return top10;
 };
 
-export function JobPostingByRegionChart({
-  data,
-}: JobPostingByRegionChartProps) {
-  const processedData = processData(data); // 데이터 가공
+// ✅ 툴팁 커스터마이징
+const CustomTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length > 0) {
+    const { locationName, jobPostingCount } = payload[0].payload;
+    return (
+      <div
+        style={{
+          backgroundColor: "black",
+          color: "white",
+          padding: "6px 10px",
+          borderRadius: "6px",
+          fontSize: "12px",
+          boxShadow: "0px 0px 5px rgba(0,0,0,0.3)",
+        }}
+      >
+        {locationName}: {jobPostingCount}개
+      </div>
+    );
+  }
+  return null;
+};
+
+export function JobPostingByRegionChart({ data }: JobPostingByRegionChartProps) {
+  const processedData = processData(data);
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -59,14 +72,14 @@ export function JobPostingByRegionChart({
         <h3 className="font-medium">지역별 채용공고</h3>
       </div>
 
-      <div className="h-64">
+      <div className="h-96">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 40 }}>
             <Pie
               data={processedData}
               cx="50%"
-              cy="50%"
-              innerRadius={60}
+              cy="45%"
+              innerRadius={50}
               outerRadius={80}
               paddingAngle={2}
               dataKey="jobPostingCount"
@@ -79,42 +92,21 @@ export function JobPostingByRegionChart({
                 />
               ))}
             </Pie>
-            <Tooltip
-              content={(e) => {
-                if (e.active && e.payload && e.payload.length > 0) {
-                  const { locationName, jobPostingCount } =
-                    e.payload[0].payload;
-                  return (
-                    <div
-                      style={{
-                        backgroundColor: "#fff",
-                        border: "1px solid #ddd",
-                        padding: "5px",
-                        borderRadius: "5px",
-                        fontSize: "12px",
-                        color: "#333",
-                      }}
-                    >
-                      {locationName}: {jobPostingCount} 개
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
+            <Tooltip content={<CustomTooltip />} />
             <Legend
               layout="horizontal"
               verticalAlign="bottom"
               align="center"
               iconType="circle"
               iconSize={8}
-              formatter={(value) => {
-                const foundData = processedData.find(
-                  (item) => item.locationName === value
-                );
-                return foundData
-                  ? `${foundData.locationName} : ${foundData.jobPostingCount}`
-                  : value;
+              wrapperStyle={{
+                marginTop: "12px",
+                fontSize: "12px",
+                lineHeight: "20px",
+              }}
+              formatter={(value, entry: any) => {
+                const payload = entry.payload as LocationStats;
+                return `${payload.locationName} (${payload.jobPostingCount})`;
               }}
             />
           </PieChart>

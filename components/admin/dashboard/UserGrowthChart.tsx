@@ -14,7 +14,6 @@ import {
 } from "recharts";
 
 export function UserGrowthChart({ data }: UserGrowthChartProps) {
-  // 넘어오는 데이터를 형식에 맞게 수정.
   const chartData = data.map((item) => ({
     month: item.month,
     users: item.userCount,
@@ -24,16 +23,13 @@ export function UserGrowthChart({ data }: UserGrowthChartProps) {
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex justify-between items-center mb-6">
         <h3 className="font-medium flex items-baseline">
-          {" "}
           사용자 증가 추이
-          {/* 느낌표 서클 아이콘 추가 */}
           <span className="ml-2 cursor-pointer">
             <Info
               size={16}
               className="text-gray-500"
-              data-tooltip-id="user-tooltip" // 수정: data-tooltip-id를 id로 변경
+              data-tooltip-id="user-tooltip"
             />
-            {/* Tooltip: 사용자 = 개인회원 + 기업회원 */}
             <ReactTooltip id="user-tooltip" place="top">
               사용자 = 개인회원 + 기업회원
             </ReactTooltip>
@@ -65,22 +61,20 @@ export function UserGrowthChart({ data }: UserGrowthChartProps) {
               dot={{ r: 4, strokeWidth: 2 }}
               activeDot={{ r: 6, strokeWidth: 2 }}
             />
-            {/* Tooltip 추가 */}
             <Tooltip
               content={({ payload }) => {
                 if (payload && payload.length > 0) {
                   const { month, users } = payload[0].payload;
                   return (
                     <div
-                      className="bg-black text-white p-2 rounded shadow-md"
+                      className="bg-black text-white p-2 rounded shadow-md text-xs"
                       style={{
-                        backgroundColor: "black",
-                        color: "white",
+                        backgroundColor: "#000",
+                        color: "#fff",
                       }}
                     >
-                      <strong>
-                        {month} : {users}
-                      </strong>
+                      <div><strong>{month}</strong></div>
+                      <div>사용자 수: {users}명</div>
                     </div>
                   );
                 }

@@ -9,10 +9,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { DailyApplicationTrend } from "@/types/admin/dashboard";
+import { ApplicationTrends } from "@/types/admin/dashboard";
 
 interface ApplicationTrendChartProps {
-  data: DailyApplicationTrend[];
+  data: ApplicationTrends[];
 }
 
 export function ApplicationTrendChart({ data }: ApplicationTrendChartProps) {
@@ -29,18 +29,18 @@ export function ApplicationTrendChart({ data }: ApplicationTrendChartProps) {
         <h3 className="font-medium">지원 추이</h3>
       </div>
 
-      <div className="flex items-center mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="flex items-center gap-2 text-xs">
           <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-          <span>총 지원 건수</span>
+          <span>총 지원자 건수</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-xs">
           <div className="w-3 h-3 rounded-full bg-green-400"></div>
-          <span>서류합격</span>
+          <span>서류 합격</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 text-xs">
           <div className="w-3 h-3 rounded-full bg-red-400"></div>
-          <span>서류불합격</span>
+          <span>서류 불합격</span>
         </div>
       </div>
 
@@ -67,7 +67,35 @@ export function ApplicationTrendChart({ data }: ApplicationTrendChartProps) {
               tick={{ fontSize: 12, fill: "#9CA3AF" }}
               domain={[0, "auto"]}
             />
-            <Tooltip formatter={(value) => `${value}`} />
+            <Tooltip
+              formatter={(value: any, name: string) => {
+                switch (name) {
+                  case "total":
+                    return [`${value}`, "총 지원자 건수"];
+                  case "accepted":
+                    return [`${value}`, "서류 합격"];
+                  case "rejected":
+                    return [`${value}`, "서류 불합격"];
+                  default:
+                    return [value, name];
+                }
+              }}
+              labelFormatter={(label) => `${label}`}
+              contentStyle={{
+                backgroundColor: "#1f2937",
+                border: "none",
+                borderRadius: "6px",
+                color: "#fff",
+              }}
+              itemStyle={{
+                color: "#fff",
+                fontSize: 13,
+              }}
+              labelStyle={{
+                color: "#fff",
+                fontWeight: "bold",
+              }}
+            />
             <Line
               type="monotone"
               dataKey="total"
