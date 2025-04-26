@@ -61,6 +61,7 @@
     "react-syntax-highlighter": "^15.6.1",
     "recharts": "latest",
     "sonner": "^1.7.1",
+    "sweetalert2": "^11.19.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "ttf2woff2": "^6.0.1",
