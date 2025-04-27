@@ -139,9 +139,16 @@ export default function JobPaymentPage() {
       alert("Toss 결제 환경변수가 올바르게 설정되어 있지 않습니다.");
       return;
     }
-    const successUrl = `${redirectUrl}/business/jobs/${job.id}/payment/success?adType=${selectedProduct?.type}&durationDays=${durationDays}&jobPostingId=${job.id}`;
-    const failUrl = `${redirectUrl}/business/jobs/${job.id}/payment/fail?adType=${selectedProduct?.type}&durationDays=${durationDays}&jobPostingId=${job.id}`;
-    const tossPayments = (window as any).TossPayments(clientKey);
+    const successUrl = `${redirectUrl}/business/jobs/${job.id}/payment/success?` +
+  `transactionId=${orderId}` +
+  `&orderId=${orderId}` +
+  `&amount=${amount}` +
+  `&adType=${selectedProduct?.type}` +
+  `&durationDays=${durationDays}` +
+  `&jobPostingId=${job.id}`;
+
+const failUrl = `${redirectUrl}/business/jobs/${job.id}/payment/fail?transactionId=${orderId}`;
+const tossPayments = (window as any).TossPayments(clientKey);
     tossPayments.requestPayment("카드", {
       amount,
       orderId,
@@ -163,12 +170,18 @@ export default function JobPaymentPage() {
         <div className="bg-white rounded shadow p-4 mb-8">
           <div className="flex items-center gap-2 mb-1">
             <div className="text-xl font-semibold">{job?.title}</div>
-            <AdBadge
-              isAdvertised={job?.isAdvertised}
-              adType={job?.adType}
-              adStartDate={job?.adStartDate}
-              adEndDate={job?.adEndDate}
-            />
+            {/* 여러 광고 뱃지 표시 */}
+            <div className="flex gap-2">
+              {job?.advertisements?.map((ad, idx) => (
+                <AdBadge
+                  key={idx}
+                  isAdvertised={true}
+                  adType={ad.adType}
+                  adStartDate={ad.startDate}
+                  adEndDate={ad.endDate}
+                />
+              ))}
+            </div>
           </div>
           <div className="text-gray-600 mb-1">{job?.companyName}</div>
           {/* 게시 기간 표시 */}

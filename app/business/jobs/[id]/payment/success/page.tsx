@@ -6,47 +6,70 @@ import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 import { BusinessHeader } from "@/components/business/layout/BusinessHeader";
 
+function getAdTypeName(adType?: number) {
+  switch (adType) {
+    case 1:
+      return "베이직 광고";
+    case 2:
+      return "스탠다드 광고";
+    case 3:
+      return "프리미엄 광고";
+    default:
+      return "광고";
+  }
+}
+
 export default function PaymentSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [adInfo, setAdInfo] = useState<any>(null);
+  const [paymentInfo, setPaymentInfo] = useState<any>(null);
 
   useEffect(() => {
-    const paymentKey = searchParams.get("paymentKey");
-    const orderId = searchParams.get("orderId");
-    const amount = searchParams.get("amount");
-    const adType = searchParams.get("adType");
-    const durationDays = searchParams.get("durationDays");
-    const jobPostingId = searchParams.get("jobPostingId");
-    if (!paymentKey || !orderId || !amount || !adType || !durationDays || !jobPostingId) {
-      setError("결제 정보 또는 광고 정보가 올바르지 않습니다.");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    fetch("/api/business/advertisement/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        paymentKey,
-        orderId,
-        amount: Number(amount),
-        adType: Number(adType),
-        durationDays: Number(durationDays),
-        jobPostingId: Number(jobPostingId)
-      }),
-    })
-      .then(res => res.json())
-      .then(data => {
-        setAdInfo(data);
+    async function completePayment() {
+      const transactionId = searchParams.get("transactionId");
+      const orderId = searchParams.get("orderId") || transactionId; // fallback
+      const paymentKey = searchParams.get("paymentKey");
+      const amount = searchParams.get("amount");
+      const adType = searchParams.get("adType");
+      const durationDays = searchParams.get("durationDays");
+      const jobPostingId = searchParams.get("jobPostingId");
+      if (!transactionId || !paymentKey || !amount || !adType || !durationDays || !jobPostingId) {
+        setError("결제 정보가 올바르지 않습니다.");
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        // 1. 광고 등록 + 결제 승인
+        const registerRes = await fetch("/api/business/advertisement/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            paymentKey,
+            orderId,
+            amount: Number(amount),
+            adType: Number(adType),
+            durationDays: Number(durationDays),
+            jobPostingId: Number(jobPostingId)
+          }),
+        });
+        if (!registerRes.ok) {
+          throw new Error("광고 등록 실패");
+        }
+        // 2. 결제 상세 조회
+        const paymentRes = await fetch(`/api/business/payment/${transactionId}`);
+        const paymentData = await paymentRes.json();
+        setPaymentInfo(paymentData?.data);
         setError(null);
-      })
-      .catch(() => {
-        setError("광고 등록에 실패했습니다. 결제 내역에서 상태를 확인해 주세요.");
-      })
-      .finally(() => setLoading(false));
+      } catch (err) {
+        setError("결제 정보를 불러오지 못했습니다. 결제 내역에서 상태를 확인해 주세요.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    completePayment();
   }, []);
 
   if (loading) {
@@ -93,7 +116,6 @@ export default function PaymentSuccessPage() {
     );
   }
 
-  const result = adInfo?.data?.result;
   return (
     <>
       <BusinessHeader />
@@ -101,11 +123,18 @@ export default function PaymentSuccessPage() {
         <div className="bg-white rounded-lg shadow-lg px-8 py-10 text-center max-w-lg w-full">
           <svg className="mx-auto h-16 w-16 text-green-500 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2l4-4m5 2a9 9 0 11-18 0a9 9 0 0118 0z" /></svg>
           <h2 className="text-2xl font-bold mb-2">광고 결제가 완료되었습니다!</h2>
-          <p className="text-gray-700 mb-4">프리미엄 광고가 정상적으로 등록되어, 곧 상단에 노출됩니다.</p>
+          <p className="text-gray-700 mb-4">
+            {paymentInfo?.adType
+              ? `${getAdTypeName(paymentInfo.adType)}가 정상적으로 등록되어, 곧 메인 화면에 노출됩니다.`
+              : '광고가 정상적으로 등록되어, 곧 메인 화면에 노출됩니다.'}
+          </p>
           <div className="bg-gray-50 rounded-md p-4 mb-4 text-left">
-            <div><b>결제 금액:</b> <span className="text-blue-700">{adInfo?.data?.amount ? Number(adInfo.data.amount).toLocaleString() : '-'}원</span></div>
-            <div><b>주문번호:</b> {adInfo?.data?.orderId || '-'}</div>
-            <div><b>광고 ID:</b> {result || '-'}</div>
+            <div><b>결제 금액:</b> <span className="text-blue-700">{paymentInfo?.amount ? Number(paymentInfo.amount).toLocaleString() : '-'}원</span></div>
+            <div><b>주문번호:</b> {paymentInfo?.transactionId || '-'}</div>
+            <div><b>결제 일시:</b> {paymentInfo?.createdAt ? new Date(paymentInfo.createdAt).toLocaleString() : '-'}</div>
+            <div><b>광고 상품:</b> {typeof paymentInfo?.advertisementPeriod === 'number' ? `${paymentInfo.advertisementPeriod}일 (${paymentInfo.advertisementTitle || '-'})` : paymentInfo?.advertisementTitle || '-'}</div>
+            <div><b>광고 적용 기간:</b> {paymentInfo?.advertisementStartDate && paymentInfo?.advertisementEndDate ? `${new Date(paymentInfo.advertisementStartDate).toLocaleDateString()} ~ ${new Date(paymentInfo.advertisementEndDate).toLocaleDateString()}` : '-'}</div>
+            <div><b>기업명:</b> {paymentInfo?.companyName || '-'}</div>
           </div>
           <div className="flex gap-3 justify-center mt-4">
             <button
