@@ -70,7 +70,7 @@ function mapPostData(data: any) {
     id: data.id,
     author: {
       name: `user${data.accountId}`, // accountId로 임시 표시 (추후 닉네임 연동 가능)
-      avatar: data.profileImageUrl || "/images/etc/profile.png",
+      avatar: data.profileImageUrl || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png",
     },
     content: data.content,
     image: data.postImageUrl || null,

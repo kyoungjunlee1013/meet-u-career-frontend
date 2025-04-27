@@ -1,20 +1,23 @@
 "use client"
 
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Menu, Bell, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { NotificationDropdown } from "./NotificationDropdown"
 import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown"
 import { ProfileDropdown } from "./ProfileDropdown"
-import { useState, useRef, useEffect } from "react"
-
 import { useSidebar } from "./SidebarProvider"
+import { useNotificationStore } from "@/store/useNotificationStore"
 
 export function PersonalHeader() {
   const { toggleSidebar } = useSidebar()
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false)
-  const [isChatOpen, setIsChatOpen] = useState(false)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [isNotificationOpen, setIsNotificationOpen] = useState<boolean>(false)
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false)
+  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false)
+
+  const { notifications, isLoaded } = useNotificationStore();
+  const hasUnreadNotification = isLoaded && notifications.some((n) => n.isRead === 0);
 
   const notificationRef = useRef<HTMLDivElement>(null)
   const chatRef = useRef<HTMLDivElement>(null)
@@ -78,9 +81,9 @@ export function PersonalHeader() {
               aria-label="Notifications"
             >
               <Bell className="h-[18px] w-[18px] text-gray-700" />
-              <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-medium">
-                1
-              </span>
+              {hasUnreadNotification && (
+                <span className="absolute -top-0.5 -right-0.5 block h-2 w-2 rounded-full bg-red-500" />
+              )}
             </Button>
             {isNotificationOpen && <NotificationDropdown />}
           </div>

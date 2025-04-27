@@ -99,7 +99,7 @@ export const CreatePostModal = ({
         if (selectedImage) {
           formData.append("image", selectedImage);
         } else if (previewImage && imageKey) {
-          if (!previewImage.includes("/images/etc/profile.png") && !previewImage.includes("generic-app-icon.png")) {
+          if (!previewImage.includes("https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png") && !previewImage.includes("generic-app-icon.png")) {
             json.postImageKey = imageKey;
           }
         } else {
@@ -171,7 +171,7 @@ export const CreatePostModal = ({
         {/* 프로필 + 닉네임 */}
         <div className="flex items-center gap-3 p-4">
           <img
-            src={profileImageUrl || "/images/etc/profile.png"}
+            src={profileImageUrl || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"}
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover"
           />
@@ -197,8 +197,8 @@ export const CreatePostModal = ({
                 key={tag}
                 onClick={() => handleTagSelect(tag)}
                 className={`px-3 py-1 rounded-full text-sm ${selectedTag === tag
-                    ? "bg-blue-100 text-blue-700"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-blue-100 text-blue-700"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
               >
                 #{tag}
