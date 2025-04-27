@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: frontend
+    command: npm run start
     networks:
       - meetu_net
   nginx:
