@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 import { BusinessHeader } from "@/components/business/layout/BusinessHeader";
+import { apiClient } from "@/api/apiClient";
 
 function getAdTypeName(adType?: number) {
   switch (adType) {
@@ -43,25 +44,21 @@ export default function PaymentSuccessPage() {
       setLoading(true);
       try {
         // 1. 광고 등록 + 결제 승인
-        const registerRes = await fetch("/api/business/advertisement/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            paymentKey,
-            orderId,
-            amount: Number(amount),
-            adType: Number(adType),
-            durationDays: Number(durationDays),
-            jobPostingId: Number(jobPostingId)
-          }),
+        // 1. 광고 등록 + 결제 승인
+        const registerRes = await apiClient.post("/api/business/advertisement/register", {
+          paymentKey,
+          orderId,
+          amount: Number(amount),
+          adType: Number(adType),
+          durationDays: Number(durationDays),
+          jobPostingId: Number(jobPostingId)
         });
-        if (!registerRes.ok) {
+        if (registerRes.status !== 200) {
           throw new Error("광고 등록 실패");
         }
         // 2. 결제 상세 조회
-        const paymentRes = await fetch(`/api/business/payment/${transactionId}`);
-        const paymentData = await paymentRes.json();
-        setPaymentInfo(paymentData?.data);
+        const paymentRes = await apiClient.get(`/api/business/payment/${transactionId}`);
+        setPaymentInfo(paymentRes.data?.data);
         setError(null);
       } catch (err) {
         setError("결제 정보를 불러오지 못했습니다. 결제 내역에서 상태를 확인해 주세요.");

@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
+import { apiClient } from "@/api/apiClient"
 import { Edit2, Plus, Trash2, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -431,13 +432,9 @@ function CoverLetterSection({ content, onContentUpdate }: { content: any; onCont
   useEffect(() => {
     setLoading(true)
     setError(null)
-    fetch("/api/personal/coverletter/list")
+    apiClient.get("/api/personal/coverletter/list")
       .then(res => {
-        if (!res.ok) throw new Error("자기소개서 목록을 불러오지 못했습니다.")
-        return res.json()
-      })
-      .then(data => {
-        setCoverLetters(data.data || [])
+        setCoverLetters(res.data.data || [])
       })
       .catch(err => {
         setError(err.message)

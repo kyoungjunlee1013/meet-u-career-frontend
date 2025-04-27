@@ -1,6 +1,7 @@
 "use client";
 
 import { BusinessHeader } from "@/components/business/layout/BusinessHeader";
+import { apiClient } from "@/api/apiClient";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useParams } from "next/navigation";
@@ -41,9 +42,8 @@ export default function JobPaymentPage() {
     if (jobId) {
       setLoading(true);
       setError(null);
-      fetch(`/api/business/job/view/${jobId}`)
-        .then(res => res.json())
-        .then(data => setJob(data.data))
+      apiClient.get(`/api/business/job/view/${jobId}`)
+        .then(res => setJob(res.data.data))
         .catch(() => setError('공고 데이터를 불러올 수 없습니다.'))
         .finally(() => setLoading(false));
     }

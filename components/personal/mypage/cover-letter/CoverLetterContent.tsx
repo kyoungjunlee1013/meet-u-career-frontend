@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react";
+import { apiClient } from "@/api/apiClient";
 import { CoverLetterStatsCardList } from "./CoverLetterStatsCardList";
 import { CoverLetterCardList } from "./CoverLetterCardList";
 import { CoverLetterEmptyState } from "./CoverLetterEmptyState";
@@ -35,11 +36,10 @@ export const CoverLetterContent = () => {
     setPreviewError(null);
     try {
       // 상세 API 호출 (id 기반)
-      const res = await fetch(`/api/personal/coverletter/view?id=${coverLetter.id}`);
-      if (!res.ok) throw new Error('서버 응답 오류');
-      const json = await res.json();
-      if (json && json.data) {
-        setSelectedCoverLetter(json.data);
+      const res = await apiClient.get(`/api/personal/coverletter/view?id=${coverLetter.id}`);
+      if (!res.data) throw new Error('서버 응답 오류');
+      if (res.data && res.data.data) {
+        setSelectedCoverLetter(res.data.data);
       } else {
         setSelectedCoverLetter(coverLetter);
       }
@@ -57,17 +57,11 @@ export const CoverLetterContent = () => {
   React.useEffect(() => {
     const fetchCoverLetters = async () => {
       try {
-        const res = await fetch("/api/personal/coverletter/list");
-        const json = await res.json();
-        // API 응답이 { data: CoverLetter[], ... } 형태라고 가정
-        if (json && json.data) {
-          setCoverLetters(json.data);
-        } else {
-          setCoverLetters([]);
-        }
+        const res = await apiClient.get("/api/personal/coverletter/list");
+        if (!res.data) throw new Error("서버 오류");
+        setCoverLetters(res.data.data || []);
       } catch (err) {
-        console.error("자기소개서 목록 조회 실패", err);
-        alert("자기소개서 목록을 불러오는 데 실패했습니다.");
+        toast({ title: "목록을 불러올 수 없습니다.", variant: "destructive" });
       }
     };
     fetchCoverLetters();
@@ -90,10 +84,8 @@ export const CoverLetterContent = () => {
           className="px-3 py-1 rounded bg-red-600 text-white"
           onClick={async () => {
             try {
-              const res = await fetch(`/api/personal/coverletter/${coverLetter.id}`, {
-                method: 'POST',
-              });
-              if (!res.ok) throw new Error('서버 오류로 삭제에 실패했습니다.');
+              const res = await apiClient.post(`/api/personal/coverletter/${coverLetter.id}`);
+              if (!res.data) throw new Error('서버 오류로 삭제에 실패했습니다.');
               setCoverLetters((prev) => prev.filter((cl) => cl.id !== coverLetter.id));
               toast({ title: "삭제되었습니다.", variant: "default" });
             } catch (err: any) {

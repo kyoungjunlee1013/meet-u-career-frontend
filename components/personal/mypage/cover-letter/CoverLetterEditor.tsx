@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { apiClient } from "@/api/apiClient"
 import { useRouter } from "next/navigation"
 import { CoverLetterBasicInfoCard } from "./CoverLetterBasicInfoCard"
 import { CoachingSectionEditor } from "../../coaching/CoachingSectionEditor"
@@ -91,43 +92,38 @@ export function CoverLetterEditor({ id, isEditMode }: { id?: string | null; isEd
     let res, json;
     if (isEditMode && id) {
       // 수정 API 호출
-      res = await fetch(`/api/personal/coverletter/edit/${id}`, {
-        method: "POST", // 또는 PATCH, 서버에 맞게 조정
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      res = await apiClient.post(`/api/personal/coverletter/edit/${id}`,
+        {
           title: coverLetterData.title,
           contents: sections.map((s, idx) => ({
-  sectionTitle: s.sectionTitle,
-  content: s.content,
-  contentOrder: idx + 1,
-  ...(s.contentId ? { id: s.contentId } : {}),
-})),
-        }),
-      });
+            sectionTitle: s.sectionTitle,
+            content: s.content,
+            contentOrder: idx + 1,
+            ...(s.contentId ? { id: s.contentId } : {}),
+          })),
+        }
+      );
       setSaveProgress(80);
-      json = await res.json();
+      json = res.data;
       setSaveProgress(100);
-      if (!res.ok || !json.data) throw new Error(json.message || "수정에 실패했습니다.");
+      if (!json.data) throw new Error(json.message || "수정에 실패했습니다.");
       toast({ title: "자기소개서가 성공적으로 수정되었습니다!", variant: "default" });
     } else {
       // 신규 작성 API 호출
-      res = await fetch("/api/personal/coverletter/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: coverLetterData.title,
-          contents: sections.map((s, idx) => ({
+      const payload = {
+        title: coverLetterData.title,
+        contents: sections.map((s, idx) => ({
   sectionTitle: s.sectionTitle,
   content: s.content,
   contentOrder: idx + 1,
   ...(s.contentId ? { id: s.contentId } : {}),
 })),
-        }),
-      });
+      };
+      res = await apiClient.post("/api/personal/coverletter/create", payload);
       setSaveProgress(80);
-      json = await res.json();
+      json = res.data;
       setSaveProgress(100);
-      if (!res.ok || !json.data) throw new Error(json.message || "저장에 실패했습니다.");
+      if (!json.data) throw new Error(json.message || "저장에 실패했습니다.");
       toast({ title: "자기소개서가 성공적으로 저장되었습니다!", variant: "default" });
     }
     setShowCelebration(true);
@@ -150,9 +146,8 @@ export function CoverLetterEditor({ id, isEditMode }: { id?: string | null; isEd
       const fetchCoverLetterData = async () => {
   try {
     setIsLoading(true);
-    const res = await fetch(`/api/personal/coverletter/view?id=${id}`);
-    if (!res.ok) throw new Error('서버 응답 오류');
-    const json = await res.json();
+    const res = await apiClient.get(`/api/personal/coverletter/view?id=${id}`);
+    const json = await res.data;
     if (json && json.data) {
       setCoverLetterData({
         id: json.data.id,
@@ -227,12 +222,11 @@ fetchCoverLetterData()
     const section = sections.find(s => s.id === sectionId);
     if (!section) return;
     try {
-      const res = await fetch(`/api/personal/coverletter/coaching`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: section.content, sectionTitle: section.sectionTitle }),
+      const res = await apiClient.post(`/api/personal/coverletter/coaching`, {
+        sectionTitle: section.sectionTitle,
+        content: section.content,
       });
-      const json = await res.json();
+      const json = await res.data;
       const data = json.data || {};
       setSections(prev =>
         prev.map(s =>

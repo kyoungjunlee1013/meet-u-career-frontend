@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { apiClient } from "@/api/apiClient";
 import { BusinessHeader } from "@/components/business/layout/BusinessHeader";
 import { PaymentsStatistics } from "@/components/business/payments/PaymentsStatistics";
 import { PaymentsSearch } from "@/components/business/payments/PaymentsSearch";
@@ -11,10 +12,9 @@ import { ReceiptModal } from "@/components/business/payments/ReceiptModal";
 
 export default function BusinessPaymentsPage() {
   useEffect(() => {
-    fetch("/api/business/payment/history")
-      .then(res => res.json())
-      .then(data => {
-        console.log("결제 내역 API 응답:", data);
+    apiClient.get("/api/business/payment/history")
+      .then(res => {
+        console.log("결제 내역 API 응답:", res.data);
       })
       .catch(err => {
         console.error("결제 내역 API 에러:", err);
@@ -27,10 +27,9 @@ export default function BusinessPaymentsPage() {
   const [receiptPayment, setReceiptPayment] = useState<PaymentCardData|null>(null);
 
   useEffect(() => {
-    fetch("/api/business/payment/history")
-      .then(res => res.json())
-      .then(data => {
-        setPayments(data.data);
+    apiClient.get("/api/business/payment/history")
+      .then(res => {
+        setPayments(res.data.data);
       })
       .catch(err => {
         console.error("결제 내역 API 에러:", err);

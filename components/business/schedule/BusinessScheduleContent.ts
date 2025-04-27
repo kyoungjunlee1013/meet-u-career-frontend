@@ -1,10 +1,10 @@
 import { ScheduleItem } from "@/components/personal/schedule/Calendar";
+import { apiClient } from "@/api/apiClient";
 
 // 기업회원 일정 전체 조회 (API 연동은 2단계에서 구현)
 export async function fetchBusinessSchedules(): Promise<any[]> {
-  const res = await fetch("/api/personal/calendar/business/list");
-  if (!res.ok) throw new Error("기업 일정 데이터를 불러오지 못했습니다.");
-  const json = await res.json();
+  const res = await apiClient.get("/api/personal/calendar/business/list");
+  const json = res.data;
   return Array.isArray(json.data) ? json.data : [];
 }
 
@@ -16,13 +16,8 @@ export async function createBusinessSchedule(schedule: ScheduleItem): Promise<an
     // 필요시 companyId 등 추가
   };
   // 공통 엔드포인트 사용
-  const res = await fetch("/api/personal/calendar/create", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error("일정 생성 실패");
-  return res.json();
+  const res = await apiClient.post("/api/personal/calendar/create", payload);
+  return res.data;
 }
 
 // 기업회원 커스텀 일정 수정
@@ -32,24 +27,16 @@ export async function updateBusinessSchedule(schedule: ScheduleItem): Promise<an
     isAllDay: schedule.isAllDay ?? false,
   };
   // 공통 엔드포인트 사용
-  const res = await fetch(`/api/personal/calendar/update/${schedule.id}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error("일정 수정 실패");
-  return res.json();
+  const res = await apiClient.post(`/api/personal/calendar/update/${schedule.id}`, payload);
+  return res.data;
 }
 
 // 기업회원 커스텀 일정 삭제
 export async function deleteBusinessSchedule(id: string): Promise<any> {
   const numericId = typeof id === "string" ? id.replace(/[^\d]/g, "") : id;
   // 공통 엔드포인트 사용
-  const res = await fetch(`/api/personal/calendar/delete/${numericId}`, {
-    method: "POST",
-  });
-  if (!res.ok) throw new Error("일정 삭제 실패");
-  return res.json();
+  const res = await apiClient.post(`/api/personal/calendar/delete/${numericId}`);
+  return res.data;
 }
 
 // DTO → ScheduleItem 변환 함수 (실제 변환 로직은 2단계에서 구현)

@@ -1,4 +1,5 @@
 "use client"
+import { apiClient } from "@/api/apiClient";
 
 import { useState, useEffect } from "react"
 import { ScheduleHeader } from "./ScheduleHeader"
@@ -23,15 +24,8 @@ export async function updatePersonalSchedule(schedule: ScheduleItem) {
       : schedule.endDateTime,
     isAllDay: schedule.isAllDay,
   };
-  const res = await fetch(`/api/personal/calendar/update/${numericId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    throw new Error('일정 수정 실패');
-  }
-  return await res.json();
+  const res = await apiClient.post(`/api/personal/calendar/update/${numericId}`, payload);
+  return res.data;
 }
 
 function toIsoString(date: any): string {
@@ -116,29 +110,16 @@ export async function createPersonalSchedule(schedule: ScheduleItem) {
     isAllDay: schedule.isAllDay,
   };
 
-  const res = await fetch('/api/personal/calendar/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    throw new Error('일정 등록 실패');
-  }
-  return await res.json();
+  const res = await apiClient.post('/api/personal/calendar/create', payload);
+  return res.data;
 }
 
 export const handleDeleteSchedule = async (id: string) => {
   // 기존 삭제 로직 복사
   try {
     const numericId = Number(id);
-    const res = await fetch(`/api/personal/calendar/delete/${numericId}`, {
-      method: 'POST',
-    });
-    if (!res.ok) {
-      throw new Error('일정 삭제 실패');
-    }
-    // setSchedules는 컴포넌트 내부에서 처리
+    const res = await apiClient.post(`/api/personal/calendar/delete/${numericId}`);
+    return res.data;
   } catch (error) {
     alert('일정 삭제 실패: ' + (error as Error).message);
   }

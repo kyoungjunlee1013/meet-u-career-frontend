@@ -35,6 +35,9 @@ export interface ResumeData {
   email: string;
   phone: string;
   profileImage?: string | File;
+  profileImageKey?: string;    // Presigned URL 업로드 후 fileKey
+  profileImageName?: string;   // 원본 파일명
+  profileImageType?: string;   // 파일 타입
   locationId?: number;
   locationName?: string;
 
@@ -84,6 +87,35 @@ interface ResumeEditorProps {
 }
 
 export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = false, profile }: ResumeEditorProps) {
+  // 이력서 기본 정보 자동 세팅
+  useEffect(() => {
+  async function fetchBaseInfo() {
+    try {
+      const { data } = await import("axios").then(m => m.default.get("/api/personal/resume/base-info"));
+      if (data && data.data) {
+        console.log("base-info 응답:", data.data);
+        setResumeData(prev => {
+          const next = {
+            ...prev,
+            name: data.data.name || "",
+            email: data.data.email || "",
+            phone: data.data.phone || "",
+            profileImageKey: data.data.profileImageKey || "",
+            locationId: data.data.locationId || undefined,
+            desiredJobCategoryId: data.data.desiredJobCategoryId || undefined,
+            skills: data.data.skills ? data.data.skills.split(",") : [],
+          };
+          console.log("setResumeData(next):", next);
+          console.log("name:", data.data.name)
+          return next;
+        });
+      }
+    } catch (e) {
+      // 기본 정보 불러오기 실패 시 무시(회원가입 미완료 등)
+    }
+  }
+  fetchBaseInfo();
+}, []);
   const router = useRouter()
   const { toast } = useToast()
   const isMobile = useMobile()
@@ -244,14 +276,16 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
         if (/^\d{4}-\d{2}$/.test(dateStr)) {
           return `${dateStr}-01`;
         }
-        
+
         // 기타 형식은 빈 문자열 반환
         return "";
       };
-      const formData = new FormData();
-      // 백엔드로 전송할 데이터 준비
-      // contentFiles와 resumeContents를 동시에 생성하여 순서 일치 보장
-      const contentFiles: File[] = [];
+
+      // Presigned URL 기반 파일 업로드 방식 적용
+      // 1. 모든 파일(프로필, 이력서, 섹션 내 파일 등)은 이미 S3 업로드 후 fileKey/fileName/fileType만 상태에 저장되어야 함
+      // 2. 저장 시에는 fileKey/fileName/fileType만 백엔드로 전송, File/FormData/multipart 사용 금지
+
+      // 섹션 컨텐츠 변환 (날짜 변환 등 기존 로직 유지)
       const resumeContents = sections
         .filter(section => section.isActive && Array.isArray(section.content))
         .flatMap(section =>
@@ -262,13 +296,14 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
             } else if (typeof item.id === 'string' && /^\d+$/.test(item.id)) {
               contentId = parseInt(item.id);
             }
-            // 날짜 형식 변환 적용
             const fromDate = formatDate(item.dateFrom || item.startDate || "");
             const toDate = formatDate(item.dateTo || item.endDate || "");
-            // 파일이 있다면 contentFiles에 push
-            if (item.contentFile instanceof File) {
-              contentFiles.push(item.contentFile);
-            }
+            // 파일 정보(fileKey 등)만 포함
+            const fileMeta = item.fileKey ? {
+              fileKey: item.fileKey,
+              fileName: item.fileName,
+              fileType: item.fileType,
+            } : {};
             return {
               id: contentId,
               sectionType: section.sectionType,
@@ -276,23 +311,27 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
               organization: item.organization || item.school || item.company || "",
               title: item.title || item.degree || item.position || "",
               field: item.field || item.major || "",
-              dateFrom: fromDate, // 변환된 날짜 사용
-              dateTo: toDate,     // 변환된 날짜 사용
+              dateFrom: fromDate,
+              dateTo: toDate,
               description: item.description || "",
-              contentOrder: idx + 1
+              contentOrder: idx + 1,
+              ...fileMeta,
             };
           })
         );
 
+      // 저장할 데이터 구성
       const requestData = {
         profile: {
-          id: resumeData.profileId, // 반드시 id 필드에 값 할당 (profileId X)
+          id: resumeData.profileId,
           locationId: resumeData.locationId,
           skills: Array.isArray(resumeData.skills) ? resumeData.skills.join(",") : "",
           desiredJobCategoryId: typeof resumeData.desiredJobCategoryId === 'number' ? resumeData.desiredJobCategoryId : (() => { throw new Error('직무 ID(desiredJobCategoryId)가 올바르지 않습니다.'); })(),
+          // 프로필 이미지 fileKey만 전송
+          ...(resumeData.profileImageKey ? { profileImageKey: resumeData.profileImageKey } : {}),
         },
         resume: {
-          ...(resumeId ? { id: parseInt(resumeId) } : {}), // 수정 시에만 id 포함
+          ...(resumeId ? { id: parseInt(resumeId) } : {}),
           profileId: profile?.profileId,
           title: resumeData.title,
           overview: resumeData.overview,
@@ -300,48 +339,24 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
           resumeUrl: resumeData.resumeUrl,
           extraLink1: resumeData.extraLink1,
           extraLink2: resumeData.extraLink2,
-          status: resumeData.status
+          status: resumeData.status,
+          // 이력서 파일 fileKey만 전송
+          ...(resumeData.resumeFileKey ? {
+            resumeFileKey: resumeData.resumeFileKey,
+            resumeFileName: resumeData.resumeFileName,
+            resumeFileType: resumeData.resumeFileType,
+          } : {}),
         },
         resumeContents
       };
-      // FormData에 JSON 데이터 추가 - 중요: requestData 사용
-      formData.append("data", JSON.stringify(requestData));
-      // 파일이 있다면 FormData에 첨부
-      if (resumeData.profileImage instanceof File) {
-        formData.append("profileImage", resumeData.profileImage);
-      }
-      if (resumeData.resumeFile instanceof File) {
-        formData.append("resumeFile", resumeData.resumeFile);
-      }
-      // contentFiles를 resumeContents 순서대로 append
-      contentFiles.forEach(file => formData.append("contentFiles", file));
-      // 디버깅 로그 - API 호출 전 데이터 확인
-      console.log('=== [디버깅] skills ===', resumeData.skills);
-      console.log('=== [디버깅] profileImage ===', resumeData.profileImage);
-      console.log('=== [디버깅] requestData ===', requestData);
-      for (let [key, value] of formData.entries()) {
-        console.log('=== [디버깅] formData ===', key, value);
-      }
-      console.log('저장할 데이터:', JSON.stringify(requestData, null, 2));
-      // 각 섹션의 컨텐츠 파일 처리 (필요시, 위에서 이미 contentFiles에 push된 경우 중복될 수 있으니 이 부분은 생략 가능)
-      // sections.forEach(section => {
-      //   if (Array.isArray(section.content)) {
-      //     section.content.forEach(item => {
-      //       if (item.contentFile instanceof File) {
-      //         formData.append("contentFiles", item.contentFile);
-      //       }
-      //     });
-      //   }
-      // });
-      
-      // 실제 저장 API 호출
+
+      // 실제 저장 API 호출 (JSON 전송)
       const axios = (await import("axios")).default;
-      const response = await axios.post(`/api/personal/resume/saveall`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const response = await axios.post(`/api/personal/resume/create`, requestData, {
+        headers: { "Content-Type": "application/json" },
       });
-      
+
       console.log('저장 응답:', response.data);
-      
       toast({
         title: isEditMode ? "이력서가 수정되었습니다!" : "이력서가 저장되었습니다!",
         description: isEditMode ? "이력서가 성공적으로 수정되었습니다." : "이력서가 성공적으로 저장되었습니다.",
@@ -354,7 +369,7 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
     } catch (error: any) {
       console.error('저장 오류:', error);
       console.error('응답 데이터:', error.response?.data);
-      
+
       toast({
         title: "저장 중 오류가 발생했습니다",
         description: error.response?.data?.message || error?.message || String(error),
@@ -486,19 +501,7 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
     }
   }
 
-  // profile 정보로 이력서 기본값 세팅
-  useEffect(() => {
-    if (profile && !isEditMode) {
-      setResumeData(prev => ({
-        ...prev,
-        name: profile.name,
-        email: profile.email,
-        phone: profile.phone,
-        profileId: profile.profileId,
-        profileImage: profile.profileImageUrl ?? undefined,
-      }));
-    }
-  }, [profile, isEditMode]);
+  
 
   // Get active sections
   const activeSections = sections.filter((section) => section.isActive)

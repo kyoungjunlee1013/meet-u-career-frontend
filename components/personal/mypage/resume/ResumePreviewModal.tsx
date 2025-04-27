@@ -45,10 +45,10 @@ interface Resume {
   coverLetterTitle?: string
   coverLetterUpdatedAt?: string
   contents?: ResumeContent[]
-  profileInfo?: ProfileInfo // 추가
+  profile?: Profile // 추가
 }
 
-interface ProfileInfo {
+interface Profile {
   profileId: number;
   accountId: number;
   name: string;
@@ -72,18 +72,199 @@ interface ResumeContent {
   content: any
 }
 
-interface ResumePreviewModalProps {
-  resume: Resume
-  isOpen: boolean
-  onClose: () => void
+// 1단계: ResumeSaveRequestDTO 기반 구조로 변경
+interface ResumeSaveRequestDTO {
+  resume: {
+    id?: number;
+    title: string;
+    resumeType: number;
+    resumeFileKey?: string;
+    resumeFileName?: string;
+    resumeFileType?: string;
+    resumeUrl?: string;
+    overview?: string;
+    coverLetterId?: number;
+    extraLink1?: string;
+    extraLink2?: string;
+    isPrimary?: boolean;
+    status?: number;
+  };
+  profile?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    profileImageKey?: string;
+    desiredJobCategoryName?: string | null;
+    desiredLocationName?: string | null;
+    skills?: string;
+    profileImageUrl?: string | null;
+    experienceLevel?: string;
+    educationLevel?: string;
+  };
+  resumeContents?: any[];
 }
 
-const formatDate = (dateString: string) => {
-  return new Date(dateString).toISOString().slice(0, 10);
+interface ResumePreviewModalProps {
+  data: ResumeSaveRequestDTO;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
 };
 
-export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewModalProps) => {
+export const ResumePreviewModal = ({ data, isOpen, onClose }: ResumePreviewModalProps) => {
+  if (!isOpen || !data) return null;
+  const { resume, profile, resumeContents } = data;
+  const externalLinks = resume.externalLinks ?? [];
+
   const modalRef = useRef<HTMLDivElement>(null)
+
+  // --- 2단계: 기본 정보 표시 (읽기 전용) ---
+  // 타입/상태 뱃지 텍스트
+  const typeBadge = resume.resumeType === 1 ? "파일" : resume.resumeType === 2 ? "링크" : "MeetU";
+  const statusBadge = resume.status === 2 ? "공개" : "비공개";
+
+
+
+
+
+
+
+
+
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-8 relative" ref={modalRef}>
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-700">
+          <X size={24} />
+        </button>
+        {/* 제목 및 뱃지 */}
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-2xl font-bold text-gray-900">{resume.title}</h2>
+          {resume.isPrimary && <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-semibold">대표</span>}
+          <span className="px-2 py-1 rounded bg-gray-100 text-gray-700 text-xs font-semibold">{typeBadge}</span>
+          <span className={`px-2 py-1 rounded text-xs font-semibold ${resume.status === 2 ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}`}>{statusBadge}</span>
+        </div>
+        {/* 프로필 정보 */}
+        <div className="flex items-center gap-4 mb-6">
+          {profile?.profileImageUrl && (
+            <Image src={profile.profileImageUrl} alt="프로필 이미지" width={56} height={56} className="rounded-full object-cover border" />
+          )}
+          <div className="flex flex-col gap-1">
+            <div className="text-lg font-semibold text-gray-800">{profile?.name}</div>
+            <div className="text-sm text-gray-600">{profile?.email}</div>
+            <div className="text-sm text-gray-600">{profile?.phone}</div>
+            {profile?.desiredJobCategoryName && <div className="text-xs text-gray-500">희망직무: {profile.desiredJobCategoryName}</div>}
+            {profile?.desiredLocationName && <div className="text-xs text-gray-500">희망지역: {profile.desiredLocationName}</div>}
+            {profile?.skills && <div className="text-xs text-gray-500">스킬: {profile.skills}</div>}
+          </div>
+        </div>
+        {/* --- overview(요약) --- */}
+        {resume.overview && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-1 text-gray-900">요약</h3>
+            <div className="text-gray-700 whitespace-pre-line border rounded p-3 bg-gray-50">{resume.overview}</div>
+          </div>
+        )}
+
+        {/* --- 파일/URL --- */}
+        {resume.resumeType === 1 && resume.resumeFileName && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-1 text-gray-900">이력서 파일</h3>
+            <div className="flex items-center gap-2">
+              <FileTextIcon className="w-5 h-5 text-gray-400" />
+              <span>{resume.resumeFileName}</span>
+              {/* 실제 다운로드 링크는 필요에 따라 구현 */}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">파일 타입: {resume.resumeFileType}</div>
+          </div>
+        )}
+        {resume.resumeType === 2 && resume.resumeUrl && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-1 text-gray-900">이력서 URL</h3>
+            <a href={resume.resumeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline flex items-center gap-1">
+              <Globe className="w-4 h-4" />
+              {resume.resumeUrl}
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        )}
+
+        {/* --- 자기소개서 --- */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-1 text-gray-900">자기소개서</h3>
+          {resume.coverLetterId ? (
+            <div className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-gray-400" />
+              <span>연결된 자기소개서 ID: {resume.coverLetterId}</span>
+            </div>
+          ) : (
+            <div className="text-gray-500">연결된 자기소개서가 없습니다.</div>
+          )}
+        </div>
+
+        {/* --- 추가 링크 --- */}
+        {(resume.extraLink1 || resume.extraLink2) && (
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-1 text-gray-900">추가 링크</h3>
+            <div className="flex flex-col gap-1">
+              {resume.extraLink1 && (
+                <a href={resume.extraLink1} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline flex items-center gap-1">
+                  <Github className="w-4 h-4" />
+                  {resume.extraLink1}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+              {resume.extraLink2 && (
+                <a href={resume.extraLink2} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline flex items-center gap-1">
+                  <Globe className="w-4 h-4" />
+                  {resume.extraLink2}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* --- 이력서 섹션 리스트 --- */}
+        {resumeContents && resumeContents.length > 0 && (
+          <div className="mb-2">
+            <h3 className="text-lg font-semibold mb-2 text-gray-900">이력서 항목</h3>
+            <div className="space-y-4">
+              {resumeContents.map((item, idx) => (
+                <div key={item.id ?? idx} className="border-b pb-3 last:border-0 last:pb-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    {/* 섹션 타입별 아이콘 */}
+                    {item.sectionType === 0 && <GraduationCap className="w-4 h-4 text-gray-400" />}
+                    {item.sectionType === 1 && <Briefcase className="w-4 h-4 text-gray-400" />}
+                    {item.sectionType === 2 && <Award className="w-4 h-4 text-gray-400" />}
+                    {item.sectionType === 3 && <FolderOpen className="w-4 h-4 text-gray-400" />}
+                    {item.sectionType === 4 && <FileTextIcon className="w-4 h-4 text-gray-400" />}
+                    <span className="font-medium text-gray-900">{item.sectionTitle}</span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-1">
+                    {item.organization && <div className="text-gray-700">기관/단체: {item.organization}</div>}
+                    {item.title && <div className="text-gray-700">직함/학위: {item.title}</div>}
+                    {item.field && <div className="text-gray-700">분야: {item.field}</div>}
+                  </div>
+                  {(item.dateFrom || item.dateTo) && (
+                    <div className="text-xs text-gray-500 mb-1">{item.dateFrom} ~ {item.dateTo}</div>
+                  )}
+                  {item.description && <div className="text-gray-700 whitespace-pre-line">{item.description}</div>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   // Handle ESC key press to close modal
   useEffect(() => {
@@ -178,21 +359,13 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
     alert(`PDF 다운로드: /resumes/${resume.id}/export/pdf`)
   }
 
-  // Mock data for demonstration
-  const mockUserInfo = {
-    name: "홍길동",
-    email: "example@meetu.com",
-    phone: "010-1234-5678",
-    address: "서울시 강남구",
-  }
-
   // Sort contents by contentOrder
-  const sortedContents = resume.contents?.sort((a, b) => a.contentOrder - b.contentOrder) || [];
-  const educationList = resume.contents?.filter(c => c.sectionType === 0) || [];
-  const experienceList = resume.contents?.filter(c => c.sectionType === 1) || [];
-  const certificationList = resume.contents?.filter(c => c.sectionType === 2) || [];
-  const activityList = resume.contents?.filter(c => c.sectionType === 3) || [];
-  const portfolioList = resume.contents?.filter(c => c.sectionType === 4) || [];
+  const sortedContents = resumeContents?.sort((a, b) => a.contentOrder - b.contentOrder) || [];
+  const educationList = resumeContents?.filter(c => c.sectionType === 0) || [];
+  const experienceList = resumeContents?.filter(c => c.sectionType === 1) || [];
+  const certificationList = resumeContents?.filter(c => c.sectionType === 2) || [];
+  const activityList = resumeContents?.filter(c => c.sectionType === 3) || [];
+  const portfolioList = resumeContents?.filter(c => c.sectionType === 4) || [];
 
   return (
     <>
@@ -246,9 +419,9 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
                   )}
 
                   <div className="flex flex-wrap gap-4 mb-4">
-                    {resume.profileInfo?.skills && (
+                    {profile?.skills && (
                       <div className="flex flex-wrap gap-2 items-center">
-                        {resume.profileInfo.skills.split(',').map((skill: string, idx: number) => (
+                        {profile.skills.split(',').map((skill: string, idx: number) => (
                           <span key={idx} className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm">
                             {skill.trim()}
                           </span>
@@ -257,10 +430,10 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
                     )}
                   </div>
 
-                  {resume.externalLinks && resume.externalLinks.length > 0 && (
+                  {externalLinks && externalLinks.length > 0 && (
                     <div className="mb-4">
                       <div className="flex flex-wrap gap-3">
-                        {resume.externalLinks.map((link, idx) => (
+                        {externalLinks.map((link, idx) => (
                           <a
                             key={idx}
                             href={link}
@@ -282,42 +455,42 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
-                    {resume.profileInfo?.name && (
+                    {profile?.name && (
                       <div>
                         <p className="text-xs text-gray-500">이름</p>
-                        <p className="font-medium text-gray-900">{resume.profileInfo.name}</p>
+                        <p className="font-medium text-gray-900">{profile.name}</p>
                       </div>
                     )}
-                    {resume.profileInfo?.email && (
+                    {profile?.email && (
                       <div>
                         <p className="text-xs text-gray-500">이메일</p>
-                        <p className="font-medium text-gray-900">{resume.profileInfo.email}</p>
+                        <p className="font-medium text-gray-900">{profile.email}</p>
                       </div>
                     )}
-                    {resume.profileInfo?.phone && (
+                    {profile?.phone && (
                       <div>
                         <p className="text-xs text-gray-500">연락처</p>
-                        <p className="font-medium text-gray-900">{resume.profileInfo.phone}</p>
+                        <p className="font-medium text-gray-900">{profile.phone}</p>
                       </div>
                     )}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
-                    {resume.profileInfo?.experienceLevel && (
+                    {profile?.experienceLevel && (
                       <div>
                         <p className="text-xs text-gray-500">경력 수준</p>
-                        <p className="font-medium text-gray-900">{resume.profileInfo.experienceLevel}</p>
+                        <p className="font-medium text-gray-900">{profile.experienceLevel}</p>
                       </div>
                     )}
-                    {resume.profileInfo?.educationLevel && (
+                    {profile?.educationLevel && (
                       <div>
                         <p className="text-xs text-gray-500">학력 수준</p>
-                        <p className="font-medium text-gray-900">{resume.profileInfo.educationLevel}</p>
+                        <p className="font-medium text-gray-900">{profile.educationLevel}</p>
                       </div>
                     )}
-                    {resume.profileInfo?.desiredLocationName && (
+                    {profile?.desiredLocationName && (
                       <div>
                         <p className="text-xs text-gray-500">희망 근무지</p>
-                        <p className="font-medium text-gray-900">{resume.profileInfo.desiredLocationName}</p>
+                        <p className="font-medium text-gray-900">{profile.desiredLocationName}</p>
                       </div>
                     )}
                   </div>
@@ -327,7 +500,7 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
                 <div className="flex flex-col items-center md:items-end shrink-0">
                   <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-200 mb-2 border border-gray-300">
                     <Image
-                      src={resume.profileInfo?.profileImageUrl || "/vibrant-street-market.png"}
+                      src={profile?.profileImageUrl || "/vibrant-street-market.png"}
                       alt="Profile"
                       width={128}
                       height={128}

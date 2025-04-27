@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { apiClient } from "@/api/apiClient";
 
 interface JobCategoryOption {
   label: string;
@@ -21,9 +22,8 @@ export function MultiJobAutoComplete({ value, onChange }: MultiJobAutoCompletePr
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (keyword.length >= 2) {
       timeoutRef.current = setTimeout(() => {
-        fetch(`/api/job-categories/search?keyword=${encodeURIComponent(keyword)}`)
-          .then(res => res.json())
-          .then(data => setOptions((data.data || []).map((item: any) => ({ label: item.label, value: item.id }))));
+        apiClient.get(`/api/job-categories/search?keyword=${encodeURIComponent(keyword)}`)
+          .then(res => setOptions((res.data.data || []).map((item: any) => ({ label: item.label, value: item.id }))));
         setShow(true);
       }, 300);
     } else {

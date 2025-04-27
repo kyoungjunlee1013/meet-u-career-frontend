@@ -1,4 +1,5 @@
 import { useFormContext } from "react-hook-form";
+import { apiClient } from "@/api/apiClient";
 import { FormCard } from "./FormCard";
 import { FormField } from "./FormField";
 import { useState, useRef, useEffect } from "react";
@@ -84,20 +85,14 @@ export function BasicInfoCard() {
     setCity("");
     setValue("locationCode", "");
     if (prov) {
-      fetch(`/api/locations/cities?province=${encodeURIComponent(prov)}`)
-        .then(res => res.json())
-        .then(data => {
-          console.log("도시 API 응답:", data);
-          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-            console.log("data.data[0] 구조:", data.data[0]);
+      apiClient.get(`/api/locations/cities?province=${encodeURIComponent(prov)}`)
+        .then(res => {
+          // res.data.data should be an array of city objects
+          if (Array.isArray(res.data.data)) {
+            setCities(res.data.data.map((c: any) => ({ value: c.locationCode, label: c.city })));
+          } else {
+            setCities([]);
           }
-          const cityOptions = (data.success && Array.isArray(data.data))
-            ? data.data.map((item: any) => ({
-                value: item.id,   // 실제 id 사용
-                label: item.label // label: 시/군/구 이름
-              }))
-            : [];
-          setCities(cityOptions);
         });
     } else {
       setCities([]);

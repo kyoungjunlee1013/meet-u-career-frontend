@@ -5,10 +5,12 @@ import { mapDtoToScheduleItem, createPersonalSchedule, updatePersonalSchedule, d
 import { ScheduleHeader } from "@/components/personal/schedule/ScheduleHeader"
 import { Footer } from "@/components/home/Footer"
 
+import { apiClient } from "@/api/apiClient";
+
 async function fetchPersonalSchedules() {
-  const res = await fetch("/api/personal/calendar/list");
-  if (!res.ok) throw new Error("일정 데이터를 불러오지 못했습니다.");
-  const json = await res.json();
+  const res = await apiClient.get("/api/personal/calendar/list");
+  // apiClient는 status 체크와 에러 처리를 axios 방식으로 하므로, 필요에 따라 try/catch로 감싸도 됨
+  const json = res.data;
   return Array.isArray(json.data) ? json.data : [];
 }
 

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { apiClient } from "@/api/apiClient";
 import { useRef, useState, useEffect } from "react"
 import Image from "next/image"
 import { X, Upload } from "lucide-react"
@@ -24,11 +24,9 @@ export function ResumeBasicInfoCard({ resumeData, setResumeData }: ResumeBasicIn
 
   useEffect(() => {
     setLoadingLocations(true);
-    fetch("/api/locations/provinces")
-      .then(res => res.json())
-      .then(data => {
-        // value를 number로 변환
-        setLocationOptions((data.data || []).map((item: any) => ({ value: item.id, label: item.label })));
+    apiClient.get("/api/locations/provinces")
+      .then(res => {
+        setLocationOptions((res.data.data || []).map((item: any) => ({ value: item.id, label: item.label })));
       })
       .finally(() => setLoadingLocations(false));
   }, []);
@@ -39,28 +37,48 @@ export function ResumeBasicInfoCard({ resumeData, setResumeData }: ResumeBasicIn
   ];
 
 
-  // 프로필 이미지 업로드
-  // Store the File object directly so FormData can upload it to the backend
-const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    setResumeData({ ...resumeData, profileImage: file });
-  }
-};
+  // Presigned URL 방식 프로필 이미지 업로드
+  const handleProfileImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-// 프로필 이미지 File 객체 미리보기 URL 관리
-const [previewProfileImageUrl, setPreviewProfileImageUrl] = useState<string | null>(null);
-useEffect(() => {
-  if (resumeData.profileImage instanceof File) {
-    const url = URL.createObjectURL(resumeData.profileImage);
-    setPreviewProfileImageUrl(url);
-    return () => {
-      URL.revokeObjectURL(url);
-    };
-  } else {
-    setPreviewProfileImageUrl(null);
-  }
-}, [resumeData.profileImage]);
+    // 1. Presigned URL 발급 요청
+    const { data } = await apiClient.post("/api/file/presigned-url", {
+      dir: "profile-image",
+      originalFileName: file.name,
+      contentType: file.type
+    });
+    const { uploadUrl, fileKey } = data.data;
+
+    // 2. S3에 파일 업로드
+    await apiClient.put(uploadUrl, file, {
+      headers: { "Content-Type": file.type }
+    });
+
+    // 3. 상태에 fileKey 등 저장 (File 객체는 저장하지 않음)
+    setResumeData({
+      ...resumeData,
+      profileImageKey: fileKey,
+      profileImageName: file.name,
+      profileImageType: file.type,
+      profileImage: undefined // File 객체 제거
+    });
+  };
+
+  // 프로필 이미지 File 객체 미리보기 URL 관리
+  const [previewProfileImageUrl, setPreviewProfileImageUrl] = useState<string | null>(null);
+  useEffect(() => {
+    if (resumeData.profileImage instanceof File) {
+      const url = URL.createObjectURL(resumeData.profileImage);
+      setPreviewProfileImageUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setPreviewProfileImageUrl(null);
+    }
+  }, [resumeData.profileImage]);
+  
 
   // ...기존 skill/link 추가/삭제 함수 유지...
 

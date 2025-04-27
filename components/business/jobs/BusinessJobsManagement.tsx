@@ -6,7 +6,7 @@ import { JobsStatistics } from "@/components/business/jobs/JobsStatistics"
 import { JobsSearch } from "@/components/business/jobs/JobsSearch"
 import { JobsTable } from "@/components/business/jobs/JobsTable"
 import { useEffect, useState } from "react"
-import axios from "axios"
+import { apiClient } from "@/api/apiClient"
 
 export const BusinessJobsManagement = () => {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -15,7 +15,7 @@ export const BusinessJobsManagement = () => {
 
   useEffect(() => {
     setLoading(true);
-    axios.get('/api/business/job/my-list')
+    apiClient.get('/api/business/job/my-list')
       .then(res => {
         setJobs(res.data.data || []);
         setError(null);

@@ -4,6 +4,8 @@ import { CoverLetterContentEditorList } from "../CoverLetterContentEditorList";
 import { CoverLetterPreviewModal } from "../CoverLetterPreviewModal";
 import { useMobile } from "@/hooks/use-mobile";
 
+import { apiClient } from "@/api/apiClient";
+
 interface CoverLetterAnalysisContentProps {
   coverLetterId: string;
 }
@@ -16,18 +18,23 @@ export const CoverLetterAnalysisContent = ({ coverLetterId }: CoverLetterAnalysi
   const isMobile = useMobile();
 
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/personal/coverletter/view?id=${coverLetterId}`)
-      .then(res => res.json())
-      .then(json => {
-        if (json && json.data) {
-          setCoverLetter(json.data);
+    const fetchCoverLetter = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await apiClient.get(`/api/personal/coverletter/view?id=${coverLetterId}`);
+        if (res.data && res.data.data) {
+          setCoverLetter(res.data.data);
         } else {
           setError("자기소개서 정보를 불러오는데 실패했습니다.");
         }
-      })
-      .catch(() => setError("자기소개서 정보를 불러오는데 실패했습니다."))
-      .finally(() => setLoading(false));
+      } catch {
+        setError("자기소개서 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCoverLetter();
   }, [coverLetterId]);
 
   if (loading) {

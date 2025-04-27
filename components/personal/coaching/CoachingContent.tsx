@@ -1,4 +1,5 @@
 'use client';
+import { apiClient } from "@/api/apiClient";
 
 import { ResumeHeader } from "./ResumeHeader";
 import { ResumeSettings } from "./ResumeSettings";
@@ -25,19 +26,12 @@ export const CoachingContent = () => {
       )
     );
     try {
-      const res = await fetch("/api/personal/coverletter/coaching", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contentId: null, // 비회원 연습이므로 null
-          sectionTitle: sections[index].sectionTitle,
-          content: sections[index].content,
-        }),
+      const res = await apiClient.post("/api/personal/coverletter/coaching", {
+        contentId: null, // 비회원 연습이므로 null
+        sectionTitle: sections[index].sectionTitle,
+        content: sections[index].content,
       });
-      if (!res.ok) throw new Error("AI 피드백 요청 실패");
-      const result = await res.json();
-      // Spring Boot ResultData<CoachingResponseDTO> 구조: { success, count, data }
-      const data = result?.data;
+      const data = res.data?.data;
       setSections((prev) =>
         prev.map((s, i) =>
           i === index

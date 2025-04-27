@@ -5,7 +5,7 @@ import { PersonalHeader } from "@/components/personal/mypage/PersonalHeader";
 import { PersonalSidebar } from "@/components/personal/mypage/PersonalSidebar";
 import { ResumeEditor } from "@/components/personal/mypage/resume/ResumeEditor";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { apiClient } from "@/api/apiClient";
 
 interface Profile {
   profileId: number;
@@ -35,7 +35,7 @@ export default function CreateResumePage() {
 
   // profile 정보 가져오기
   useEffect(() => {
-    axios.get("/api/personal/profile/me")
+    apiClient.get("/api/personal/profile/me")
       .then(res => setProfile(res.data.data))
       .catch(() => setProfile(null));
   }, []);
