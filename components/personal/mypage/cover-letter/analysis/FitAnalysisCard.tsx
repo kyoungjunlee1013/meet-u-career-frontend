@@ -8,13 +8,12 @@ import { Loader2, BarChart2 } from "lucide-react"
 import { formatDate } from "@/utils/date-formatter"
 
 interface FitAnalysisCardProps {
-  content: any
-  jobTitle: string | null
-  jobPostingId: string | null
-  onAnalysisComplete: (contentId: string, analysisData: any) => void
+  content: any;
+  jobTitle: string | null;
+  onAnalysisComplete: (contentId: string, analysisData: any) => void;
 }
 
-export const FitAnalysisCard = ({ content, jobTitle, jobPostingId, onAnalysisComplete }: FitAnalysisCardProps) => {
+export const FitAnalysisCard = ({ content, jobTitle, onAnalysisComplete }: FitAnalysisCardProps) => {
   const [analyzing, setAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [analysis, setAnalysis] = useState(content.analysis || null)
@@ -29,13 +28,12 @@ export const FitAnalysisCard = ({ content, jobTitle, jobPostingId, onAnalysisCom
       setAnalyzing(true)
       setError(null)
 
-      const result = await analyzeContent(content.id, jobTitle, jobPostingId)
+      const result = await analyzeContent(content.id, jobTitle)
 
       setAnalysis(result)
       onAnalysisComplete(content.id, result)
     } catch (err) {
-      setError("분석 중 오류가 발생했습니다. 다시 시도해주세요.")
-      console.error(err)
+      setError("분석에 실패했습니다.")
     } finally {
       setAnalyzing(false)
     }

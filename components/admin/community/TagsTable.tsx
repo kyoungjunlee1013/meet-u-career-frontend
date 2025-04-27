@@ -1,15 +1,30 @@
-"use client"
+"use client";
 
-import { Edit, Power } from "lucide-react"
-import type { Tag } from "./TagsManagement"
+import { Edit, Power } from "lucide-react";
+import type { Tag } from "./TagsManagement";
 
 interface TagsTableProps {
-  tags: Tag[]
-  onEdit: (tag: Tag) => void
-  onToggleStatus: (tagId: number) => void
+  tags: Tag[];
+  onEdit: (tag: Tag) => void;
+  onToggleStatus: (tagId: number) => void;
 }
 
-export default function TagsTable({ tags, onEdit, onToggleStatus }: TagsTableProps) {
+function formatDateTime(dateString: string) {
+  const date = new Date(dateString);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mi = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+}
+
+export default function TagsTable({
+  tags,
+  onEdit,
+  onToggleStatus,
+}: TagsTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left text-gray-700">
@@ -43,14 +58,16 @@ export default function TagsTable({ tags, onEdit, onToggleStatus }: TagsTablePro
               <td className="px-4 py-4">
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    tag.status === "활성" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+                    tag.status === 0
+                      ? "bg-blue-100 text-blue-800"
+                      : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  {tag.status}
+                  {tag.status === 0 ? "활성" : "비활성화"}
                 </span>
               </td>
-              <td className="px-4 py-4">{tag.createdAt}</td>
-              <td className="px-4 py-4">{tag.updatedAt}</td>
+              <td className="px-4 py-4">{formatDateTime(tag.createdAt)}</td>
+              <td className="px-4 py-4">{formatDateTime(tag.updatedAt)}</td>
               <td className="px-4 py-4">
                 <div className="flex space-x-2">
                   <button
@@ -61,7 +78,7 @@ export default function TagsTable({ tags, onEdit, onToggleStatus }: TagsTablePro
                     <Edit size={16} className="mr-1" />
                     수정
                   </button>
-                  {tag.status === "활성" ? (
+                  {tag.status === 0 ? (
                     <button
                       className="px-2 py-1 bg-red-100 hover:bg-red-200 rounded-md flex items-center text-red-700"
                       onClick={() => onToggleStatus(tag.id)}
@@ -87,5 +104,5 @@ export default function TagsTable({ tags, onEdit, onToggleStatus }: TagsTablePro
         </tbody>
       </table>
     </div>
-  )
+  );
 }

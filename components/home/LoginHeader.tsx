@@ -8,12 +8,16 @@ import Image from "next/image"
 import NotificationDropdown from "./NotificationDropdown"
 import ChatDropdown from "./ChatDropdown"
 import ProfileDropdown from "./ProfileDropdown"
+import { useUserStore } from "@/store/useUserStore";
 
 export const LoginHeader = () => {
   const pathname = usePathname()
   const [notificationOpen, setNotificationOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+
+  // 사용자 정보 가져오기
+  const { userInfo } = useUserStore();
 
   // Refs for dropdown containers
   const notificationRef = useRef<HTMLDivElement>(null)
@@ -60,7 +64,7 @@ export const LoginHeader = () => {
   }
 
   return (
-    <header className="border-b py-2.5">
+    <header className="border-b py-2.5 bg-white sticky top-0 z-50">
       <div className="max-w-[1200px] mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="text-blue-600 font-bold text-2xl">
@@ -111,25 +115,30 @@ export const LoginHeader = () => {
 
           {/* Profile & Dropdown */}
           <div className="relative" ref={profileRef}>
-            <button onClick={toggleProfile} className="flex items-center gap-1 hover:bg-gray-100 rounded-full p-1">
+            <button
+              onClick={toggleProfile}
+              className="flex items-center gap-1 hover:bg-gray-100 rounded-full p-1"
+            >
               <div className="relative h-7 w-7 rounded-full overflow-hidden">
                 <Image
-                  src="/placeholder.svg?height=28&width=28"
+                  src="/placeholder.svg?height=40&width=40"
                   alt="프로필 이미지"
-                  width={28}
-                  height={28}
+                  width={40}
+                  height={40}
                   className="object-cover"
                 />
               </div>
-              <span className="text-sm font-medium hidden sm:inline">김미팅</span>
+              {/* 사용자 이름 표시 (없으면 "게스트") */}
+              <span className="text-sm font-medium hidden sm:inline">
+                {userInfo?.name || "게스트"}
+              </span>
               <ChevronDown className="h-4 w-4 text-gray-500" />
             </button>
-
             {profileOpen && <ProfileDropdown />}
           </div>
         </div>
       </div>
-    </header>
+    </header >
   )
 }
 

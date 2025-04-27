@@ -1,58 +1,64 @@
-import Image from "next/image"
+"use client";
 
-interface Review {
-  id: number
-  company: string
-  position: string
-  date: string
-  difficulty: string
-  result: string
-  logo: string
-}
+import { Review } from "@/types/review";
+import Image from "next/image";
 
+// ✅ props 타입 정의
 interface InterviewReviewCardProps {
-  review: Review
+  review: Review;
+  onEdit?: () => void;
+  onView?: () => void;
 }
 
-export function InterviewReviewCard({ review }: InterviewReviewCardProps) {
+// ✅ 면접 리뷰 카드 컴포넌트
+export function InterviewReviewCard({ review, onEdit, onView }: InterviewReviewCardProps) {
   return (
-    <div className="flex items-start justify-between">
-      <div className="flex items-start space-x-4">
-        <div className="h-12 w-12 rounded-md overflow-hidden flex-shrink-0 border border-gray-200">
+    <div className="p-4 bg-white rounded-md shadow-sm border border-gray-200">
+      {/* 상단: 회사명 / 날짜 */}
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center gap-2">
           <Image
             src={review.logo || "/placeholder.svg"}
             alt={review.company}
-            width={48}
-            height={48}
-            className="h-full w-full object-cover"
+            width={36}
+            height={36}
+            className="rounded border"
           />
-        </div>
-        <div>
-          <h4 className="font-medium text-gray-900">{review.company}</h4>
-          <p className="text-sm text-gray-600 mt-1">{review.position}</p>
-          <p className="text-sm text-gray-500 mt-1">{review.date}</p>
-          <div className="flex space-x-2 mt-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-              난이도: {review.difficulty}
-            </span>
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                review.result === "합격" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-              }`}
-            >
-              {review.result}
-            </span>
+          <div>
+            <div className="text-base font-semibold text-gray-900">{review.company}</div>
+            <div className="text-xs text-gray-500">{review.date}</div>
           </div>
         </div>
+        <div className="text-sm text-gray-400">{review.interviewYearMonth}</div>
       </div>
-      <div className="flex space-x-2">
-        <button className="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors">
-          상세보기
-        </button>
-        <button className="text-sm bg-gray-50 text-gray-600 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
-          수정
-        </button>
+
+      {/* 직무 및 평가 정보 */}
+      <div className="text-sm text-gray-700 mt-2">
+        <p className="font-medium">직무: {review.jobCategory}</p>
+        <p>평가: {["부정적", "보통", "긍정적"][review.rating]}</p>
+        <p>난이도: {review.difficulty}점</p>
+        <p className="mt-2 text-gray-800 line-clamp-2">{review.questionsAsked}</p>
+      </div>
+
+      {/* 하단 버튼 */}
+      <div className="flex gap-3 justify-end mt-4 text-sm">
+        {onEdit && (
+          <button
+            onClick={onEdit}
+            className="text-blue-600 hover:underline font-medium"
+          >
+            수정
+          </button>
+        )}
+        {onView && (
+          <button
+            onClick={onView}
+            className="text-gray-500 hover:underline"
+          >
+            보기
+          </button>
+        )}
       </div>
     </div>
-  )
+  );
 }

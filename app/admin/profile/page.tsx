@@ -1,5 +1,7 @@
-import AdminHeader from "@/components/admin/layout/AdminHeader"
-import { DynamicAdminProfileContent } from "@/utils/dynamic-imports"
+"use client";
+
+import AdminHeader from "@/components/admin/layout/AdminHeader";
+import { DynamicAdminProfileContent } from "@/utils/dynamic-imports";
 
 export default function AdminProfilePage() {
   return (
@@ -7,5 +9,5 @@ export default function AdminProfilePage() {
       <AdminHeader />
       <DynamicAdminProfileContent />
     </div>
-  )
+  );
 }

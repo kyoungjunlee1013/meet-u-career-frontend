@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { CoverLetterStatsCardList } from "./CoverLetterStatsCardList"
-import { CoverLetterFilterBar } from "./CoverLetterFilterBar"
-import { CoverLetterCardList } from "./CoverLetterCardList"
-import { CoverLetterEmptyState } from "./CoverLetterEmptyState"
+import { CoverLetterStatsCardList } from "./CoverLetterStatsCardList";
+import { CoverLetterCardList } from "./CoverLetterCardList";
+import { CoverLetterEmptyState } from "./CoverLetterEmptyState";
+import { CoverLetterTypeTabGroup } from "./CoverLetterTypeTabGroup";
+import { Pagination } from "./Pagination";
 
 export const CoverLetterContent = () => {
   const [coverLetters, setCoverLetters] = useState<any[]>([
@@ -48,15 +49,12 @@ export const CoverLetterContent = () => {
     },
   ])
 
-  const [filter, setFilter] = useState({
-    search: "",
-    status: "all",
-    sort: "latest",
-  })
+  // 탭 상태 관리 ("all", "analyzed", "unanalyzed")
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [sort, setSort] = useState<string>("latest");
 
-  const handleFilterChange = (newFilter: Partial<typeof filter>) => {
-    setFilter((prev) => ({ ...prev, ...newFilter }))
-  }
+  // 정렬 변경 핸들러 (필요시 확장)
+  const handleSortChange = (value: string) => setSort(value);
 
   const handleDelete = (coverLetter: any) => {
     setCoverLetters((prev) => prev.filter((cl) => cl.id !== coverLetter.id))
@@ -67,48 +65,63 @@ export const CoverLetterContent = () => {
     console.log("Preview cover letter:", coverLetter)
   }
 
+  // 페이징 처리 추가
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6; // 한 페이지당 카드 개수(스크랩 페이지와 맞춤)
+
+  // 탭 및 검색어에 따라 coverLetters 필터링
   const filteredCoverLetters = coverLetters
     .filter((cl) => {
-      // Filter by search term
-      if (filter.search && !cl.title.toLowerCase().includes(filter.search.toLowerCase())) {
-        return false
-      }
-      // Filter by status
-      if (filter.status !== "all" && cl.status !== filter.status) {
-        return false
-      }
-      return true
+      // 탭 필터
+      if (activeTab === "analyzed" && cl.status !== "완료") return false;
+      if (activeTab === "unanalyzed" && cl.status === "완료") return false;
+      return true;
     })
     .sort((a, b) => {
-      // Sort by date
-      if (filter.sort === "latest") {
-        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      // 정렬
+      if (sort === "latest") {
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       } else {
-        return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+        return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
       }
-    })
+    });
+
+  // 페이지별 카드 리스트 계산
+  const totalPages = Math.max(1, Math.ceil(filteredCoverLetters.length / itemsPerPage));
+  const pagedCoverLetters = filteredCoverLetters.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // 탭/필터 변경 시 페이지 리셋
+  // (탭, 정렬 변경 등에서 currentPage = 1로 리셋 필요)
+  // 예시: useEffect(() => { setCurrentPage(1); }, [activeTab, sort]);
 
   return (
     <div className="space-y-6">
       <CoverLetterStatsCardList
-        stats={[
-          { title: "전체", count: coverLetters.length },
-          { title: "완료", count: coverLetters.filter((cl) => cl.status === "완료").length },
-          { title: "진행 중", count: coverLetters.filter((cl) => cl.status === "진행 중").length },
-        ]}
+        totalCount={coverLetters.length}
+        analyzedCount={coverLetters.filter((cl) => cl.status === "완료").length}
+        unanalyzedCount={coverLetters.filter((cl) => cl.status !== "완료").length}
       />
-
-      <CoverLetterFilterBar
-        filter={filter}
-        onFilterChange={handleFilterChange}
-        totalCount={filteredCoverLetters.length}
-      />
-
-      {filteredCoverLetters.length > 0 ? (
-        <CoverLetterCardList coverLetters={filteredCoverLetters} onDelete={handleDelete} onPreview={handlePreview} />
-      ) : (
-        <CoverLetterEmptyState />
-      )}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <CoverLetterTypeTabGroup activeTab={activeTab} setActiveTab={setActiveTab} />
+        {filteredCoverLetters.length > 0 ? (
+          <>
+            <CoverLetterCardList coverLetters={pagedCoverLetters} onDelete={handleDelete} onPreview={handlePreview} />
+            <div className="flex justify-center mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </>
+        ) : (
+          <CoverLetterEmptyState />
+        )}
+      </div>
     </div>
-  )
+  );
 }
+

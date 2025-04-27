@@ -1,60 +1,155 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import Link from "next/link"
-import { useActionState } from "react"
-import { loginUser } from "@/app/login/actions"
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Link from "next/link";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useRouter } from "next/navigation";
+import { fetchMyInfo } from "@/api/fetchMyInfo";
 
 export const PersonalLoginForm = () => {
-  const [state, formAction, isPending] = useActionState(loginUser, {
-    success: false,
-    errors: {},
-  })
-  const [rememberMe, setRememberMe] = useState(false)
+  const router = useRouter();
+  const [userId, setUserId] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [userIdError, setUserIdError] = useState<string>("");
+  const [passwordError, setPasswordError] = useState<string>("");
+  const [serverError, setServerError] = useState<string>("");
+  const { setTokens } = useAuthStore();
 
-  const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRememberMe(e.target.checked)
-  }
+  // 로드 시 저장된 아이디 복구
+  useEffect(() => {
+    const savedUserId = sessionStorage.getItem("savedUserId");
+    if (savedUserId) {
+      setUserId(savedUserId);
+      setRememberMe(true);
+    }
+  }, []);
+
+  const handleLogin = async () => {
+    let hasError = false;
+    setUserIdError("");
+    setPasswordError("");
+    setServerError("");
+
+    if (!userId) {
+      setUserIdError("아이디를 입력해주세요.");
+      hasError = true;
+    }
+    if (!password) {
+      setPasswordError("비밀번호를 입력해주세요.");
+      hasError = true;
+    }
+    if (hasError) return;
+
+    try {
+      const response = await axios.post(
+        "/api/personal/auth/login",
+        {
+          userId,
+          password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.msg === "success") {
+        const { accessToken, refreshToken } = response.data.data || {};
+
+        if (accessToken && refreshToken) {
+          setTokens(accessToken, refreshToken);
+
+          // 로그인 성공 후 아이디 저장
+          if (rememberMe) {
+            sessionStorage.setItem("savedUserId", userId);
+          } else {
+            sessionStorage.removeItem("savedUserId");
+          }
+
+          await fetchMyInfo();
+
+          // 메인 페이지로 이동
+          router.push("/");
+        } else {
+          setServerError("토큰 발급 실패. 다시 로그인 해주세요.");
+        }
+      } else {
+        setServerError(response.data.msg);
+      }
+    } catch (error: any) {
+      setServerError(
+        error.response?.data?.msg
+      );
+    }
+  };
 
   return (
-    <form action={formAction} className="space-y-4">
+    <div className="space-y-4">
+      {/* 서버 에러 메시지 (로그인 실패 시) */}
+      {serverError && (
+        <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
+          {serverError}
+        </div>
+      )}
+
+      {/* 아이디 입력 */}
       <div>
         <input
           type="text"
           name="userId"
           placeholder="아이디"
-          className={`w-full px-3 py-2.5 border ${
-            state?.errors?.userId ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          autoComplete="off"
+          value={userId}
+          onChange={(e) => {
+            setUserId(e.target.value);
+            if (userIdError) setUserIdError("");
+          }}
+          className={`w-full px-3 py-2.5 border ${userIdError ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 ${userIdError ? "focus:ring-red-500" : "focus:ring-blue-500"
+            }`}
         />
-        {state?.errors?.userId && <p className="text-red-500 text-xs mt-1">{state.errors.userId}</p>}
+        {userIdError && (
+          <p className="text-red-500 text-xs mt-1">{userIdError}</p>
+        )}
       </div>
 
+      {/* 비밀번호 입력 */}
       <div>
         <input
           type="password"
           name="password"
           placeholder="비밀번호"
-          className={`w-full px-3 py-2.5 border ${
-            state?.errors?.password ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          autoComplete="off"
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (passwordError) setPasswordError("");
+          }}
+          className={`w-full px-3 py-2.5 border ${passwordError ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 ${passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"
+            }`}
         />
-        {state?.errors?.password && <p className="text-red-500 text-xs mt-1">{state.errors.password}</p>}
+        {passwordError && (
+          <p className="text-red-500 text-xs mt-1">{passwordError}</p>
+        )}
       </div>
 
+      {/* 아이디 저장 체크박스 + 링크 */}
       <div className="flex items-center">
         <input
           type="checkbox"
           id="rememberMe"
           name="rememberMe"
           checked={rememberMe}
-          onChange={handleRememberMeChange}
+          onChange={(e) => setRememberMe(e.target.checked)}
           className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
         />
         <label htmlFor="rememberMe" className="ml-2 text-xs text-gray-600">
-          로그인 유지
+          아이디 저장
         </label>
         <div className="ml-auto flex gap-2 text-xs text-gray-500">
           <Link href="/find-id" className="hover:underline">
@@ -67,20 +162,14 @@ export const PersonalLoginForm = () => {
         </div>
       </div>
 
+      {/* 로그인 버튼 */}
       <button
-        type="submit"
-        disabled={isPending}
+        type="button"
+        onClick={handleLogin}
         className="w-full py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
       >
-        {isPending ? (
-          <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-        ) : (
-          "로그인"
-        )}
+        로그인
       </button>
-
-      {state?.success && <p className="text-green-600 text-sm text-center">{state.message}</p>}
-      {state?.message && !state.success && <p className="text-red-600 text-sm text-center">{state.message}</p>}
-    </form>
-  )
-}
+    </div>
+  );
+};

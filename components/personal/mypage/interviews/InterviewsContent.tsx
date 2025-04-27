@@ -1,73 +1,180 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { InterviewStats } from "./InterviewStats"
-import { InterviewStatusTab } from "./InterviewStatusTab"
-import { InterviewReviewTab } from "./InterviewReviewTab"
+import { useState, useEffect, useMemo } from "react";
+import axios from "axios";
+import { InterviewTabs } from "./InterviewTabs";
+import { InterviewStatusTab } from "./InterviewStatusTab";
+import  InterviewReviewTab from "./InterviewReviewTab";
+import { InterviewStats } from "./InterviewStats";
+import { ReviewModal } from "./review/ReviewModal";
+import { ReviewDetailModal } from "./ReviewDetailModal";
+import { Interview } from "@/types/interview"; // ✅ 타입 통일 import
+
+// ✅ 리뷰 타입
+interface Review {
+  id: number;
+  company: string;
+  position: string;
+  date: string;
+  logo: string;
+  jobCategory: string;
+  careerLevel: number;
+  interviewYearMonth: string;
+  rating: number;
+  difficulty: number;
+  interviewType: number;
+  interviewParticipants: number;
+  questionsAsked: string;
+  interviewTip: string;
+  result: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export function InterviewsContent() {
-  const [activeTab, setActiveTab] = useState<"status" | "reviews">("status")
+  const [activeTab, setActiveTab] = useState("status");
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState<Interview | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [viewingReview, setViewingReview] = useState<Review | null>(null);
+
+  const fetchInterviews = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+
+      const res = await axios.get("/api/personal/interviews", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const reviewableRes = await axios.post("/api/personal/interview-reviews/reviewable-list", res.data.data);
+      const reviewableMap = new Map<number, boolean>();
+      reviewableRes.data.data.forEach((dto: any) => {
+        reviewableMap.set(dto.applicationId, dto.canWriteReview);
+      });
+
+      const transformed: Interview[] = res.data.data.map((item: any) => ({
+        ...item,
+        canWriteReview: reviewableMap.get(item.applicationId) ?? false,
+        // ✅ status를 number로 명확히 보정
+        status:
+          typeof item.status === "string"
+            ? item.status === "completed"
+              ? 3
+              : item.status === "canceled"
+              ? 4
+              : 1
+            : item.status,
+      }));
+
+      setInterviews(transformed);
+    } catch (err) {
+      console.error("❌ 인터뷰 데이터 불러오기 실패", err);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+
+      const res = await axios.get("/api/personal/interview-reviews", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setReviews(res.data.data);
+    } catch (err) {
+      console.error("❌ 리뷰 목록 불러오기 실패", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchInterviews();
+    fetchReviews();
+  }, []);
+
+  const handleEditReviewFromInterview = (interview: Interview) => {
+    setEditingReview(interview);
+    setReviewModalOpen(true);
+  };
+
+  const handleEditReviewFromReview = (review: Review) => {
+    const converted: Interview = {
+      ...review,
+      status: 3,
+      companyId: 0,
+      jobCategoryId: 0,
+      applicationId: 0,
+    };
+    setEditingReview(converted);
+    setReviewModalOpen(true);
+  };
+
+  const handleViewReview = (review: Review) => {
+    setViewingReview(review);
+    setDetailModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setReviewModalOpen(false);
+    setEditingReview(null);
+  };
+
+  const handleCloseDetailModal = () => {
+    setDetailModalOpen(false);
+    setViewingReview(null);
+  };
+
+  const counts = useMemo(() => ({
+    status: interviews.length,
+    reviews: reviews.length,
+  }), [interviews, reviews]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">면접 현황</h1>
-      <InterviewStats />
+    <div className="space-y-6 max-w-7xl mx-auto px-4">
+      <h1 className="text-2xl font-bold text-gray-900 pt-6">면접 현황</h1>
 
-      {/* Tab Navigation - Update styling to match other mypage tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <div className="flex space-x-1">
-          <button
-            className={`flex items-center py-3 px-4 border-b-2 font-medium text-sm ${
-              activeTab === "status"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
-            onClick={() => setActiveTab("status")}
-            aria-selected={activeTab === "status"}
-            role="tab"
-          >
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
-              <path d="M16 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              <path d="M8 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              <path d="M3 10H21" stroke="currentColor" strokeWidth="2" />
-            </svg>
-            <span>면접 현황</span>
-            <span className="ml-2 bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full">3</span>
-          </button>
-          <button
-            className={`flex items-center py-3 px-4 border-b-2 font-medium text-sm ${
-              activeTab === "reviews"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
-            onClick={() => setActiveTab("reviews")}
-            aria-selected={activeTab === "reviews"}
-            role="tab"
-          >
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path
-                d="M8 5H6C4.89543 5 4 5.89543 4 7V19C4 20.1046 4.89543 21 6 21H18C19.1046 21 20 20.1046 20 19V7C20 5.89543 19.1046 5 18 5H16"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <path
-                d="M8 5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7H8V5Z"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <path d="M9 12H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              <path d="M9 16H15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            <span>면접 리뷰</span>
-            <span className="ml-2 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">2</span>
-          </button>
-        </div>
+      {/* ✅ 통계에 인터뷰 리스트 넘기기 */}
+      <InterviewStats interviews={interviews} />
+
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <InterviewTabs activeTab={activeTab} onTabChange={setActiveTab} counts={counts} />
+
+        {activeTab === "reviews" ? (
+          <InterviewReviewTab
+            reviews={reviews}
+            onEditReview={handleEditReviewFromReview}
+            onViewReview={handleViewReview}
+          />
+        ) : (
+          <InterviewStatusTab
+            interviews={interviews}
+            onEditReview={handleEditReviewFromInterview}
+          />
+        )}
       </div>
 
-      {/* Tab Content */}
-      {activeTab === "status" ? <InterviewStatusTab /> : <InterviewReviewTab />}
+      {reviewModalOpen && editingReview && (
+        <ReviewModal
+          interview={{ ...editingReview, status: "completed" }}
+          onClose={handleCloseModal}
+          onComplete={() => {
+            fetchInterviews();
+            fetchReviews();
+            handleCloseModal();
+          }}
+        />
+      )}
+
+      {detailModalOpen && viewingReview && (
+        <ReviewDetailModal
+          isOpen={detailModalOpen}
+          onClose={handleCloseDetailModal}
+          review={viewingReview}
+        />
+      )}
     </div>
-  )
+  );
 }

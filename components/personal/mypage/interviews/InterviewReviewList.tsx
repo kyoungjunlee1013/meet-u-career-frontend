@@ -1,34 +1,31 @@
-import { InterviewReviewCard } from "./InterviewReviewCard"
+"use client";
 
-export function InterviewReviewList() {
-  const reviews = [
-    {
-      id: 1,
-      company: "테크스타트(주)",
-      position: "프론트엔드 개발자",
-      date: "2023-06-10",
-      difficulty: "중간",
-      result: "합격",
-      logo: "/abstract-company-logo.png",
-    },
-    {
-      id: 2,
-      company: "글로벌소프트(주)",
-      position: "백엔드 개발자",
-      date: "2023-06-05",
-      difficulty: "어려움",
-      result: "불합격",
-      logo: "/abstract-corporate-logo.png",
-    },
-  ]
+import { Review } from "@/types/review";
+import { InterviewReviewCard } from "./InterviewReviewCard";
 
+// ✅ props 타입 정의
+interface InterviewReviewListProps {
+  reviews: Review[];
+  onEditReview: (review: Review) => void;
+  onViewReview: (review: Review) => void;
+}
+
+// ✅ 면접 리뷰 리스트 컴포넌트
+export function InterviewReviewList({
+  reviews,
+  onEditReview,
+  onViewReview,
+}: InterviewReviewListProps) {
   return (
-    <div>
+    <div className="space-y-4">
       {reviews.map((review) => (
-        <div key={review.id} className="p-4 hover:bg-gray-50 transition-colors">
-          <InterviewReviewCard review={review} />
-        </div>
+        <InterviewReviewCard
+          key={review.id}
+          review={review}
+          onEdit={() => onEditReview(review)}
+          onView={() => onViewReview(review)}
+        />
       ))}
     </div>
-  )
+  );
 }
