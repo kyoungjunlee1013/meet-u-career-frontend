@@ -23,8 +23,8 @@ interface TalentCardProps {
 
 export const TalentCard = ({ talent }: TalentCardProps) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
-      <div className="p-4">
+    <div className="bg-white border border-gray-200 rounded-md overflow-hidden flex flex-col h-full">
+      <div className="p-4 flex-1">
         <div className="flex justify-between">
           <div className="flex gap-3">
             <div className="w-12 h-12 bg-gray-200 rounded-full flex-shrink-0"></div>
