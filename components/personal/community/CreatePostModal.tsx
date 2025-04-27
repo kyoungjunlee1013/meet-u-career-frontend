@@ -22,7 +22,7 @@ interface CreatePostModalProps {
 export const CreatePostModal = ({
   onClose,
   profileImageUrl,
-  userName,
+  userName = "",
   initialContent = "",
   initialTag = null,
   initialImageUrl = null,

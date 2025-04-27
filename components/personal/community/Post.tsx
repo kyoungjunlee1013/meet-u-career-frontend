@@ -190,10 +190,19 @@ export const Post = ({ post }: PostProps) => {
   const handleToggleLike = async (e: React.MouseEvent) => {
     e.stopPropagation()
     try {
-      const response = await axios.post("/api/community/likes/toggle", {
-        accountId: userInfo?.accountId,
-        postId: post.id,
-      })
+      const token = sessionStorage.getItem('accessToken');
+      const response = await axios.post(
+        "/api/community/likes/toggle",
+        {
+          accountId: userInfo?.accountId,
+          postId: post.id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       if (response.status === 200) {
         if (!isLiked && response.data.count === 1) {
           setLikesCount((prev) => prev + 1)
@@ -207,6 +216,7 @@ export const Post = ({ post }: PostProps) => {
       console.error("좋아요 처리 실패", error)
     }
   }
+  
 
   //----------------------------------------
   // 댓글 관련 함수
@@ -246,39 +256,66 @@ export const Post = ({ post }: PostProps) => {
       alert("댓글 내용을 입력해주세요.");
       return;
     }
-
+  
     try {
-      const response = await axios.post("/api/community/comments/create", {
-        accountId: userInfo?.accountId,
-        postId: post.id,
-        content: commentContent,
-      });
-
+      const token = sessionStorage.getItem('accessToken');
+      const response = await axios.post(
+        "/api/community/comments/create",
+        {
+          accountId: userInfo?.accountId,
+          postId: post.id,
+          content: commentContent,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
       if (response.status === 200) {
         alert("댓글이 등록되었습니다.");
-        setCommentContent(""); // 입력창 비우기
-        setCommentsCount(prev => prev + 1); // 댓글 수 +1
-        fetchComments(); // 댓글 목록 다시 불러오기
+        setCommentContent(""); 
+        setCommentsCount(prev => prev + 1); 
+        fetchComments(); 
       }
     } catch (error) {
       console.error("댓글 작성 실패", error);
       alert("댓글 작성 실패했습니다.");
     }
   }
+  
 
   // 댓글 삭제
   const handleDeleteComment = async (commentId: number) => {
     if (!confirm("댓글을 삭제하시겠습니까?")) return;
-
+  
     try {
-      await axios.post(`/api/community/comments/delete/${commentId}`);
+      const token = sessionStorage.getItem('accessToken');
+      await axios.post(
+        `/api/community/comments/delete/${commentId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       alert("댓글이 삭제되었습니다!");
-      fetchComments(); // 삭제 후 댓글 다시 새로 불러오기
+  
+      // 댓글 리스트에서 삭제한 댓글 제거
+      setComments((prevComments) => prevComments.filter((comment) => comment.id !== commentId));
+  
+      // 댓글 수 -1 감소
+      setCommentsCount((prev) => Math.max(0, prev - 1));
+  
     } catch (error) {
       console.error("댓글 삭제 실패", error);
       alert("댓글 삭제에 실패했습니다.");
     }
   };
+  
+  
 
   // 댓글 수정 모드로 전환
   const handleEditClick = (comment: Comment) => {
@@ -288,23 +325,44 @@ export const Post = ({ post }: PostProps) => {
 
   // 댓글 수정 저장
   const handleSaveEdit = async () => {
-    if (editingCommentId === null) return
-
+    if (editingCommentId === null) return;
+  
     try {
-      await axios.post("/api/community/comments/update", {
-        id: editingCommentId,
-        accountId: userInfo?.accountId, 
-        content: editingContent,
-      })
-      alert("댓글이 수정되었습니다!")
-      setEditingCommentId(null)
-      setEditingContent("")
-      fetchComments() // 댓글 목록 새로고침
+      const token = sessionStorage.getItem('accessToken');
+      await axios.post(
+        "/api/community/comments/update",
+        {
+          id: editingCommentId,
+          accountId: userInfo?.accountId,
+          content: editingContent,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      alert("댓글이 수정되었습니다!");
+  
+      // ✅ 수정된 댓글을 바로 반영
+      setComments((prevComments) =>
+        prevComments.map((comment) =>
+          comment.id === editingCommentId
+            ? { ...comment, content: editingContent }
+            : comment
+        )
+      );
+  
+      setEditingCommentId(null);
+      setEditingContent("");
+  
     } catch (error) {
-      console.error("댓글 수정 실패", error)
-      alert("댓글 수정에 실패했습니다.")
+      console.error("댓글 수정 실패", error);
+      alert("댓글 수정에 실패했습니다.");
     }
-  }
+  };
+  
 
   //----------------------------------------
   // 컴포넌트 렌더링
