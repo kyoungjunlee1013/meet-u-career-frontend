@@ -44,7 +44,12 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal, onOpenCreatePost
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/personal/community/posts/all-posts");
+        const token = sessionStorage.getItem('accessToken');
+        const res = await axios.get("/api/personal/community/posts/all-posts", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         const posts = res.data.data.posts;
         console.log("불러온 posts:", posts);
         setPosts(posts);
@@ -80,14 +85,12 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal, onOpenCreatePost
         onSelectAll={handleSelectAll}
       />
       <CreatePostInput onOpenCreatePostModal={onOpenCreatePostModal} />
-      {posts
-        .filter(post => {
-          if (selectedTags.length === 0) return true;
-          const tagName = TAG_ID_TO_NAME[post.tagId];
-          const hashtag = tagName ? `#${tagName}` : "";
-          return selectedTags.includes(hashtag);
-        })
-        .map(post => {
+      {posts?.filter(post => {
+        if (selectedTags.length === 0) return true;
+        const tagName = TAG_ID_TO_NAME[post.tagId];
+        const hashtag = tagName ? `#${tagName}` : "";
+        return selectedTags.includes(hashtag);
+      }).map(post => {
           const tagName = TAG_ID_TO_NAME[post.tagId];
           const hashtags = tagName ? [`#${tagName}`] : [];
 
