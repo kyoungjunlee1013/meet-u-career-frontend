@@ -10,6 +10,8 @@ import { SaveButton } from "./SaveButton"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useMobile } from "@/hooks/use-mobile"
+import { ConfettiCelebration } from "./ConfettiCelebration"
+import { CelebrationOverlay } from "@/components/common";
 
 // 기존 ResumeSection 타입(섹션 에디터 내부용)
 export interface ResumeSection {
@@ -203,6 +205,9 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
   // State for add section modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
+  // 저장 축하 오버레이 상태
+  const [showCelebration, setShowCelebration] = useState(false);
+
   // Handle save resume
   const handleSaveResume = useCallback(async () => {
     if (!resumeData.title) {
@@ -341,8 +346,9 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
         title: isEditMode ? "이력서가 수정되었습니다!" : "이력서가 저장되었습니다!",
         description: isEditMode ? "이력서가 성공적으로 수정되었습니다." : "이력서가 성공적으로 저장되었습니다.",
       });
-      
+      setShowCelebration(true);
       setTimeout(() => {
+        setShowCelebration(false);
         router.push("/personal/mypage/resume");
       }, 1500);
     } catch (error: any) {
@@ -503,8 +509,13 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">{isEditMode ? "이력서 수정" : "이력서 작성"}</h1>
+    <>
+      {/* 저장 축하 애니메이션 오버레이 */}
+      <CelebrationOverlay show={showCelebration}>
+        <ConfettiCelebration run={showCelebration} />
+      </CelebrationOverlay>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-gray-900">{isEditMode ? "이력서 수정" : "이력서 작성"}</h1>
       {isMobile ? (
         <Tabs defaultValue="editor" className="w-full">
           <TabsList className="w-full grid grid-cols-2">
@@ -561,5 +572,6 @@ export function ResumeEditor({ resumeType = "direct", resumeId, isEditMode = fal
         />
       )}
     </div>
-  )
+  </>
+) 
 }

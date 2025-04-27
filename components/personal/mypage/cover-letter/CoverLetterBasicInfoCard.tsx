@@ -35,9 +35,7 @@ export function CoverLetterBasicInfoCard({ coverLetterData, setCoverLetterData }
               className="rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500"
               required
             />
-            <p className="text-xs text-gray-500">
-              자기소개서 제목은 타인에게 공유되지 않으며, 내 자기소개서 목록에서 구분하기 위한 용도로만 사용됩니다.
-            </p>
+
           </div>
         </div>
       </CardContent>
