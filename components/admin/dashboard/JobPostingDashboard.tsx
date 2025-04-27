@@ -8,7 +8,7 @@ import { TopCompanies } from "@/components/admin/dashboard/TopCompanies";
 import { PopularKeywords } from "@/components/admin/dashboard/PopularKeywords";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/api/apiClient";
-import { DashboardJobPostingMetrics } from "@/types/admin/dashboard";
+import { DashboardJobPostingMetrics } from "@/types/dashboard";
 
 export default function JobPostingDashboard() {
   const [metrics, setMetrics] = useState<DashboardJobPostingMetrics>({

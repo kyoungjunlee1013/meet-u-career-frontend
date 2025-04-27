@@ -17,7 +17,7 @@ export const CompanyHeader = ({ companyId }: CompanyHeaderProps) => {
         <div className="bg-white rounded-lg p-6 relative">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-[120px] h-[120px] bg-white rounded-md border flex items-center justify-center overflow-hidden">
-              <Image src="/hyundai-logo.png" alt="현대자동차 로고" width={100} height={40} className="object-contain" />
+              <Image src="/images/etc/hyundai-logo.png" alt="현대자동차 로고" width={100} height={40} className="object-contain" />
             </div>
 
             <div className="flex-1">

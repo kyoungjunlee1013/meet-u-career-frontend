@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { ApplicationAgeGroup } from "@/types/admin/dashboard";
+import { ApplicationAgeGroup } from "@/types/dashboard";
 
 interface ApplicationByAgeChartProps {
   data: ApplicationAgeGroup[];

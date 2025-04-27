@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye } from "lucide-react";
-import { TopCompany } from "@/types/admin/dashboard";
+import { TopCompany } from "@/types/dashboard";
 
 interface TopCompaniesProps {
   data: TopCompany[];

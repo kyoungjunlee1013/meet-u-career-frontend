@@ -92,7 +92,7 @@ export function ChatDropdown() {
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
                     <Image
-                      src={message.sender.avatar || "/placeholder.svg"}
+                      src={message.sender.avatar || "/images/etc/placeholder.svg"}
                       alt={message.sender.name}
                       width={40}
                       height={40}

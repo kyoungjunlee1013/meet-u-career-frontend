@@ -46,9 +46,9 @@ export const BusinessLoginForm = () => {
 
           // 로그인 성공 후 아이디 저장
           if (rememberMe) {
-            sessionStorage.setItem("savedUserId", userId);
+            localStorage.setItem("savedUserId", userId);
           } else {
-            sessionStorage.removeItem("savedUserId");
+            localStorage.removeItem("savedUserId");
           }
 
           await fetchMyInfo();

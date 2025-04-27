@@ -83,7 +83,7 @@ export const CompanyReviewList = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <img
-                    src={company.logo || "/placeholder.svg"}
+                    src={company.logo || "/images/etc/placeholder.svg"}
                     alt={`${company.name} 로고`}
                     className="w-10 h-10 mr-4"
                   />

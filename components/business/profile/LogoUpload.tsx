@@ -59,7 +59,7 @@ export const LogoUpload = ({
         onMouseLeave={() => setIsHovering(false)}
       >
         <Image
-          src={previewUrl || "/placeholder.svg"}
+          src={previewUrl || "/images/etc/placeholder.svg"}
           alt="Company logo"
           width={128}
           height={128}

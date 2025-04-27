@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "@/api/apiClient";
-import type { DashboardUserMetrics } from "@/types/admin/dashboard";
+import type { DashboardUserMetrics } from "@/types/dashboard";
 import { MetricUserCards } from "@/components/admin/dashboard/MetricUserCards";
 import { UserGrowthChart } from "@/components/admin/dashboard/UserGrowthChart";
 import { UserDistributionChart } from "@/components/admin/dashboard/UserDistributionChart";

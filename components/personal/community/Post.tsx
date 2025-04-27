@@ -17,7 +17,7 @@ interface Author {
 
 interface Comment {
   id: number
-  accountId: number 
+  accountId: number
   authorAvatar: string
   authorName: string
   content: string
@@ -89,12 +89,12 @@ export const Post = ({ post }: PostProps) => {
   // 게시글 관련 상태
   const [showMenu, setShowMenu] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  
+
   // 좋아요 관련 상태
   const [showLikes, setShowLikes] = useState(false)
   const [likesCount, setLikesCount] = useState(post.likes)
   const [isLiked, setIsLiked] = useState(post.isLiked)
-  
+
   // 댓글 관련 상태
   const [showComments, setShowComments] = useState(false)
   const [commentsCount, setCommentsCount] = useState(post.comments)
@@ -102,7 +102,7 @@ export const Post = ({ post }: PostProps) => {
   const [commentContent, setCommentContent] = useState("")
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
   const [editingContent, setEditingContent] = useState<string>("")
-  
+
   // 사용자 정보
   const myAccountId = 1 // 나중에 로그인된 사용자의 accountId로 교체
 
@@ -218,7 +218,7 @@ export const Post = ({ post }: PostProps) => {
     try {
       const response = await axios.get(`/api/community/comments/${post.id}`);
       if (response.status === 200) {
-        console.log("서버에서 내려준 댓글 리스트:", response.data.data); 
+        console.log("서버에서 내려준 댓글 리스트:", response.data.data);
         setComments(response.data.data); // 서버에서 댓글 리스트 받아오기
       }
     } catch (error) {
@@ -232,14 +232,14 @@ export const Post = ({ post }: PostProps) => {
       alert("댓글 내용을 입력해주세요.");
       return;
     }
-  
+
     try {
       const response = await axios.post("/api/community/comments/create", {
         accountId: 1, // 임시 로그인 사용자 ID
         postId: post.id,
         content: commentContent,
       });
-  
+
       if (response.status === 200) {
         alert("댓글이 등록되었습니다.");
         setCommentContent(""); // 입력창 비우기
@@ -302,7 +302,7 @@ export const Post = ({ post }: PostProps) => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <img
-              src={post.author.avatar || "/profile.png"}
+              src={post.author.avatar || "/images/etc/profile.png"}
               alt="작성자 프로필"
               className="w-10 h-10 rounded-full object-cover mr-3"
             />
@@ -456,7 +456,7 @@ export const Post = ({ post }: PostProps) => {
           {/* 댓글 입력창 */}
           <div className="flex items-start gap-3 p-4 border-t">
             <img
-              src="/profile.png"
+              src="/images/etc/profile.png"
               alt="내 프로필"
               className="w-10 h-10 rounded-full object-cover"
             />
