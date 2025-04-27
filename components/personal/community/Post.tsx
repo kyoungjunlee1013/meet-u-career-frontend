@@ -467,7 +467,11 @@ export const Post = ({ post }: PostProps) => {
           <div className="p-4 space-y-4">
             {comments.map((comment) => (
               <div key={comment.id} className="flex items-start gap-3">
-                <img src={comment.authorAvatar || "/images/etc/profile.png"} alt="프로필" className="w-8 h-8 rounded-full object-cover" />
+                <img src={comment.authorAvatar || "/images/etc/profile.png"} alt="프로필" className="w-8 h-8 rounded-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/images/etc/profile.png";
+                  }}
+                />
                 <div className="flex-1 bg-gray-100 p-2 rounded-md">
                   {/* 댓글 작성자, 작성 시간 */}
                   <p className="text-sm font-medium flex items-center gap-2">

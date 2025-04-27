@@ -52,6 +52,10 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal }: PostFeedProps)
     const fetchPosts = async () => {
       try {
         const token = sessionStorage.getItem('accessToken');
+        if (!token) {
+          console.error("AccessToken 없음! API 요청 중단");
+          return;
+        }
         const res = await axios.get("/api/personal/community/posts/all-posts", {
           headers: {
             Authorization: `Bearer ${token}`,

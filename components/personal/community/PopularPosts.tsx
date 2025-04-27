@@ -107,7 +107,7 @@ export const PopularPosts = () => {
           <div className="space-y-3">
             {popularPosts.map((post) => (
               <div key={post.id} className="p-3 border-b last:border-b-0">
-                <Link href={`/community/${post.id}`}>
+                <Link href={`/personal/community/${post.id}`}>
                   <h3 className="font-medium text-gray-800 hover:text-blue-600 cursor-pointer">
                     {post.title}
                   </h3>

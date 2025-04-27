@@ -1,8 +1,9 @@
 "use client";
 
+import { apiClient } from "@/api/apiClient";
+import { useAuthStore } from "@/store/useAuthStore";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import axios from "axios";
 import { Post } from "@/components/personal/community/Post";
 
 export default function PostDetailPage() {
@@ -16,9 +17,15 @@ export default function PostDetailPage() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await axios.get(`/api/personal/community/posts/detail/${postId}`);
+        const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
+        const response = await apiClient.get(`/api/personal/community/posts/detail/${postId}`, {
+          withCredentials: !isLocalhost,
+          headers: {
+            Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+          },
+        });
         console.log("받은 상세 데이터:", response.data.data);
-        setPostData(mapPostData(response.data.data)); // ✅ Post 컴포넌트에 맞게 매핑
+        setPostData(mapPostData(response.data.data)); // Post 컴포넌트용 변환
       } catch (err) {
         console.error("게시글 불러오기 실패", err);
         setError("게시글을 불러올 수 없습니다.");
@@ -32,13 +39,15 @@ export default function PostDetailPage() {
     }
   }, [postId]);
 
-  if (loading) return <div className="p-6">로딩 중...</div>;
-  if (error) return <div className="p-6 text-red-500">{error}</div>;
-  if (!postData) return <div className="p-6">게시글이 존재하지 않습니다.</div>;
+  if (loading) return <div className="p-6 text-center text-gray-500">로딩 중...</div>;
+  if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
+  if (!postData) return <div className="p-6 text-center text-gray-500">게시글이 존재하지 않습니다.</div>;
 
   return (
-    <div className="p-6">
-      <Post post={postData} />
+    <div className="flex justify-center py-10 px-4 bg-gray-50 min-h-screen">
+      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-3xl">
+        <Post post={postData} />
+      </div>
     </div>
   );
 }
@@ -51,24 +60,24 @@ function mapPostData(data: any) {
   return {
     id: data.id,
     author: {
-      name: `user${data.accountId}`, // 지금은 accountId로 대충 표시 (추후 닉네임 연동 가능)
+      name: `user${data.accountId}`, // accountId로 임시 표시 (추후 닉네임 연동 가능)
       avatar: data.profileImageUrl || "/images/etc/profile.png",
     },
     content: data.content,
     image: data.postImageUrl || null,
     imageKey: data.postImageKey || null,
     likes: data.likeCount,
-    isLiked: false, // 상세 조회에서는 기본 false (추후 좋아요 여부 추가 가능)
+    isLiked: false,
     comments: data.commentCount,
-    tags: [`#${mapTagIdToName(data.tagId)}`], // 태그 ID → 이름 매핑
-    likers: [], // 상세조회에서는 따로 likers 정보 없음
-    commentsList: [], // 상세조회에서는 따로 commentsList 없음
+    tags: [`#${mapTagIdToName(data.tagId)}`],
+    likers: [],
+    commentsList: [],
     createdAt: data.createdAt,
   };
 }
 
 /**
- * 🧩 태그 ID → 태그 이름 매핑 함수
+ * 태그 ID → 이름 매핑
  */
 function mapTagIdToName(tagId: number) {
   const TAG_ID_TO_NAME: Record<number, string> = {

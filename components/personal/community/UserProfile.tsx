@@ -1,9 +1,11 @@
 "use client"
 
+import { apiClient } from "@/api/apiClient";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useUserStore } from "@/store/useUserStore";
 import { useState, useEffect } from "react";
 import { MessageSquare } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useUserStore } from "@/store/useUserStore"
 import { Profile } from "@/types/profile"; 
 import axios from "axios";
 
@@ -21,9 +23,12 @@ export const UserProfile = () => {
     const fetchProfile = async () => {
       if (!userInfo?.profileId) return; // profileId 없으면 스킵
       try {
-        const token = sessionStorage.getItem("accessToken");
-        const response = await axios.get(`/api/personal/profile/me?profileId=${userInfo.profileId}`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
+        const response = await apiClient.get(`/api/personal/profile/me?profileId=${userInfo.profileId}`, {
+          withCredentials: !isLocalhost,
+          headers: {
+            Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+          },
         });
         setProfile(response.data.data); // ✅ API 결과 저장
       } catch (error) {
