@@ -1,283 +1,218 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { ChevronDown, Search, X, Check } from "lucide-react"
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronDown, Search, X } from "lucide-react";
 
-// Define types for our filter data
-type FilterCategory = "job" | "career" | "location" | "education"
-type FilterItem = {
-  id: string
-  label: string
-  selected?: boolean
+type FilterCategory = "job" | "career" | "location" | "education";
+type FilterItem = { id: string; label: string };
+
+interface Location {
+  locationCode: string;
+  province: string;
+  city: string | null;
+  fullLocation: string;
 }
 
-export const JobsFilter = () => {
-  // State to track which dropdown is open
-  const [openDropdown, setOpenDropdown] = useState<FilterCategory | null>(null)
+interface JobsFilterProps {
+  onApply: (filters: {
+    industry?: string;
+    experienceLevel?: number;
+    educationLevel?: number;
+    locationCode?: string;
+    keyword?: string;
+  }) => void;
+}
 
-  // State for career range slider
-  const [careerRange, setCareerRange] = useState<[number, number]>([0, 10])
+export const JobsFilter = ({ onApply }: JobsFilterProps) => {
+  const [openDropdown, setOpenDropdown] = useState<FilterCategory | null>(null);
+  const [keyword, setKeyword] = useState("");
+  const [career, setCareer] = useState<number | null>(null);
+  const [education, setEducation] = useState<FilterItem | null>(null);
+  const [selectedJobs, setSelectedJobs] = useState<FilterItem[]>([]);
+  const [locations, setLocations] = useState<FilterItem[]>([]);
+  const [allLocations, setAllLocations] = useState<Location[]>([]);
+  const [expandedProvince, setExpandedProvince] = useState<string | null>(null);
+  const [experience, setExperience] = useState<FilterItem | null>(null);
+  
 
-  // State for selected filters
-  const [selectedFilters, setSelectedFilters] = useState<{
-    job: FilterItem[]
-    career: string | null
-    location: FilterItem[]
-    education: FilterItem | null
-  }>({
-    job: [],
-    career: null,
-    location: [],
-    education: null,
-  })
-
-  // Refs for dropdown containers
   const dropdownRefs = {
     job: useRef<HTMLDivElement>(null),
     career: useRef<HTMLDivElement>(null),
     location: useRef<HTMLDivElement>(null),
     education: useRef<HTMLDivElement>(null),
-  }
+  };
 
-  // Sample data for filters
-  const filterData = {
-    job: [
-      { id: "dev", label: "개발" },
-      { id: "design", label: "디자인" },
-      { id: "marketing", label: "마케팅" },
-      { id: "sales", label: "영업" },
-      { id: "management", label: "경영·비즈니스" },
-      { id: "hr", label: "인사" },
-      { id: "finance", label: "금융" },
-      { id: "service", label: "서비스" },
-    ],
-    location: [
-      { id: "seoul", label: "서울" },
-      { id: "gyeonggi", label: "경기" },
-      { id: "incheon", label: "인천" },
-      { id: "busan", label: "부산" },
-      { id: "daegu", label: "대구" },
-      { id: "daejeon", label: "대전" },
-      { id: "gwangju", label: "광주" },
-      { id: "ulsan", label: "울산" },
-    ],
-    education: [
-      { id: "high", label: "고졸" },
-      { id: "college", label: "전문대졸" },
-      { id: "bachelor", label: "대졸" },
-      { id: "master", label: "석사" },
-      { id: "phd", label: "박사" },
-      { id: "any", label: "학력무관" },
-    ],
-  }
-
-  // Handle click outside to close dropdown
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (e: MouseEvent) => {
       if (openDropdown) {
-        const currentRef = dropdownRefs[openDropdown]
-        if (currentRef.current && !currentRef.current.contains(event.target as Node)) {
-          setOpenDropdown(null)
+        const ref = dropdownRefs[openDropdown].current;
+        if (ref && !ref.contains(e.target as Node)) {
+          setOpenDropdown(null);
+          setExpandedProvince(null);
         }
       }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openDropdown]);
+
+  useEffect(() => {
+    fetch("/api/locations")
+      .then((res) => res.json())
+      .then((data) => setAllLocations(data));
+  }, []);
+
+  const provinces = Array.from(new Set(allLocations.map((l) => l.province))).map((p) => ({
+    id: p,
+    label: p,
+  }));
+
+  const applyFilters = () => {
+    const filters = {
+      industry: selectedJobs.map((j) => j.label).join(","),
+      experienceLevel: experience ? Number(experience.id) : career !== null ? career : undefined,
+      educationLevel: education ? Number(education.id) : undefined,
+      locationCode: locations.map((l) => l.id).join(","),
+      keyword: keyword || undefined,
+    };
+    onApply(filters);
+  };
+  useEffect(() => {
+    applyFilters();
+  }, [selectedJobs, locations, education, experience, career, keyword]);
+
+  const handleKeywordKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      applyFilters();
     }
+  };
 
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [openDropdown])
+  const educationOptions: FilterItem[] = [
+    { id: "0", label: "학력무관" },
+    { id: "6", label: "고졸" },
+    { id: "7", label: "전문대졸" },
+    { id: "8", label: "대졸" },
+    { id: "9", label: "석사" },
+    { id: "5", label: "박사" },
+  ];
 
-  // Toggle dropdown visibility
-  const toggleDropdown = (dropdown: FilterCategory) => {
-    setOpenDropdown(openDropdown === dropdown ? null : dropdown)
-  }
+  const experienceOptions: FilterItem[] = [
+    { id: "0", label: "신입" },
+    { id: "1", label: "1년" },
+    { id: "2", label: "2년" },
+    { id: "3", label: "3년" },
+    { id: "4", label: "4년" },
+    { id: "5", label: "5년" },
+    { id: "10", label: "10년 이상" },
+  ];
+  const industryGroups: Record<string, string[]> = {
+    "서비스업": ["호텔·여행·항공", "외식업·식음료", "시설관리·경비·용역", "레저·스포츠·여가", "AS·카센터·주유", "렌탈·임대", "웨딩·장례·이벤트", "기타서비스업", "뷰티·미용"],
+    "제조·화학": ["전기·전자·제어", "기계·설비·자동차", "석유·화학·에너지", "섬유·의류·패션", "화장품·뷰티", "생활용품·소비재·사무", "가구·목재·제지", "농업·어업·광업·임업", "금속·재료·철강·요업", "조선·항공·우주", "기타제조업", "식품가공·개발", "반도체·광학·LCD", "환경"],
+    "IT·웹·통신": ["솔루션·SI·ERP·CRM", "웹에이젼시", "쇼핑몰·오픈마켓", "포털·인터넷·컨텐츠", "네트워크·통신·모바일", "하드웨어·장비", "정보보안·백신", "IT컨설팅", "게임"],
+    "은행·금융업": ["은행·금융·저축", "대출·캐피탈·여신", "기타금융", "증권·보험·카드"],
+    "미디어·디자인": ["신문·잡지·언론사", "방송사·케이블", "연예·엔터테인먼트", "광고·홍보·전시", "영화·배급·음악", "공연·예술·문화", "출판·인쇄·사진", "캐릭터·애니메이션", "디자인·설계"],
+    "교육업": ["초중고·대학", "학원·어학원", "유아·유치원", "교재·학습지", "전문·기능학원"],
+    "의료·제약·복지": ["의료(진료과목별)", "의료(병원종류별)", "제약·보건·바이오", "사회복지"],
+    "판매·유통": ["판매(매장종류별)", "판매(상품품목별)", "유통·무역·상사", "운송·운수·물류"],
+    "건설업": ["건설·건축·토목·시공", "실내·인테리어·조경", "환경·설비", "부동산·임대·중개"],
+    "기관·협회": ["정부·공공기관·공기업", "협회·단체", "법률·법무·특허", "세무·회계", "연구소·컨설팅·조사"],
+  };
 
-  // Handle job filter selection
-  const toggleJobFilter = (item: FilterItem) => {
-    setSelectedFilters((prev) => {
-      const isSelected = prev.job.some((filter) => filter.id === item.id)
-
-      if (isSelected) {
-        return {
-          ...prev,
-          job: prev.job.filter((filter) => filter.id !== item.id),
-        }
-      } else {
-        return {
-          ...prev,
-          job: [...prev.job, item],
-        }
-      }
-    })
-  }
-
-  // Handle location filter selection
-  const toggleLocationFilter = (item: FilterItem) => {
-    setSelectedFilters((prev) => {
-      const isSelected = prev.location.some((filter) => filter.id === item.id)
-
-      if (isSelected) {
-        return {
-          ...prev,
-          location: prev.location.filter((filter) => filter.id !== item.id),
-        }
-      } else {
-        return {
-          ...prev,
-          location: [...prev.location, item],
-        }
-      }
-    })
-  }
-
-  // Handle education filter selection
-  const selectEducationFilter = (item: FilterItem) => {
-    setSelectedFilters((prev) => ({
-      ...prev,
-      education: item,
-    }))
-  }
-
-  // Handle career range selection
-  const handleCareerRangeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number.parseInt(e.target.value)
-    setCareerRange([0, value])
-
-    // Update career filter text
-    if (value === 0) {
-      setSelectedFilters((prev) => ({
-        ...prev,
-        career: null,
-      }))
-    } else if (value === 10) {
-      setSelectedFilters((prev) => ({
-        ...prev,
-        career: "10년 이상",
-      }))
-    } else {
-      setSelectedFilters((prev) => ({
-        ...prev,
-        career: `${value}년`,
-      }))
-    }
-  }
-
-  // Reset specific filter
-  const resetFilter = (category: FilterCategory) => {
-    if (category === "job") {
-      setSelectedFilters((prev) => ({ ...prev, job: [] }))
-    } else if (category === "career") {
-      setCareerRange([0, 10])
-      setSelectedFilters((prev) => ({ ...prev, career: null }))
-    } else if (category === "location") {
-      setSelectedFilters((prev) => ({ ...prev, location: [] }))
-    } else if (category === "education") {
-      setSelectedFilters((prev) => ({ ...prev, education: null }))
-    }
-  }
-
-  // Reset all filters
   const resetAllFilters = () => {
-    setSelectedFilters({
-      job: [],
-      career: null,
-      location: [],
-      education: null,
-    })
-    setCareerRange([0, 10])
-  }
-
-  // Remove a specific filter tag
-  const removeFilterTag = (category: FilterCategory, id?: string) => {
-    if (category === "job" && id) {
-      setSelectedFilters((prev) => ({
-        ...prev,
-        job: prev.job.filter((item) => item.id !== id),
-      }))
-    } else if (category === "career") {
-      setSelectedFilters((prev) => ({ ...prev, career: null }))
-      setCareerRange([0, 10])
-    } else if (category === "location" && id) {
-      setSelectedFilters((prev) => ({
-        ...prev,
-        location: prev.location.filter((item) => item.id !== id),
-      }))
-    } else if (category === "education") {
-      setSelectedFilters((prev) => ({ ...prev, education: null }))
-    }
-  }
-
-  // Check if any filters are selected
-  const hasActiveFilters = () => {
-    return (
-      selectedFilters.job.length > 0 ||
-      selectedFilters.career !== null ||
-      selectedFilters.location.length > 0 ||
-      selectedFilters.education !== null
-    )
-  }
+    setSelectedJobs([]);
+    setLocations([]);
+    setEducation(null);
+    setExperience(null);
+    setCareer(null);
+    setKeyword("");
+  };
 
   return (
     <div className="border rounded-md p-4 mb-8">
       <div className="flex flex-wrap gap-4 mb-4">
-        {/* Job Filter */}
+        {/* 산업 필터 */}
         <div className="relative" ref={dropdownRefs.job}>
           <button
-            className={`flex items-center justify-between w-32 px-3 py-1.5 text-sm border rounded-md bg-white ${openDropdown === "job" ? "border-blue-500" : ""}`}
-            onClick={() => toggleDropdown("job")}
+            onClick={() => setOpenDropdown(openDropdown === "job" ? null : "job")}
+            className={`flex items-center justify-between w-32 px-3 py-1.5 border rounded-md bg-white ${
+              openDropdown === "job" ? "border-blue-500" : ""
+            }`}
           >
-            <span>직무</span>
-            <ChevronDown className="h-4 w-4" />
+            직무 <ChevronDown className="w-4 h-4 ml-1" />
           </button>
 
           {openDropdown === "job" && (
-            <div className="absolute top-full left-0 mt-1 w-80 bg-white border rounded-md shadow-lg z-10">
-              <div className="p-4">
-                <div className="relative mb-4">
-                  <input
-                    type="text"
-                    placeholder="직무 검색"
-                    className="w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                </div>
-
-                <div className="max-h-60 overflow-y-auto mb-4">
-                  {filterData.job.map((item) => (
-                    <div key={item.id} className="flex items-center py-2">
-                      <label className="flex items-center cursor-pointer w-full">
-                        <input
-                          type="checkbox"
-                          className="sr-only"
-                          checked={selectedFilters.job.some((filter) => filter.id === item.id)}
-                          onChange={() => toggleJobFilter(item)}
-                        />
-                        <div
-                          className={`w-5 h-5 border rounded mr-2 flex items-center justify-center ${selectedFilters.job.some((filter) => filter.id === item.id) ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}
-                        >
-                          {selectedFilters.job.some((filter) => filter.id === item.id) && (
-                            <Check className="h-3 w-3 text-white" />
-                          )}
+            <div className="absolute top-full mt-1 w-[400px] bg-white border rounded-md shadow-lg z-10 flex flex-col">
+              <div className="flex max-h-60 overflow-y-auto">
+                {/* 좌측: 상위 산업 그룹 */}
+                <div className="w-[50%] border-r p-4 overflow-y-auto">
+                  {Object.keys(industryGroups).map((group) => {
+                    const children = industryGroups[group];
+                    const allSel = children.every(ind => selectedJobs.some(j => j.label === ind));
+                    return (
+                      <div key={group} className="mb-2">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-sm font-medium">{group}</span>
+                          <button
+                            className="text-xs text-blue-600 hover:underline"
+                            onClick={() => {
+                              const items = children.map(ind => ({ id: ind, label: ind }));
+                              setSelectedJobs(prev =>
+                                allSel
+                                  ? prev.filter(j => !children.includes(j.label))
+                                  : [...prev, ...items.filter(i => !prev.some(j => j.label === i.label))]
+                              );
+                            }}
+                          >
+                            {allSel ? "해제" : "전체"}
+                          </button>
                         </div>
-                        <span className="text-sm">{item.label}</span>
-                      </label>
-                    </div>
-                  ))}
+                        <button
+                          className="text-xs text-gray-500 hover:underline"
+                          onClick={() => setExpandedProvince(expandedProvince === group ? null : group)}
+                        >
+                          {group} 보기
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-
-                <div className="flex justify-between">
-                  <button className="text-sm text-gray-500" onClick={() => resetFilter("job")}>
-                    초기화
-                  </button>
+                {/* 우측: 하위 산업 리스트 */}
+                <div className="w-[60%] p-4 overflow-y-auto text-sm">
+                  {expandedProvince
+                    ? industryGroups[expandedProvince].map((industry) => (
+                        <label key={industry} className="flex items-center py-1 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="mr-2 accent-blue-500"
+                            checked={selectedJobs.some(j => j.label === industry)}
+                            onChange={() => {
+                              setSelectedJobs(prev =>
+                                prev.some(j => j.label === industry)
+                                  ? prev.filter(j => j.label !== industry)
+                                  : [...prev, { id: industry, label: industry }]
+                              )
+                            }}
+                          />
+                          {industry}
+                        </label>
+                      ))
+                    : <div className="text-sm text-gray-500">상위 산업을 선택하세요</div>
+                  }
                 </div>
               </div>
 
-              <div className="border-t p-3 flex justify-end">
+              {/* 초기화/적용 버튼 */}
+              <div className="border-t px-4 py-2 flex justify-between">
                 <button
-                  className="px-4 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600"
-                  onClick={() => setOpenDropdown(null)}
+                  className="text-sm text-gray-500"
+                  onClick={() => { setSelectedJobs([]); applyFilters(); }}
+                >
+                  초기화
+                </button>
+                <button
+                  className="px-4 py-1 bg-blue-500 text-white rounded-md text-sm"
+                  onClick={() => { applyFilters(); setOpenDropdown(null); }}
                 >
                   적용
                 </button>
@@ -286,110 +221,165 @@ export const JobsFilter = () => {
           )}
         </div>
 
-        {/* Career Filter */}
-        <div className="relative" ref={dropdownRefs.career}>
-          <button
-            className={`flex items-center justify-between w-32 px-3 py-1.5 text-sm border rounded-md bg-white ${openDropdown === "career" ? "border-blue-500" : ""}`}
-            onClick={() => toggleDropdown("career")}
-          >
-            <span>경력</span>
-            <ChevronDown className="h-4 w-4" />
-          </button>
+       {/* 경력 */}
+      <div className="relative" ref={dropdownRefs.career}>
+        <button
+          onClick={() => setOpenDropdown(openDropdown === "career" ? null : "career")}
+          className={`flex items-center justify-between w-32 px-3 py-1.5 border rounded-md bg-white ${
+            openDropdown === "career" ? "border-blue-500" : ""
+          }`}
+        >
+          경력 <ChevronDown className="w-4 h-4 ml-1" />
+        </button>
 
-          {openDropdown === "career" && (
-            <div className="absolute top-full left-0 mt-1 w-80 bg-white border rounded-md shadow-lg z-10">
-              <div className="p-4">
-                <div className="mb-8">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-sm">신입</span>
-                    <span className="text-sm">{careerRange[1] === 10 ? "10년 이상" : `${careerRange[1]}년`}</span>
-                  </div>
-
+        {openDropdown === "career" && (
+          <div className="absolute top-full mt-1 w-80 bg-white border rounded-md shadow-lg z-10">
+            <div className="p-4 max-h-60 overflow-y-auto grid grid-cols-2 gap-2 text-sm">
+              {experienceOptions.map((item) => (
+                <label key={item.id} className="flex items-center cursor-pointer">
                   <input
-                    type="range"
-                    min="0"
-                    max="10"
-                    value={careerRange[1]}
-                    onChange={handleCareerRangeChange}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    type="radio"
+                    name="experience"
+                    className="mr-2"
+                    checked={career === Number(item.id)}
+                    onChange={() => {
+                      setCareer(Number(item.id));
+                      applyFilters();
+                    }}
                   />
-                </div>
-
-                <div className="flex justify-between">
-                  <button className="text-sm text-gray-500" onClick={() => resetFilter("career")}>
-                    초기화
-                  </button>
-                </div>
-              </div>
-
-              <div className="border-t p-3 flex justify-end">
-                <button
-                  className="px-4 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600"
-                  onClick={() => setOpenDropdown(null)}
-                >
-                  적용
-                </button>
-              </div>
+                  {item.label}
+                </label>
+              ))}
             </div>
-          )}
-        </div>
 
-        {/* Location Filter */}
+      {/* 초기화/적용 버튼 */}
+      <div className="border-t px-4 py-2 flex justify-between">
+        <button
+          className="text-sm text-gray-500"
+          onClick={() => {
+            setCareer(null);
+            applyFilters(); // 초기화시도 바로 반영
+          }}
+        >
+          초기화
+        </button>
+        <button
+          className="px-4 py-1 bg-blue-500 text-white rounded-md text-sm"
+          onClick={() => {
+            setOpenDropdown(null);
+            applyFilters();
+          }}
+        >
+          적용
+        </button>
+      </div>
+    </div>
+  )}
+</div>
+
+
+        {/* 지역 필터 */}
         <div className="relative" ref={dropdownRefs.location}>
           <button
-            className={`flex items-center justify-between w-32 px-3 py-1.5 text-sm border rounded-md bg-white ${openDropdown === "location" ? "border-blue-500" : ""}`}
-            onClick={() => toggleDropdown("location")}
+            onClick={() => setOpenDropdown(openDropdown === "location" ? null : "location")}
+            className={`flex items-center justify-between w-32 px-3 py-1.5 border rounded-md bg-white ${
+              openDropdown === "location" ? "border-blue-500" : ""
+            }`}
           >
-            <span>지역</span>
-            <ChevronDown className="h-4 w-4" />
+            지역 <ChevronDown className="w-4 h-4 ml-1" />
           </button>
 
           {openDropdown === "location" && (
-            <div className="absolute top-full left-0 mt-1 w-80 bg-white border rounded-md shadow-lg z-10">
-              <div className="p-4">
-                <div className="relative mb-4">
-                  <input
-                    type="text"
-                    placeholder="지역 검색"
-                    className="w-full pl-8 pr-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                </div>
+            <div className="absolute top-full mt-1 w-[400px] bg-white border rounded-md shadow-lg z-10 flex flex-col">
+              <div className="flex max-h-60 overflow-y-auto">
+                {/* 좌측: 시/도 리스트 */}
+                  <div className="w-[50%] border-r p-4 overflow-y-auto">
+                    {provinces.map((province) => {
+                      const isExpanded = expandedProvince === province.label;
+                      const relatedCities = allLocations
+                        .filter((l) => l.province === province.label && l.city)
+                        .map((l) => ({ id: l.locationCode, label: l.fullLocation }));
 
-                <div className="max-h-60 overflow-y-auto mb-4">
-                  {filterData.location.map((item) => (
-                    <div key={item.id} className="flex items-center py-2">
-                      <label className="flex items-center cursor-pointer w-full">
-                        <input
-                          type="checkbox"
-                          className="sr-only"
-                          checked={selectedFilters.location.some((filter) => filter.id === item.id)}
-                          onChange={() => toggleLocationFilter(item)}
-                        />
-                        <div
-                          className={`w-5 h-5 border rounded mr-2 flex items-center justify-center ${selectedFilters.location.some((filter) => filter.id === item.id) ? "bg-blue-500 border-blue-500" : "border-gray-300"}`}
-                        >
-                          {selectedFilters.location.some((filter) => filter.id === item.id) && (
-                            <Check className="h-3 w-3 text-white" />
-                          )}
+                      const provinceItem = allLocations.find(
+                        (l) => l.province === province.label && l.city === null
+                      );
+                      const provinceId = provinceItem?.locationCode;
+
+                      const isSelected = locations.some((l) => l.id === provinceId);
+
+                      return (
+                        <div key={province.id} className="mb-2">
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium">{province.label}</span>
+                            <button
+                              type="button"
+                              className="text-xs text-blue-600 hover:underline"
+                              onClick={() => {
+                                if (isSelected) {
+                                  setLocations(prev => prev.filter(l => l.id !== provinceId));
+                                } else if (provinceId) {
+                                  setLocations(prev => [...prev, { id: provinceId, label: province.label }]);
+                                }
+                              }}
+                            >
+                              {isSelected ? "해제" : "전체"}
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            className="text-xs text-gray-500 hover:underline"
+                            onClick={() =>
+                              setExpandedProvince(isExpanded ? null : province.label)
+                            }
+                          >
+                            {province.label} 보기
+                          </button>
                         </div>
-                        <span className="text-sm">{item.label}</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
+                      );
+                    })}
+                  </div>
 
-                <div className="flex justify-between">
-                  <button className="text-sm text-gray-500" onClick={() => resetFilter("location")}>
-                    초기화
-                  </button>
+                {/* 우측: 시/군/구 리스트 */}
+                <div className="w-[60%] p-4 overflow-y-auto text-sm">
+                  {expandedProvince
+                    ? allLocations
+                        .filter((l) => l.province === expandedProvince && l.city)
+                        .map((city) => (
+                          <label key={city.locationCode} className="flex items-center py-1 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="mr-2 accent-blue-500"
+                              checked={locations.some((l) => l.id === city.locationCode)}
+                              onChange={() =>
+                                setLocations((prev) =>
+                                  prev.some((l) => l.id === city.locationCode)
+                                    ? prev.filter((l) => l.id !== city.locationCode)
+                                    : [...prev, { id: city.locationCode, label: city.fullLocation }]
+                                )
+                              }
+                            />
+                            {city.fullLocation}
+                          </label>
+                        ))
+                    : <div className="text-sm text-gray-500">시·도를 선택하세요</div>
+                  }
                 </div>
               </div>
 
-              <div className="border-t p-3 flex justify-end">
+              {/* 초기화/적용 버튼 */}
+              <div className="border-t px-4 py-2 flex justify-between">
                 <button
-                  className="px-4 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600"
-                  onClick={() => setOpenDropdown(null)}
+                  className="text-sm text-gray-500"
+                  onClick={() => {
+                    setLocations([]);
+                    setExpandedProvince(null);
+                  }}
+                >
+                  초기화
+                </button>
+                <button
+                  className="px-4 py-1 bg-blue-500 text-white rounded-md text-sm"
+                  onClick={() => { applyFilters(); setOpenDropdown(null); }}
                 >
                   적용
                 </button>
@@ -398,53 +388,43 @@ export const JobsFilter = () => {
           )}
         </div>
 
-        {/* Education Filter */}
+        {/* 학력 필터 */}
         <div className="relative" ref={dropdownRefs.education}>
           <button
-            className={`flex items-center justify-between w-32 px-3 py-1.5 text-sm border rounded-md bg-white ${openDropdown === "education" ? "border-blue-500" : ""}`}
-            onClick={() => toggleDropdown("education")}
+            onClick={() => setOpenDropdown(openDropdown === "education" ? null : "education")}
+            className={`flex items-center justify-between w-32 px-3 py-1.5 border rounded-md bg-white ${
+              openDropdown === "education" ? "border-blue-500" : ""
+            }`}
           >
-            <span>학력</span>
-            <ChevronDown className="h-4 w-4" />
+            학력 <ChevronDown className="w-4 h-4 ml-1" />
           </button>
 
           {openDropdown === "education" && (
-            <div className="absolute top-full left-0 mt-1 w-80 bg-white border rounded-md shadow-lg z-10">
-              <div className="p-4">
-                <div className="max-h-60 overflow-y-auto mb-4">
-                  {filterData.education.map((item) => (
-                    <div key={item.id} className="flex items-center py-2">
-                      <label className="flex items-center cursor-pointer w-full">
-                        <input
-                          type="radio"
-                          className="sr-only"
-                          checked={selectedFilters.education?.id === item.id}
-                          onChange={() => selectEducationFilter(item)}
-                        />
-                        <div
-                          className={`w-5 h-5 border rounded-full mr-2 flex items-center justify-center ${selectedFilters.education?.id === item.id ? "border-blue-500" : "border-gray-300"}`}
-                        >
-                          {selectedFilters.education?.id === item.id && (
-                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                          )}
-                        </div>
-                        <span className="text-sm">{item.label}</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-between">
-                  <button className="text-sm text-gray-500" onClick={() => resetFilter("education")}>
-                    초기화
-                  </button>
-                </div>
+            <div className="absolute top-full mt-1 w-80 bg-white border rounded-md shadow-lg z-10">
+              <div className="p-4 grid grid-cols-2 gap-2 max-h-60 overflow-y-auto">
+                {educationOptions.map((item) => (
+                  <label key={item.id} className="flex items-center py-2 cursor-pointer text-sm">
+                    <input
+                      type="radio"
+                      name="education"
+                      className="mr-2 accent-blue-500"
+                      checked={education?.id === item.id}
+                      onChange={() => setEducation(item)}
+                    />
+                    {item.label}
+                  </label>
+                ))}
               </div>
-
-              <div className="border-t p-3 flex justify-end">
+              <div className="border-t px-4 py-2 flex justify-between">
                 <button
-                  className="px-4 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600"
-                  onClick={() => setOpenDropdown(null)}
+                  className="text-sm text-gray-500"
+                  onClick={() => setEducation(null)}
+                >
+                  초기화
+                </button>
+                <button
+                  className="px-4 py-1 bg-blue-500 text-white rounded-md text-sm"
+                  onClick={() => { applyFilters(); setOpenDropdown(null); }}
                 >
                   적용
                 </button>
@@ -452,70 +432,101 @@ export const JobsFilter = () => {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Search Input */}
-      <div className="relative mb-4">
-        <input
-          type="text"
-          placeholder="검색어를 입력하세요"
-          className="w-full pl-3 pr-10 py-2 text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-        <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-          <Search className="h-4 w-4 text-gray-400" />
-        </button>
       </div>
+        {/* 검색어 입력 */}
+          <div className="relative mb-4">
+            <input
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applyFilters();
+              }}
+              type="text"
+              placeholder="검색어를 입력하세요"
+              className="w-full pl-3 pr-10 py-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button
+              className="absolute right-3 top-1/2 transform -translate-y-1/2"
+              onClick={applyFilters}
+            >
+              <Search className="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
 
-      {/* Selected Filters */}
-      {hasActiveFilters() && (
-        <div className="flex flex-wrap items-center gap-2 mt-3">
-          {selectedFilters.job.map((item) => (
-            <div key={item.id} className="flex items-center bg-gray-100 rounded-full px-3 py-1">
+      {/* 선택된 필터들 보여주기 */}
+      {(selectedJobs.length > 0 || locations.length > 0 || education || career !== null) && (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {selectedJobs.map((item) => (
+            <div key={item.id} className="flex items-center bg-blue-100 text-blue-700 rounded-full px-3 py-1">
               <span className="text-xs">{item.label}</span>
               <button
-                className="ml-1 text-gray-500 hover:text-gray-700"
-                onClick={() => removeFilterTag("job", item.id)}
+                className="ml-1 hover:text-blue-900"
+                onClick={() => setSelectedJobs((prev) => prev.filter((j) => j.id !== item.id))}
               >
                 <X className="h-3 w-3" />
               </button>
             </div>
           ))}
-
-          {selectedFilters.career && (
-            <div className="flex items-center bg-gray-100 rounded-full px-3 py-1">
-              <span className="text-xs">{selectedFilters.career}</span>
-              <button className="ml-1 text-gray-500 hover:text-gray-700" onClick={() => removeFilterTag("career")}>
-                <X className="h-3 w-3" />
-              </button>
-            </div>
-          )}
-
-          {selectedFilters.location.map((item) => (
-            <div key={item.id} className="flex items-center bg-gray-100 rounded-full px-3 py-1">
+          {locations.map((item) => (
+            <div key={item.id} className="flex items-center bg-blue-100 text-blue-700 rounded-full px-3 py-1">
               <span className="text-xs">{item.label}</span>
               <button
-                className="ml-1 text-gray-500 hover:text-gray-700"
-                onClick={() => removeFilterTag("location", item.id)}
+                className="ml-1 hover:text-blue-900"
+                onClick={() => setLocations((prev) => prev.filter((l) => l.id !== item.id))}
               >
                 <X className="h-3 w-3" />
               </button>
             </div>
           ))}
-
-          {selectedFilters.education && (
-            <div className="flex items-center bg-gray-100 rounded-full px-3 py-1">
-              <span className="text-xs">{selectedFilters.education.label}</span>
-              <button className="ml-1 text-gray-500 hover:text-gray-700" onClick={() => removeFilterTag("education")}>
+          {education && (
+            <div className="flex items-center bg-blue-100 text-blue-700 rounded-full px-3 py-1">
+              <span className="text-xs">{education.label}</span>
+              <button
+                className="ml-1 hover:text-blue-900"
+                onClick={() => setEducation(null)}
+              >
                 <X className="h-3 w-3" />
               </button>
             </div>
           )}
-
-          <button className="ml-auto text-xs text-gray-500 hover:text-gray-700" onClick={resetAllFilters}>
-            초기화
+          {career !== null && (
+            <div className="flex items-center bg-blue-100 text-blue-700 rounded-full px-3 py-1">
+              <span className="text-xs">{career === 10 ? "10년 이상" : `${career}년`}</span>
+              <button
+                className="ml-1 hover:text-blue-900"
+                onClick={() => setCareer(null)}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+          {experience && (
+            <div className="flex items-center bg-blue-100 text-blue-700 rounded-full px-3 py-1">
+              <span className="text-xs">{experience.label}</span>
+              <button
+                className="ml-1 hover:text-blue-900"
+                onClick={() => setExperience(null)}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+          
+          {/* 전체 초기화 버튼 */}
+          <button
+            className="ml-auto text-xs text-gray-500 hover:text-gray-700"
+            onClick={resetAllFilters}
+          >
+            전체 초기화
           </button>
         </div>
       )}
-    </div>
-  )
-}
+
+        </div>
+    
+  );
+};
+
+
+
