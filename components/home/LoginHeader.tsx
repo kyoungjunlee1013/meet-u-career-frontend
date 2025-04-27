@@ -9,11 +9,14 @@ import ChatDropdown from "./ChatDropdown";
 import ProfileDropdown from "./ProfileDropdown";
 import { useUserStore } from "@/store/useUserStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
+import { useRouter } from "next/navigation";
 
 export const LoginHeader = () => {
+  const router = useRouter();
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
 
   const { userInfo } = useUserStore();
   const { notifications, isLoaded } = useNotificationStore();
@@ -22,6 +25,16 @@ export const LoginHeader = () => {
   const notificationRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  // 검색어 입력
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchKeyword.trim() !== "") {
+        router.push(`/personal/jobs?keyword=${encodeURIComponent(searchKeyword.trim())}`);
+      }
+    }
+  };
 
   // 드롭다운 외부 클릭시 닫기
   useEffect(() => {
@@ -75,15 +88,15 @@ export const LoginHeader = () => {
             />
           </Link>
 
-          <div className="relative flex items-center">
+          <div className="relative flex items-center w-80">
+            <Search className="absolute left-4 w-5 h-5 text-blue-500" />
             <input
               type="text"
-              placeholder="회사명, 채용공 검색 (예체)"
-              className="pl-3 pr-10 py-1 text-sm border rounded-md w-64 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="pl-12 pr-4 py-2 w-full text-sm font-semibold border border-blue-500 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <button className="absolute right-3">
-              <Search className="h-4 w-4 text-gray-400" />
-            </button>
           </div>
         </div>
 

@@ -2,11 +2,23 @@
 
 import Link from "next/link"
 import { Search } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Image from "next/image"
+import { useState } from "react"
 
 export const Header = () => {
-  const pathname = usePathname()
+  const pathname = usePathname();
+  const router = useRouter();
+  const [searchKeyword, setSearchKeyword] = useState<string>("");
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchKeyword.trim() !== "") {
+        router.push(`/personal/jobs?keyword=${encodeURIComponent(searchKeyword.trim())}`);
+      }
+    }
+  };
 
   return (
     <header className="border-b py-2.5 bg-white sticky top-0 z-50">
@@ -21,15 +33,15 @@ export const Header = () => {
               priority
             />
           </Link>
-          <div className="relative flex items-center">
+          <div className="relative flex items-center w-80">
+            <Search className="absolute left-4 w-5 h-5 text-blue-500" />
             <input
               type="text"
-              placeholder="회사명, 채용공 검색 (예체)"
-              className="pl-3 pr-10 py-1 text-sm border rounded-md w-64 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="pl-12 pr-4 py-2 w-full text-sm font-semibold border border-blue-500 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <button className="absolute right-3">
-              <Search className="h-4 w-4 text-gray-400" />
-            </button>
           </div>
         </div>
         <div className="flex items-center gap-4 text-xs text-gray-600">
