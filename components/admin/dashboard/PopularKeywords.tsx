@@ -1,6 +1,6 @@
 "use client";
 
-import { KeywordStats } from "@/types/admin/dashboard";
+import { KeywordStats } from "@/types/dashboard";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
 interface PopularKeywordsProps {

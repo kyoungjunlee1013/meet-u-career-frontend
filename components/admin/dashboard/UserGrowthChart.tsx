@@ -2,7 +2,7 @@
 
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { Info } from "lucide-react";
-import { UserGrowthChartProps } from "@/types/admin/dashboard";
+import { UserGrowthChartProps } from "@/types/dashboard";
 import {
   LineChart,
   Line,

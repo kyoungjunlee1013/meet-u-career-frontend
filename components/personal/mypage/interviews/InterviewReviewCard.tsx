@@ -18,7 +18,7 @@ export function InterviewReviewCard({ review, onEdit, onView }: InterviewReviewC
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
           <Image
-            src={review.logo || "/placeholder.svg"}
+            src={review.logo || "/images/etc/placeholder.svg"}
             alt={review.company}
             width={36}
             height={36}

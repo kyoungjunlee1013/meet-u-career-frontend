@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { ApplicationTrends } from "@/types/admin/dashboard";
+import { ApplicationTrends } from "@/types/dashboard";
 
 interface ApplicationTrendChartProps {
   data: ApplicationTrends[];

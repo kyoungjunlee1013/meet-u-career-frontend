@@ -1,6 +1,6 @@
 import type React from "react";
 import { Users, Building2, Briefcase, MessageSquare } from "lucide-react";
-import type { MetricCardsProps } from "@/types/admin/dashboard";
+import type { MetricCardsProps } from "@/types/dashboard";
 
 export function MetricUserCards({
   userCount,
@@ -59,9 +59,8 @@ function MetricCard({ icon, value, label, change, positive }: MetricCardProps) {
       <div className="text-2xl font-bold mb-1">{value}</div>
       <div className="text-sm text-gray-500 mb-2">{label}</div>
       <div
-        className={`text-xs ${
-          positive ? "text-green-500" : "text-red-500"
-        } flex items-center`}
+        className={`text-xs ${positive ? "text-green-500" : "text-red-500"
+          } flex items-center`}
       >
         <span className="mr-1">{positive ? "↑" : "↓"}</span>
         <span>{Math.abs(change).toFixed(1)}% 지난 달 대비</span>

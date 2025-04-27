@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { JobTypeData } from "@/types/admin/dashboard";
+import { JobTypeData } from "@/types/dashboard";
 
 interface JobTypeDataProps {
   data: JobTypeData[];

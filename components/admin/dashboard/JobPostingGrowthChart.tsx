@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { JobPostingGrowthChartData } from "@/types/admin/dashboard";
+import { JobPostingGrowthChartData } from "@/types/dashboard";
 import type { TooltipProps } from "recharts";
 
 interface JobPostingGrowthChartProps {

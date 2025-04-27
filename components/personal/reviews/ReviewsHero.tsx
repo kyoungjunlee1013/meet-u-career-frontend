@@ -25,7 +25,7 @@ export const ReviewsHero = () => {
           </div>
           <div className="md:w-1/2 flex justify-center">
             <img
-              src="/images/etc/review_01.png"
+              src="/images/review/review_01.png"
               alt="기업 리뷰 작성하는 일러스트"
               className="max-w-full h-auto"
               width={400}

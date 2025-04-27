@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import type { UserDistributionChartProps } from "@/types/admin/dashboard";
+import type { UserDistributionChartProps } from "@/types/dashboard";
 import { Info } from "lucide-react";
 
 const COLORS = ["#4f46e5", "#38bdf8"]; // 관리자 색상은 제외

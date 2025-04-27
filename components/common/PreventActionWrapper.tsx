@@ -4,15 +4,12 @@ import { ReactNode, useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useUserStore } from "@/store/useUserStore";
 import { fetchMyInfo } from "@/api/fetchMyInfo";
+import NotificationHandler from "@/components/notification/NotificationHandler";
 
 interface Props {
   children: ReactNode;
 }
 
-/**
- * PreventActionWrapper
- * - 앱 최초 진입 시 토큰 복구 + 유저 정보 복구
- */
 export default function PreventActionWrapper({ children }: Props) {
   const { restoreTokens, isHydrated, accessToken } = useAuthStore();
   const { restoreUserInfo } = useUserStore();
@@ -24,7 +21,7 @@ export default function PreventActionWrapper({ children }: Props) {
 
   useEffect(() => {
     if (isHydrated && accessToken) {
-      fetchMyInfo(); // 토큰 있으면 /me 재호출해서 진짜 유저 정보 가져오기
+      fetchMyInfo();
     }
   }, [isHydrated, accessToken]);
 
@@ -34,10 +31,11 @@ export default function PreventActionWrapper({ children }: Props) {
 
   return (
     <div
-      onContextMenu={preventAction} // 우클릭 방지
-      onDragStart={preventAction} // 드래그 시작 방지
+      onContextMenu={preventAction}
+      onDragStart={preventAction}
       className="min-h-screen"
     >
+      {accessToken && <NotificationHandler />}
       {children}
     </div>
   );
