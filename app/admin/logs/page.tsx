@@ -4,6 +4,7 @@ import { useAuthGuard } from "@/hooks/useAuthGuard";
 import AdminHeader from "@/components/admin/layout/AdminHeader";
 import LogsManagement from "@/components/admin/logs/LogsManagement";
 
+
 export default function LogsPage() {
   const isChecking = useAuthGuard("admin"); // admin만 접근 가능
 
