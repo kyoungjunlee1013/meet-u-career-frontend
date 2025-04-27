@@ -6,114 +6,118 @@ import { Pagination } from "./Pagination"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 
-const talents = [
-  {
-    id: 1,
-    name: "김지훈",
-    title: "프론트엔드 개발자",
-    location: "서울",
-    experience: "경력 3년",
-    education: "학력 대졸",
-    skills: ["React", "TypeScript", "JavaScript", "HTML", "CSS"],
-    moreSkills: 1,
-    description: "3년차 프론트엔드 개발자로 사용자 경험을 중시하는 웹 애플리케이션 제작에 관심이 있습니다.",
-    bookmarked: false,
-  },
-  {
-    id: 2,
-    name: "이서연",
-    title: "백엔드 개발자",
-    location: "서울",
-    experience: "경력 4년",
-    education: "학력 석사",
-    skills: ["Java", "Spring Boot", "MySQL", "AWS", "Docker"],
-    moreSkills: 1,
-    description: "5년차 백엔드 개발자로 안정적 서비스 설계와 확장성 있는 아키텍처 설계 경험이 있습니다.",
-    bookmarked: true,
-  },
-  {
-    id: 3,
-    name: "박민준",
-    title: "풀스택 개발자",
-    location: "부산",
-    experience: "경력 4년",
-    education: "학력 대졸",
-    skills: ["JavaScript", "Node.js", "React", "MongoDB", "Express"],
-    moreSkills: 2,
-    description:
-      "4년차 풀스택 개발자로 웹 서비스 개발과 운영 경험이 있으며, 현재 MEAN 스택을 집중적으로 공부하고 있습니다.",
-    bookmarked: false,
-  },
-  {
-    id: 4,
-    name: "최준호",
-    title: "데이터 사이언티스트",
-    location: "대전",
-    experience: "경력 3년",
-    education: "학력 대졸",
-    skills: ["Python", "R", "TensorFlow", "PyTorch", "Machine Learning"],
-    moreSkills: 1,
-    description: "3년차 데이터 사이언티스트로 머신러닝 모델 개발 및 최적화, 데이터 분석과 보고 경험이 있습니다.",
-    bookmarked: true,
-  },
-  {
-    id: 5,
-    name: "한소희",
-    title: "DevOps 엔지니어",
-    location: "서울",
-    experience: "경력 4년",
-    education: "학력 대졸",
-    skills: ["AWS", "Docker", "Kubernetes", "Jenkins", "Terraform"],
-    moreSkills: 1,
-    description: "4년차 DevOps 엔지니어로 클라우드 인프라 구축 및 개발자, CI/CD 파이프라인 구축 경험이 있습니다.",
-    bookmarked: false,
-  },
-  {
-    id: 6,
-    name: "임준호",
-    title: "안드로이드 개발자",
-    location: "경기",
-    experience: "경력 2년",
-    education: "학력 대졸",
-    skills: ["Kotlin", "Java", "Android SDK", "MVVM", "Room"],
-    moreSkills: 1,
-    description: "2년차 안드로이드 개발자로 사용자 친화적인 모바일 애플리케이션 개발 경험을 쌓고 있습니다.",
-    bookmarked: false,
-  },
-  {
-    id: 7,
-    name: "홍지은",
-    title: "iOS 개발자",
-    location: "서울",
-    experience: "경력 3년",
-    education: "학력 대졸",
-    skills: ["Swift", "Objective-C", "UIKit", "SwiftUI", "Core Data"],
-    moreSkills: 1,
-    description: "3년차 iOS 개발자로 다양한 앱 개발과 출시 사례가 있으며 최신 기술을 활용하는 것을 좋아합니다.",
-    bookmarked: true,
-  },
-  {
-    id: 8,
-    name: "강현우",
-    title: "시스템 엔지니어",
-    location: "인천",
-    experience: "경력 7년",
-    education: "학력 대졸",
-    skills: ["Linux", "Windows Server", "Network Security", "Virtualization", "Cloud Infrastructure"],
-    moreSkills: 0,
-    description: "7년차 시스템 엔지니어로 대규모 IT 인프라 구축 및 관리, 보안 시스템 설계 경험이 있습니다.",
-    bookmarked: false,
-  },
-]
+interface TalentDto {
+  id: number
+  name: string
+  title: string
+  location: string
+  experience: string
+  education: string
+  skills: string[]
+  moreSkills: number
+  description: string
+  bookmarked: boolean
+  employmentType: string
+  salary?: number
+  applyDate?: string
+  profileImageKey?: string
+}
 
-export const TalentsGrid = () => {
+interface TalentsGridProps {
+  talents: TalentDto[]
+  searchQuery: string
+  filters: {
+    location: string
+    experience: string[]
+    education: string
+    employmentType: string[]
+    salary: number[]
+    applyDate: string
+  }
+}
+
+export const TalentsGrid = ({ talents, searchQuery, filters }: TalentsGridProps) => {
   const [viewType, setViewType] = useState<"grid" | "list">("grid")
+  const [sortType, setSortType] = useState<'latest' | 'alpha'>('latest')
+  const lower = searchQuery.trim().toLowerCase();
+  const filteredTalents = talents.filter(talent => {
+    // Search query filter
+    const matchesSearch = !lower || (
+      talent.name.toLowerCase().includes(lower) ||
+      talent.skills.some(skill => skill.toLowerCase().includes(lower)) ||
+      talent.description.toLowerCase().includes(lower)
+    );
+
+    // Location filter
+    const matchesLocation = !filters.location || talent.location === filters.location;
+
+    // Experience filter (parse years and match to range)
+    let matchesExperience = true;
+    if (filters.experience.length > 0) {
+      // Extract number from '경력 3년', '경력 4년', etc.
+      const match = talent.experience.match(/(\d+)/);
+      const years = match ? parseInt(match[1], 10) : 0;
+      matchesExperience = filters.experience.some(range => {
+        if (range === "0-2") return years >= 0 && years <= 2;
+        if (range === "3-5") return years >= 3 && years <= 5;
+        if (range === "5+") return years >= 5;
+        return false;
+      });
+    }
+
+    // Education filter: match only the degree part (고졸, 대졸, 석사, 박사)
+    let matchesEducation = true;
+    if (filters.education) {
+      // Extract degree from '학력 대졸', '학력 석사', etc.
+      const degree = talent.education.replace(/^학력\s*/, "");
+      matchesEducation = degree === filters.education;
+    }
+
+    // Employment type filter
+    let matchesEmploymentType = true;
+    if (filters.employmentType && filters.employmentType.length > 0) {
+      matchesEmploymentType = filters.employmentType.includes(talent.employmentType);
+    }
+
+    // Salary filter
+    const salaryVal = talent.salary ?? 0;
+    const matchesSalary = salaryVal >= filters.salary[0] && salaryVal <= filters.salary[1];
+
+    // Apply-date filter
+    let matchesApplyDate = true;
+    if (filters.applyDate && talent.applyDate) {
+      const daysMap: Record<string, number> = { '1w': 7, '1m': 30, '3m': 90 };
+      const daysAgo = daysMap[filters.applyDate] || 0;
+      const diffDays = (Date.now() - new Date(talent.applyDate).getTime()) / (1000 * 60 * 60 * 24);
+      matchesApplyDate = diffDays <= daysAgo;
+    }
+
+    return (
+      matchesSearch &&
+      matchesLocation &&
+      matchesExperience &&
+      matchesEducation &&
+      matchesEmploymentType &&
+      matchesSalary &&
+      matchesApplyDate
+    );
+  });
+
+  // Apply sorting
+  const sortedTalents = [...filteredTalents].sort((a, b) => {
+    if (sortType === 'latest') {
+      const aDate = a.applyDate ? new Date(a.applyDate).getTime() : 0;
+      const bDate = b.applyDate ? new Date(b.applyDate).getTime() : 0;
+      return bDate - aDate;
+    }
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
         <div className="text-sm font-medium">
-          <span className="text-blue-500">15</span> 명의 인재
+          <span className="text-blue-500">{sortedTalents.length}</span> 명의 인재
         </div>
 
         <div className="flex items-center gap-2">
@@ -132,15 +136,20 @@ export const TalentsGrid = () => {
             </button>
           </div>
 
-          <Button variant="outline" className="text-sm h-8 flex items-center gap-1 border-gray-300">
-            <span>관련순</span>
-            <ChevronDown className="h-3 w-3" />
-          </Button>
+          {/* Sort selector */}
+          <select
+            value={sortType}
+            onChange={e => setSortType(e.target.value as 'latest' | 'alpha')}
+            className="justify-center whitespace-nowrap rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 text-sm h-8 flex items-center gap-1 border-gray-300"
+          >
+            <option value="latest">최신순</option>
+            <option value="alpha">가나다순</option>
+          </select>
         </div>
       </div>
 
       <div className={`grid ${viewType === "grid" ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"} gap-4`}>
-        {talents.map((talent) => (
+        {sortedTalents.map((talent) => (
           <TalentCard key={talent.id} talent={talent} />
         ))}
       </div>

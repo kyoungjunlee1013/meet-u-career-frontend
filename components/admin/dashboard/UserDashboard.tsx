@@ -2,17 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "@/api/apiClient";
-import type { DashboardMetrics } from "@/types/admin/dashboard";
-import { MetricCards } from "@/components/admin/dashboard/MetricCards";
+import type { DashboardUserMetrics } from "@/types/dashboard";
+import { MetricUserCards } from "@/components/admin/dashboard/MetricUserCards";
 import { UserGrowthChart } from "@/components/admin/dashboard/UserGrowthChart";
 import { UserDistributionChart } from "@/components/admin/dashboard/UserDistributionChart";
-// import { JobPostingGrowthChart } from "@/components/admin/dashboard/JobPostingGrowthChart";
-// import { JobCategoryChart } from "@/components/admin/dashboard/JobCategoryChart";
-// import { RecentLogins } from "@/components/admin/dashboard/RecentLogins";
-// import { PopularJobPostings } from "@/components/admin/dashboard/PopularJobPostings";
 
 export default function UserDashboard() {
-  const [metrics, setMetrics] = useState<DashboardMetrics>({
+  const [metrics, setMetrics] = useState<DashboardUserMetrics>({
     userCount: null,
     companyCount: null,
     jobPostingCount: null,
@@ -20,6 +16,7 @@ export default function UserDashboard() {
     userGrowthChart: [],
     userTypeChart: [],
   });
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -36,11 +33,31 @@ export default function UserDashboard() {
         });
       } catch (error) {
         console.error("사용자 통계 API 호출 실패:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-6 mt-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="h-24 bg-gray-200 rounded-lg" />
+          <div className="h-24 bg-gray-200 rounded-lg" />
+          <div className="h-24 bg-gray-200 rounded-lg" />
+          <div className="h-24 bg-gray-200 rounded-lg" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+          <div className="h-64 bg-gray-200 rounded-lg" />
+          <div className="h-64 bg-gray-200 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -49,7 +66,7 @@ export default function UserDashboard() {
           metrics.companyCount &&
           metrics.jobPostingCount &&
           metrics.communityPostCount && (
-            <MetricCards
+            <MetricUserCards
               userCount={metrics.userCount}
               companyCount={metrics.companyCount}
               jobPostingCount={metrics.jobPostingCount}
@@ -62,16 +79,6 @@ export default function UserDashboard() {
         <UserGrowthChart data={metrics.userGrowthChart} />
         <UserDistributionChart data={metrics.userTypeChart} />
       </div>
-
-      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <JobPostingGrowthChart />
-        <JobCategoryChart />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <RecentLogins />
-        <PopularJobPostings />
-      </div> */}
     </>
   );
 }

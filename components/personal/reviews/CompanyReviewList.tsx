@@ -1,9 +1,7 @@
 "use client"
-
 import { useEffect, useState } from "react"
 import { Eye, Bookmark } from "lucide-react"
 import Link from "next/link"
-
 interface Company {
   companyId: number
   companyName: string
@@ -12,15 +10,12 @@ interface Company {
   industry: string
   address: string
 }
-
 interface Props {
   searchKeyword: string
 }
-
 export const CompanyReviewList = ({ searchKeyword }: Props) => {
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
-
   useEffect(() => {
     const fetchCompanies = async () => {
       setLoading(true)
@@ -30,7 +25,6 @@ export const CompanyReviewList = ({ searchKeyword }: Props) => {
               searchKeyword,
             )}`
           : `http://localhost:8080/api/personal/interview-reviews/companies`
-
         const res = await fetch(url)
         const json = await res.json()
         setCompanies(json.data)
@@ -41,17 +35,14 @@ export const CompanyReviewList = ({ searchKeyword }: Props) => {
         setLoading(false)
       }
     }
-
     fetchCompanies()
   }, [searchKeyword])
-
   return (
     <div className="py-10">
       <div className="max-w-[1200px] mx-auto px-4">
         <h2 className="text-2xl font-bold mb-6">
           {searchKeyword ? `"${searchKeyword}" 검색 결과` : "전체 기업리뷰"}
         </h2>
-
         {loading ? (
             <p className="text-gray-500 text-sm">불러오는 중...</p>
           ) : !companies || companies.length === 0 ? (

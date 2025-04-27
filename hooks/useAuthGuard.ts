@@ -48,6 +48,8 @@ export function useAuthGuard(requiredTypes: RoleKey | RoleKey[] = "personal") {
 
         console.log("사용자 역할(role):", role);
         console.log("허용된 역할(allowedRoles):", allowedRoles);
+        
+        // console.log({ requiredArr, role, allowedRoles });
 
         if (!allowedRoles.includes(role)) {
           console.log("권한이 없어서 /unauthorized로 리디렉션");

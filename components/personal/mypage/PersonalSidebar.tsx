@@ -73,15 +73,13 @@ export const PersonalSidebar = ({
           <div className="p-4 border-b border-gray-100">
             <div className="flex flex-col items-center">
               <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden mb-2">
-                {/* {userInfo?.account. && (
-                  <Image
-                    src={`/${user.profileImageUrl}`}
-                    alt="User profile"
-                    width={64}
-                    height={64}
-                    className="h-full w-full object-cover"
-                  />
-                )} */}
+                <Image
+                  src="/images/etc/vibrant-street-market.png"
+                  alt="User profile"
+                  width={64}
+                  height={64}
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="text-center">
                 <h2 className="text-lg font-semibold text-gray-800">

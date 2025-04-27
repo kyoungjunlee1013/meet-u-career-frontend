@@ -1,5 +1,4 @@
 'use client'
-
 import axios from "axios"
 import { useState, useEffect, useMemo } from "react"
 import { OffersHeader } from "@/components/personal/mypage/offers/OffersHeader"
@@ -7,7 +6,6 @@ import { OffersStats } from "@/components/personal/mypage/offers/OffersStats"
 import { OffersTabs, type TabType } from "@/components/personal/mypage/offers/OffersTabs"
 import { OffersFilter } from "@/components/personal/mypage/offers/OffersFilter"
 import { OffersList } from "@/components/personal/mypage/offers/OffersList"
-
 interface Offer {
   id: number
   company: string
@@ -17,15 +15,12 @@ interface Offer {
   description: string
   status: '검토중' | '수락함' | '거절함'
 }
-
 export default function OffersContent() {
   const [activeTab, setActiveTab] = useState<TabType>('전체')
   const [offers, setOffers] = useState<Offer[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
   const accountId = 1
-
   const mapStatus = (statusCode: number): '검토중' | '수락함' | '거절함' => {
     switch (statusCode) {
       case 1: return '수락함'
@@ -33,7 +28,6 @@ export default function OffersContent() {
       default: return '검토중'
     }
   }
-
   useEffect(() => {
     axios
       .get(`/api/personal/mypage/offers/list/all/${accountId}`)
@@ -56,24 +50,20 @@ export default function OffersContent() {
       })
       .finally(() => setLoading(false))
   }, [])
-
   const counts = useMemo(() => ({
     전체: offers.length,
     검토중: offers.filter((o) => o.status === '검토중').length,
     수락함: offers.filter((o) => o.status === '수락함').length,
     거절함: offers.filter((o) => o.status === '거절함').length,
   }), [offers])
-
   const filtered = useMemo(() => {
     return activeTab === '전체'
       ? offers
       : offers.filter((o) => o.status === activeTab)
   }, [offers, activeTab])
-
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab)
   }
-
   const updateOfferStatus = (id: number, nextTab: '수락함' | '거절함') => {
     // 1. 상태 업데이트
     setOffers((prev) =>
@@ -82,10 +72,8 @@ export default function OffersContent() {
     // 2. 탭 전환
     setActiveTab(nextTab)
   }
-
   if (loading) return <p className="text-center p-4">로딩 중...</p>
   if (error) return <p className="text-red-500 text-center p-4">{error}</p>
-
   return (
     <div className="max-w-screen-xl mx-auto p-6">
       <OffersHeader />

@@ -1,11 +1,9 @@
 "use client"
-
 import { useEffect, useState } from "react"
 import { apiClient } from "@/api/apiClient"
 import { Camera, User } from "lucide-react"
 import Image from "next/image"
 import { useUserStore } from "@/store/useUserStore"
-
 interface ProfileInfo {
   accountId: number
   name: string
@@ -17,13 +15,10 @@ interface ProfileInfo {
   desiredSalaryCode: number
   profileImageUrl: string
 }
-
 export const ProfileInfoTab = () => {
-  
   const [profileImage, setProfileImage] = useState<string | null>(null)
   const [form, setForm] = useState<ProfileInfo | null>(null)
   const {userInfo} = useUserStore();
-  
   useEffect(() => {
     const fetchData = async () => {
       const res = await apiClient.get<{ data: ProfileInfo }>("/api/personal/profile/me?profileId=2")
@@ -32,19 +27,16 @@ export const ProfileInfoTab = () => {
     }
     fetchData()
   }, [])
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target
     if (!form) return
     setForm({ ...form, [id]: value })
   }
-
   const handleSave = async () => {
     if (!form) return
     await apiClient.put("/api/personal/profile/me?profileId=" + form.accountId, form)
     alert("저장 완료")
   }
-
   return (
     <div>
       <h2 className="text-lg font-medium text-gray-900 mb-4">프로필 이미지</h2>
@@ -78,7 +70,6 @@ export const ProfileInfoTab = () => {
           </label>
         </div>
       </div>
-
       <div className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

@@ -13,18 +13,18 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async rewrites(){
-    return[
-        {
-            destination: 'http://localhost:8080/api/:path*',
-            source: '/api/:path*',
-        },
-        {
-            destination: 'https://api.meet-u-career.com/api/:path*',
-            source: '/api/:path*',
-        }
+  async rewrites() {
+    return [
+      {
+        destination: 'http://localhost:8080/api/:path*',
+        source: '/api/:path*',
+      },
+      {
+        destination: 'https://api.meet-u-career.com/api/:path*',
+        source: '/api/:path*',
+      }
     ]
-},
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -38,6 +38,7 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+    disableFileWatcher: true,
   },
 }
 

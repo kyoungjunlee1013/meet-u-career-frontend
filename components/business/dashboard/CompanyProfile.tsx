@@ -13,7 +13,13 @@ export const CompanyProfile = ({ data }: Props) => {
       <div className="flex items-start justify-between">
         <div className="flex items-center space-x-4">
           <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden">
-            <Image src="/placeholder.svg?height=64&width=64" alt="Company logo" width={64} height={64} />
+            <Image
+              src="/images/etc/placeholder.svg?height=64&width=64"
+              alt="Company logo"
+              width={64}
+              height={64}
+              className="w-full h-full object-cover"
+            />
           </div>
           <div>
             <h1 className="text-lg font-medium">{data.companyName}</h1>

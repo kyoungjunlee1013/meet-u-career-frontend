@@ -57,8 +57,8 @@ export function ChatMain({ chatId }: ChatMainProps) {
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center">
           <Image
-            src="/mystical-forest-spirit.png"
-            alt="채팅방"
+            src={selectedChat.avatar || "/images/etc/placeholder.svg"}
+            alt={selectedChat.name}
             width={48}
             height={48}
             className="rounded-full"
@@ -80,8 +80,8 @@ export function ChatMain({ chatId }: ChatMainProps) {
             {message.senderId !== userInfo.account.id && (
               <div className="flex-shrink-0 mr-3">
                 <Image
-                  src="/mystical-forest-spirit.png"
-                  alt="상대방"
+                  src={selectedChat.avatar || "/images/etc/placeholder.svg"}
+                  alt={selectedChat.name}
                   width={40}
                   height={40}
                   className="rounded-full"

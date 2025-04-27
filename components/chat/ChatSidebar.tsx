@@ -1,22 +1,17 @@
 "use client"
-
 import { useChatRooms } from "@/hooks/useChatRooms"
 import { Search } from "lucide-react"
 import Image from "next/image"
-
 interface ChatSidebarProps {
   selectedChatId: string | null
   onSelectChat: (id: string) => void
 }
-
 export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) {
   const { chatRooms, loading, error, markRoomAsRead } = useChatRooms()
-
   const handleSelectChat = (id: string) => {
     onSelectChat(id)
     markRoomAsRead(Number(id))  // 클릭 시 읽음 처리 API 호출
   }
-
   return (
     <div className="w-[365px] border-r border-gray-200 flex flex-col h-full">
       <div className="p-4 border-b border-gray-200">
@@ -32,7 +27,6 @@ export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) 
           />
         </div>
       </div>
-
       <div className="flex-1 overflow-y-auto bg-gray-50">
         {/* 로딩 중 */}
         {loading && (
@@ -40,21 +34,18 @@ export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) 
             채팅방 불러오는 중...
           </div>
         )}
-
         {/* 에러 발생 */}
         {error && (
           <div className="flex items-center justify-center h-full text-red-500">
             {error}
           </div>
         )}
-
         {/* 데이터 있을 때 */}
         {!loading && !error && chatRooms.length === 0 && (
           <div className="flex items-center justify-center h-full text-gray-500">
             채팅방이 없습니다.
           </div>
         )}
-
         {/* 채팅방 리스트 */}
         {!loading && !error && chatRooms.map((chat) => (
           <div

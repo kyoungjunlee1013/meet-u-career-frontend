@@ -1,6 +1,5 @@
 import type React from "react"
 import { FileText, Clock, Award } from "lucide-react"
-
 interface OffersStatsProps {
   counts: {
     전체: number
@@ -9,7 +8,6 @@ interface OffersStatsProps {
     거절함: number
   }
 }
-
 export function OffersStats({ counts }: OffersStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -19,7 +17,6 @@ export function OffersStats({ counts }: OffersStatsProps) {
     </div>
   )
 }
-
 function StatCard({ icon, count, label }: { icon: React.ReactNode; count: number; label: string }) {
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 flex items-start">

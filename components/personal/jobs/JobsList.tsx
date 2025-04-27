@@ -1,166 +1,146 @@
-import Link from "next/link"
-import { JobCard } from "./JobCard"
+"use client";
+
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Search } from "lucide-react";
+import { JobsFilter } from "./JobsFilter";
+import { JobCard } from "./JobCard";
+
+type JobDTO = {
+  id: number;
+  name: string;
+  title: string;
+  location: { fullLocation: string };
+  experienceLevel: number;
+  expirationDate: string;
+  applyCount: number;
+  status: number;
+};
+
+type Filters = {
+  industry?: string;
+  experienceLevel?: number;
+  educationLevel?: number;
+  locationCode?: string;
+  keyword?: string;
+};
 
 export const JobsList = () => {
-  const jobListings = [
-    {
-      id: 1,
-      company: "카카오",
-      title: "경영 전략 채용",
-      location: "서울 강남구",
-      requirements: "경력 3년이상 필요",
-      viewCount: "05/30(목)",
-      href: "/personal/jobs/1",
-      isRecommended: true,
-    },
-    {
-      id: 2,
-      company: "네이버",
-      title: "경영 신입 채용",
-      location: "경기 성남시",
-      requirements: "경력 1년이상 필요",
-      viewCount: "06/15(금)",
-      href: "/personal/jobs/2",
-      isRecommended: true,
-      tag: "추천 TOP100",
-    },
-    {
-      id: 3,
-      company: "메가스터디",
-      title: "인사 경력 채용",
-      location: "경기 성남시",
-      requirements: "경력 3년이상 필요",
-      viewCount: "05/15(목)",
-      href: "/personal/jobs/3",
-      isRecommended: true,
-    },
-    {
-      id: 4,
-      company: "LG전자",
-      title: "경영 전략 채용",
-      location: "서울 강서구",
-      requirements: "경력 3년이상 필요",
-      viewCount: "05/25(목)",
-      href: "/personal/jobs/4",
-      isRecommended: true,
-      tag: "추천 TOP100",
-    },
-    {
-      id: 5,
-      company: "우아한형제들",
-      title: "경영 전략 채용",
-      location: "경기 성남시",
-      requirements: "경력 3년이상 필요",
-      viewCount: "05/15(목)",
-      href: "/personal/jobs/5",
-      isRecommended: true,
-      tag: "추천 TOP100",
-    },
-    {
-      id: 6,
-      company: "삼성전자",
-      title: "마케팅 신입 채용",
-      location: "서울 강남구",
-      requirements: "경력 1년이상 필요",
-      viewCount: "05/20(목)",
-      href: "/personal/jobs/6",
-      isRecommended: true,
-      tag: "추천 TOP100",
-    },
-    {
-      id: 7,
-      company: "카카오",
-      title: "마케팅 경력 채용",
-      location: "서울 강남구",
-      requirements: "경력 3년이상 필요",
-      viewCount: "05/30(목)",
-      href: "/personal/jobs/7",
-      isRecommended: true,
-    },
-    {
-      id: 8,
-      company: "우아한형제들",
-      title: "경영 전략 채용",
-      location: "경기 성남시",
-      requirements: "경력 3년이상 필요",
-      viewCount: "05/15(목)",
-      href: "/personal/jobs/8",
-      isRecommended: true,
-    },
-    {
-      id: 9,
-      company: "네이버",
-      title: "마케팅 신입 채용",
-      location: "경기 성남시",
-      requirements: "경력 1년이상 필요",
-      viewCount: "05/20(목)",
-      href: "/personal/jobs/9",
-      isRecommended: true,
-    },
-    {
-      id: 10,
-      company: "LG전자",
-      title: "서비스 신입 채용",
-      location: "서울 강서구",
-      requirements: "경력 1년이상 필요",
-      viewCount: "05/25(목)",
-      href: "/personal/jobs/10",
-      isRecommended: true,
-      tag: "추천 TOP100",
-    },
-    {
-      id: 11,
-      company: "메가스터디",
-      title: "서비스 신입 채용",
-      location: "서울 강남구",
-      requirements: "경력 1년이상 필요",
-      viewCount: "05/25(목)",
-      href: "/personal/jobs/11",
-      isRecommended: true,
-    },
-    {
-      id: 12,
-      company: "네이버",
-      title: "경영 전략 채용",
-      location: "경기 성남시",
-      requirements: "경력 3년이상 필요",
-      viewCount: "05/15(목)",
-      href: "/personal/jobs/12",
-      isRecommended: true,
-    },
-  ]
+  const [jobs, setJobs] = useState<JobDTO[]>([]);
+  const [filters, setFilters] = useState<Filters>({});
+  const [sort, setSort] = useState<"newest" | "popular" | "recommended">("newest");
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const observer = useRef<IntersectionObserver | null>(null);
 
+  const fetchJobs = async (isNew = false) => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (filters.industry) params.append("industry", filters.industry);
+    if (filters.experienceLevel !== undefined) params.append("experienceLevel", filters.experienceLevel.toString());
+    if (filters.educationLevel !== undefined) params.append("educationLevel", filters.educationLevel.toString());
+    if (filters.keyword) params.append("keyword", filters.keyword);
+    if (filters.locationCode) {
+      const codes = filters.locationCode.split(",");
+      codes.forEach(code => params.append("locationCode", code));
+    }
+    params.append("sort", sort);
+    params.append("page", isNew ? "0" : page.toString());
+    params.append("size", "20");
+
+    const res = await fetch(`/api/personal/job/list?${params.toString()}`);
+    const json = await res.json();
+
+    if (isNew) {
+      setJobs(json.data);
+    } else {
+      setJobs(prev => [...prev, ...json.data]);
+    }
+    setHasMore(json.data.length > 0);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    setPage(0);
+    fetchJobs(true);
+  }, [filters, sort]);
+
+  useEffect(() => {
+    if (page === 0) return;
+    fetchJobs();
+  }, [page]);
+
+  const lastJobRef = useCallback((node: HTMLDivElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prev => prev + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
   return (
     <div className="mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium">오늘의 채용공고</h2>
         <div className="flex items-center gap-4 text-xs text-gray-500">
-          <Link href="/personal/jobs/newest" className="hover:underline">
-            최신순
-          </Link>
-          <Link href="/personal/jobs/popular" className="hover:underline">
-            인기순
-          </Link>
-          <Link href="/personal/jobs/recommended" className="hover:underline">
-            추천채용순
-          </Link>
+          <button className={sort === "newest" ? "underline" : ""} onClick={() => setSort("newest")}>최신순</button>
+          <button className={sort === "popular" ? "underline" : ""} onClick={() => setSort("popular")}>인기순</button>
+          <button className={sort === "recommended" ? "underline" : ""} onClick={() => setSort("recommended")}>마감일순</button>
         </div>
       </div>
+
+      {/* 필터 */}
+      <JobsFilter onApply={setFilters}></JobsFilter> 
+
+    
+      {/* 카드 리스트 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        {jobListings.map((job) => (
-          <JobCard
-            key={job.id}
-            company={job.company}
-            title={job.title}
-            location={job.location}
-            requirements={job.requirements}
-            viewCount={job.viewCount}
-            href={job.href}
-            isRecommended={job.isRecommended}
-            tag={job.tag}
-          />
-        ))}
+        {jobs.map((job, index) => {
+          if (jobs.length === index + 1) {
+            return (
+              <div ref={lastJobRef} key={`${job.id}-${index}`}>
+                <JobCard
+                  name={job.name}
+                  title={job.title}
+                  location={job.location.fullLocation}
+                  requirements={`경력 ${job.experienceLevel}년`}
+                  viewCount={new Date(job.expirationDate).toLocaleDateString("ko-KR")}
+                  href={`/personal/jobs/${job.id}`}
+                  isRecommended={job.status === 2}
+                  tag={job.applyCount > 0 ? `지원 ${job.applyCount}건` : undefined}
+                />
+              </div>
+            );
+          } else {
+            return (
+              <div key={`${job.id}-${index}`}>
+                <JobCard
+                  name={job.name}
+                  title={job.title}
+                  location={job.location.fullLocation}
+                  requirements={`경력 ${job.experienceLevel}년`}
+                  viewCount={new Date(job.expirationDate).toLocaleDateString("ko-KR")}
+                  href={`/personal/jobs/${job.id}`}
+                  isRecommended={job.status === 2}
+                  tag={job.applyCount > 0 ? `지원 ${job.applyCount}건` : undefined}
+                />
+              </div>
+            );
+          }
+        })}
       </div>
+
+      {/* 로딩 스피너 */}
+      {loading && (
+        <div className="flex justify-center py-8">
+          <svg className="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+        </div>
+      )}
     </div>
-  )
-}
+  );
+};
