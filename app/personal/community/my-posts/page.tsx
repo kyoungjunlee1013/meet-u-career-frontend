@@ -1,3 +1,5 @@
+"use client";
+
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { Header } from "@/components/home/Header";
 import { MainNavigation } from "@/components/home/MainNavigation";
