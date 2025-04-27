@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
-import { Post } from "@/components/personal/community/Post"; // ✅ 경로 수정 완료
+import { Post } from "@/components/personal/community/Post";
 
 export default function PostDetailPage() {
   const params = useParams();
@@ -44,7 +44,7 @@ export default function PostDetailPage() {
 }
 
 /**
- * 🧩 서버에서 받은 게시글 상세 데이터(CommunityPostDTO 형태)를
+ * 서버에서 받은 게시글 상세 데이터(CommunityPostDTO 형태)를
  * Post 컴포넌트가 기대하는 형태로 변환하는 매핑 함수
  */
 function mapPostData(data: any) {
@@ -52,7 +52,7 @@ function mapPostData(data: any) {
     id: data.id,
     author: {
       name: `user${data.accountId}`, // 지금은 accountId로 대충 표시 (추후 닉네임 연동 가능)
-      avatar: data.profileImageUrl || "/profile.png",
+      avatar: data.profileImageUrl || "/images/etc/profile.png",
     },
     content: data.content,
     image: data.postImageUrl || null,

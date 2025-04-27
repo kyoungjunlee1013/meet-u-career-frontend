@@ -101,7 +101,7 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal, onOpenCreatePost
                 id: post.id,
                 author: {
                   name: `user${post.accountId}`,
-                  avatar: post.profileImageUrl || "/profile.png",
+                  avatar: post.profileImageUrl || "/images/etc/profile.png",
                 },
                 content: post.content,
                 image: post.postImageUrl,

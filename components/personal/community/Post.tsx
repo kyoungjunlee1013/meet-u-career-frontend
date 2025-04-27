@@ -6,6 +6,7 @@ import { Heart, MessageSquare, Share2, MoreHorizontal } from "lucide-react"
 import Image from "next/image"
 import axios from "axios"
 import { CreatePostModal } from "./CreatePostModal"
+import { useUserStore } from "@/store/useUserStore"
 
 //----------------------------------------
 // 인터페이스 정의
@@ -104,7 +105,7 @@ export const Post = ({ post }: PostProps) => {
   const [editingContent, setEditingContent] = useState<string>("")
 
   // 사용자 정보
-  const myAccountId = 1 // 나중에 로그인된 사용자의 accountId로 교체
+  const { userInfo } = useUserStore();
 
   //----------------------------------------
   // 외부 클릭 감지용 참조
@@ -155,9 +156,17 @@ export const Post = ({ post }: PostProps) => {
     setShowMenu(false)
     if (confirm("게시글을 삭제하시겠습니까?")) {
       try {
-        await axios.post(`/api/personal/community/posts/delete/${post.id}`, {
-          accountId: 1,
-        })
+        const token = sessionStorage.getItem('accessToken');
+        await axios.post(`/api/personal/community/posts/delete/${post.id}`,
+          {
+            accountId: userInfo?.accountId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
         alert("게시글이 삭제되었습니다.")
         window.location.reload()
       } catch (error) {
@@ -182,7 +191,7 @@ export const Post = ({ post }: PostProps) => {
     e.stopPropagation()
     try {
       const response = await axios.post("/api/community/likes/toggle", {
-        accountId: 1,
+        accountId: userInfo?.accountId,
         postId: post.id,
       })
       if (response.status === 200) {
@@ -216,7 +225,12 @@ export const Post = ({ post }: PostProps) => {
   // 댓글 목록 불러오기
   const fetchComments = async () => {
     try {
-      const response = await axios.get(`/api/community/comments/${post.id}`);
+      const token = sessionStorage.getItem('accessToken');
+      const response = await axios.get(`/api/community/comments/${post.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (response.status === 200) {
         console.log("서버에서 내려준 댓글 리스트:", response.data.data);
         setComments(response.data.data); // 서버에서 댓글 리스트 받아오기
@@ -235,7 +249,7 @@ export const Post = ({ post }: PostProps) => {
 
     try {
       const response = await axios.post("/api/community/comments/create", {
-        accountId: 1, // 임시 로그인 사용자 ID
+        accountId: userInfo?.accountId,
         postId: post.id,
         content: commentContent,
       });
@@ -279,7 +293,7 @@ export const Post = ({ post }: PostProps) => {
     try {
       await axios.post("/api/community/comments/update", {
         id: editingCommentId,
-        accountId: 1, // 나중에 로그인 사용자 accountId로 교체
+        accountId: userInfo?.accountId, 
         content: editingContent,
       })
       alert("댓글이 수정되었습니다!")
@@ -303,6 +317,9 @@ export const Post = ({ post }: PostProps) => {
           <div className="flex items-center">
             <img
               src={post.author.avatar || "/images/etc/profile.png"}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/images/etc/profile.png";
+              }}
               alt="작성자 프로필"
               className="w-10 h-10 rounded-full object-cover mr-3"
             />
@@ -354,7 +371,7 @@ export const Post = ({ post }: PostProps) => {
       {/* 게시글 이미지 */}
       {post.image && (
         <div className="bg-gray-100 aspect-video relative">
-          <Image src={post.image} alt="게시글 이미지" fill className="object-cover" />
+          <Image src={post.image} alt="게시글 이미지" fill className="object-contain object-center" />
         </div>
       )}
 
@@ -392,7 +409,7 @@ export const Post = ({ post }: PostProps) => {
           <div className="p-4 space-y-4">
             {comments.map((comment) => (
               <div key={comment.id} className="flex items-start gap-3">
-                <img src={comment.authorAvatar || "/profile.png"} alt="프로필" className="w-8 h-8 rounded-full object-cover" />
+                <img src={comment.authorAvatar || "/images/etc/profile.png"} alt="프로필" className="w-8 h-8 rounded-full object-cover" />
                 <div className="flex-1 bg-gray-100 p-2 rounded-md">
                   {/* 댓글 작성자, 작성 시간 */}
                   <p className="text-sm font-medium flex items-center gap-2">
@@ -430,7 +447,7 @@ export const Post = ({ post }: PostProps) => {
                       <p className="text-sm">{comment.content}</p>
 
                       {/* 수정/삭제 버튼은 내가 쓴 댓글만 표시 */}
-                      {comment.accountId === myAccountId && (
+                      {comment.accountId === userInfo?.accountId && (
                         <div className="flex gap-2 mt-1">
                           <button
                             onClick={() => handleEditClick(comment)}
@@ -485,7 +502,7 @@ export const Post = ({ post }: PostProps) => {
       {isEditModalOpen && (
         <CreatePostModal
           onClose={() => setIsEditModalOpen(false)}
-          profileImageUrl={post.author.avatar || "/profile.png"}
+          profileImageUrl={post.author.avatar || "/images/etc/profile.png"}
           userName={post.author.name}
           initialContent={post.content}
           initialTag={post.tags?.[0]?.replace("#", "") ?? null}
