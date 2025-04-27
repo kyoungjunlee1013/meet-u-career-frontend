@@ -216,9 +216,8 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
                       <span className="ml-1">{getResumeTypeLabel()}</span>
                     </span>
                     <span
-                      className={`text-xs rounded-full px-2 py-1 ${
-                        resume.status === 2 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
-                      }`}
+                      className={`text-xs rounded-full px-2 py-1 ${resume.status === 2 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+                        }`}
                     >
                       {resume.status === 2 ? "공개" : "비공개"}
                     </span>
@@ -314,7 +313,7 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
                 <div className="flex flex-col items-center md:items-end">
                   <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200 mb-2">
                     <Image
-                      src="/vibrant-street-market.png"
+                      src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
                       alt="Profile"
                       width={128}
                       height={128}
@@ -328,40 +327,40 @@ export const ResumePreviewModal = ({ resume, isOpen, onClose }: ResumePreviewMod
 
             {/* Resume Content Cards */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(0)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">학력</h3>
-  </div>
-  <EducationSection list={educationList} />
-</div>
-<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(1)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">경력</h3>
-  </div>
-  <ExperienceSection list={experienceList} />
-</div>
-<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(2)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">자격증</h3>
-  </div>
-  <CertificationSection list={certificationList} />
-</div>
-<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(3)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">활동/경험</h3>
-  </div>
-  <ActivitySection list={activityList} />
-</div>
-<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-  <div className="flex items-center mb-4">
-    {getSectionIcon(4)}
-    <h3 className="text-lg font-medium text-gray-800 ml-2">포트폴리오</h3>
-  </div>
-  <PortfolioSection list={portfolioList} />
-</div>
+              <div className="flex items-center mb-4">
+                {getSectionIcon(0)}
+                <h3 className="text-lg font-medium text-gray-800 ml-2">학력</h3>
+              </div>
+              <EducationSection list={educationList} />
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <div className="flex items-center mb-4">
+                {getSectionIcon(1)}
+                <h3 className="text-lg font-medium text-gray-800 ml-2">경력</h3>
+              </div>
+              <ExperienceSection list={experienceList} />
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <div className="flex items-center mb-4">
+                {getSectionIcon(2)}
+                <h3 className="text-lg font-medium text-gray-800 ml-2">자격증</h3>
+              </div>
+              <CertificationSection list={certificationList} />
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <div className="flex items-center mb-4">
+                {getSectionIcon(3)}
+                <h3 className="text-lg font-medium text-gray-800 ml-2">활동/경험</h3>
+              </div>
+              <ActivitySection list={activityList} />
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <div className="flex items-center mb-4">
+                {getSectionIcon(4)}
+                <h3 className="text-lg font-medium text-gray-800 ml-2">포트폴리오</h3>
+              </div>
+              <PortfolioSection list={portfolioList} />
+            </div>
           </div>
 
           {/* Action Buttons */}

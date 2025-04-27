@@ -29,21 +29,19 @@ export const RegisterTabs = ({ onCreateIdClick }: RegisterTabsProps) => {
             <div className="max-w-md w-full px-6">
               <div className="flex border-b mb-10">
                 <button
-                  className={`flex-1 py-4 text-center font-medium ${
-                    activeTab === "personal"
-                      ? "text-blue-600 border-b-2 border-blue-600"
-                      : "text-gray-500 hover:bg-gray-50"
-                  }`}
+                  className={`flex-1 py-4 text-center font-medium ${activeTab === "personal"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:bg-gray-50"
+                    }`}
                   onClick={() => handleTabChange("personal")}
                 >
                   개인회원
                 </button>
                 <button
-                  className={`flex-1 py-4 text-center font-medium ${
-                    activeTab === "business"
-                      ? "text-blue-600 border-b-2 border-blue-600"
-                      : "text-gray-500 hover:bg-gray-50"
-                  }`}
+                  className={`flex-1 py-4 text-center font-medium ${activeTab === "business"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:bg-gray-50"
+                    }`}
                   onClick={() => handleTabChange("business")}
                 >
                   기업회원
@@ -54,15 +52,7 @@ export const RegisterTabs = ({ onCreateIdClick }: RegisterTabsProps) => {
                 <p className="text-center text-sm text-gray-600 mb-6">소셜 계정으로 간편 로그인</p>
                 <div className="flex justify-center gap-4 mb-10">
                   <Link
-                    href="/auth/naver"
-                    className="w-12 h-12 rounded-full bg-[#03C75A] flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                    aria-label="네이버 로그인"
-                  >
-                    <span className="font-bold text-sm">N</span>
-                  </Link>
-
-                  <Link
-                    href="/auth/kakao"
+                    href="#"
                     className="w-12 h-12 rounded-full bg-[#FEE500] flex items-center justify-center text-black hover:opacity-90 transition-opacity"
                     aria-label="카카오 로그인"
                   >
@@ -70,27 +60,19 @@ export const RegisterTabs = ({ onCreateIdClick }: RegisterTabsProps) => {
                   </Link>
 
                   <Link
-                    href="/auth/google"
+                    href="#"
+                    className="w-12 h-12 rounded-full bg-[#03C75A] flex items-center justify-center text-white hover:opacity-90 transition-opacity"
+                    aria-label="네이버 로그인"
+                  >
+                    <span className="font-bold text-sm">N</span>
+                  </Link>
+
+                  <Link
+                    href="#"
                     className="w-12 h-12 rounded-full bg-white border flex items-center justify-center text-black hover:opacity-90 transition-opacity"
                     aria-label="구글 로그인"
                   >
                     <span className="font-bold text-sm">G</span>
-                  </Link>
-
-                  <Link
-                    href="/auth/facebook"
-                    className="w-12 h-12 rounded-full bg-[#1877F2] flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                    aria-label="페이스북 로그인"
-                  >
-                    <span className="font-bold text-sm">F</span>
-                  </Link>
-
-                  <Link
-                    href="/auth/apple"
-                    className="w-12 h-12 rounded-full bg-black flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                    aria-label="애플 로그인"
-                  >
-                    <span className="font-bold text-sm">A</span>
                   </Link>
                 </div>
               </div>

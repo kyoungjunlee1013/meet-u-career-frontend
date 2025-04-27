@@ -76,7 +76,11 @@ export const PersonalSidebar = ({ activeItem = "MY홈" }: PersonalSidebarProps) 
             <div className="flex flex-col items-center">
               <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden mb-2">
                 <Image
+<<<<<<< Updated upstream
                   src="/images/etc/vibrant-street-market.png"
+=======
+                  src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
+>>>>>>> Stashed changes
                   alt="User profile"
                   width={64}
                   height={64}
