@@ -57,7 +57,7 @@ export function ChatMain({ chatId }: ChatMainProps) {
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center">
           <Image
-            src={userInfo.profileImage || "/images/etc/placeholder.svg"}
+            src={userInfo.profileImage || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"}
             alt="프로필"
             width={48}
             height={48}
@@ -80,7 +80,7 @@ export function ChatMain({ chatId }: ChatMainProps) {
             {message.senderId !== userInfo.accountId && (
               <div className="flex-shrink-0 mr-3">
                 <Image
-                  src={userInfo.profileImage || "/images/etc/placeholder.svg"}
+                  src={userInfo.profileImage || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"}
                   alt="프로필"
                   width={40}
                   height={40}
