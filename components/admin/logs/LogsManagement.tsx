@@ -1,8 +1,18 @@
+"use client"
+
+import { useState } from "react"
 import LogsFilter from "./LogsFilter"
 import LogsTable from "./LogsTable"
 import LogsPagination from "./LogsPagination"
 
 export default function LogsManagement() {
+  const [filter, setFilter] = useState({
+    startDate: "",
+    endDate: "",
+    logType: "",
+    keyword: "",
+  })
+
   return (
     <div>
       <div className="mb-6">
@@ -13,11 +23,11 @@ export default function LogsManagement() {
       </div>
 
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <LogsFilter />
+        <LogsFilter filter={filter} onFilterChange={setFilter} />
       </div>
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <LogsTable />
+        <LogsTable filter={filter} />
         <div className="p-4 border-t">
           <LogsPagination />
         </div>

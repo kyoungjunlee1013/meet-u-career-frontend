@@ -21,7 +21,7 @@ const mockChatMessages: ChatMessage[] = [
     message: "안녕하세요, 면접 일정 관련해서 문의드립니다.",
     time: "10분 전",
     isRead: false,
-    avatar: "/images/etc/placeholder.svg?height=40&width=40",
+    avatar: "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg?height=40&width=40",
   },
   {
     id: "2",
@@ -29,7 +29,7 @@ const mockChatMessages: ChatMessage[] = [
     message: "제출한 이력서 확인 부탁드립니다.",
     time: "30분 전",
     isRead: false,
-    avatar: "/images/etc/placeholder.svg?height=40&width=40",
+    avatar: "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg?height=40&width=40",
   },
   {
     id: "3",
@@ -37,7 +37,7 @@ const mockChatMessages: ChatMessage[] = [
     message: "감사합니다. 다음 주에 뵙겠습니다.",
     time: "2시간 전",
     isRead: true,
-    avatar: "/images/etc/placeholder.svg?height=40&width=40",
+    avatar: "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg?height=40&width=40",
   },
   {
     id: "4",
@@ -45,7 +45,7 @@ const mockChatMessages: ChatMessage[] = [
     message: "포트폴리오 추가 자료 보내드립니다.",
     time: "어제",
     isRead: true,
-    avatar: "/images/etc/placeholder.svg?height=40&width=40",
+    avatar: "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg?height=40&width=40",
   },
 ]
 

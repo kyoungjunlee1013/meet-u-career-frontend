@@ -94,4 +94,15 @@ body {
     @apply bg-background text-foreground;
     @apply font-sans;
   }
+  /* Hide native calendar icon on date inputs */
+  input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+
 }
+

@@ -1,8 +1,6 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import { apiClient } from "@/api/apiClient";
 
 type RoleKey = "personal" | "business" | "admin" | "super" | "any";
 
@@ -32,20 +30,17 @@ export function useAuthGuard(requiredTypes: RoleKey | RoleKey[] = "personal") {
 
     (async () => {
       try {
-        const { data } = await axios.get("/api/user/me", {
+        // apiClient.get 사용
+        const { data } = await apiClient.get("/api/user/me", {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
         });
 
         const rawRole = data.data.role;
-        if (typeof rawRole !== "string")
-          throw new Error("role 정보가 없습니다");
+        if (typeof rawRole !== "string") throw new Error("role 정보가 없습니다");
 
         const role = rawRole.toLowerCase();
         // requiredArr 에 들어있는 각 키마다 allowList[키] 들을 모아서 허용 가능한 role 배열 생성
         const allowedRoles = requiredArr.flatMap((k) => allowList[k] || []);
-
-        // console.log({ requiredArr, role, allowedRoles });
 
         if (!allowedRoles.includes(role)) {
           router.replace("/unauthorized");

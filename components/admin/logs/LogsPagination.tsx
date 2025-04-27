@@ -1,24 +1,37 @@
-import { ChevronLeft, ChevronRight } from "lucide-react"
+"use client"
 
-export default function LogsPagination() {
+import { useState } from "react"
+import LogsFilter from "./LogsFilter"
+import LogsTable from "./LogsTable"
+import LogsPagination from "./LogsPagination"
+
+export default function LogsManagement() {
+  const [filter, setFilter] = useState({
+    startDate: "",
+    endDate: "",
+    logType: "",
+    keyword: "",
+  })
+
   return (
-    <div className="flex items-center justify-center">
-      <nav className="inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-        <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-          <span className="sr-only">Previous</span>
-          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
-        </button>
-        <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-blue-50 text-sm font-medium text-blue-600 hover:bg-blue-100">
-          1
-        </button>
-        <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-          2
-        </button>
-        <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-          <span className="sr-only">Next</span>
-          <ChevronRight className="h-5 w-5" aria-hidden="true" />
-        </button>
-      </nav>
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">시스템 로그</h1>
+        <p className="text-gray-600">
+          시스템 전체 로그를 조회하고 관리합니다. 날짜, 키워드, 로그 유형으로 필터링할 수 있습니다.
+        </p>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <LogsFilter filter={filter} onFilterChange={setFilter} />
+      </div>
+
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <LogsTable filter={filter} />
+        <div className="p-4 border-t">
+          <LogsPagination />
+        </div>
+      </div>
     </div>
   )
 }

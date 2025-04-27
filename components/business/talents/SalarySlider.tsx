@@ -1,11 +1,15 @@
+
 "use client"
 
 import { useState } from "react"
 import * as Slider from "@radix-ui/react-slider"
 
-export const SalarySlider = () => {
-  const [value, setValue] = useState([0, 15000])
+interface SalarySliderProps {
+  value: number[]
+  onValueChange: (val: number[]) => void
+}
 
+export const SalarySlider = ({ value, onValueChange }: SalarySliderProps) => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between text-xs text-gray-500">
@@ -29,7 +33,7 @@ export const SalarySlider = () => {
           value={value}
           max={15000}
           step={100}
-          onValueChange={setValue}
+          onValueChange={onValueChange}
         >
           <Slider.Track className="relative h-1 w-full grow rounded-full bg-transparent">
             <Slider.Range className="absolute h-full bg-transparent" />
