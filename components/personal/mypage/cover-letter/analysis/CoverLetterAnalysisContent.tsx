@@ -1,94 +1,84 @@
-"use client"
+import React, { useEffect, useState } from "react";
+import { CoverLetterBasicInfoCard } from "../CoverLetterBasicInfoCard";
+import { CoverLetterContentEditorList } from "../CoverLetterContentEditorList";
+import { CoverLetterPreviewModal } from "../CoverLetterPreviewModal";
+import { useMobile } from "@/hooks/use-mobile";
 
-import { useEffect, useState } from "react"
-import { AnalysisHeader } from "./AnalysisHeader"
-import { FitAnalysisCardList } from "./FitAnalysisCardList"
-import { AnalysisSidebar } from "./AnalysisSidebar"
-import { getCoverLetterById } from "./actions"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle2 } from "lucide-react"
+import { apiClient } from "@/api/apiClient";
 
 interface CoverLetterAnalysisContentProps {
-  coverLetterId: string
+  coverLetterId: string;
 }
 
 export const CoverLetterAnalysisContent = ({ coverLetterId }: CoverLetterAnalysisContentProps) => {
-  const [coverLetter, setCoverLetter] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedJobCategory, setSelectedJobCategory] = useState<string | null>(null)
-  const [selectedJobTitle, setSelectedJobTitle] = useState<string | null>(null)
-  const [allAnalysisComplete, setAllAnalysisComplete] = useState(false)
+  const [coverLetter, setCoverLetter] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const isMobile = useMobile();
 
   useEffect(() => {
     const fetchCoverLetter = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        setLoading(true)
-        const data = await getCoverLetterById(coverLetterId)
-        setCoverLetter(data)
-        setError(null)
-      } catch (err) {
-        setError("자기소개서 정보를 불러오는데 실패했습니다.")
-        console.error(err)
+        const res = await apiClient.get(`/api/personal/coverletter/view?id=${coverLetterId}`);
+        if (res.data && res.data.data) {
+          setCoverLetter(res.data.data);
+        } else {
+          setError("자기소개서 정보를 불러오는데 실패했습니다.");
+        }
+      } catch {
+        setError("자기소개서 정보를 불러오는데 실패했습니다.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-
-    fetchCoverLetter()
-  }, [coverLetterId])
-
-  const checkAllAnalysisComplete = (contents: any[]) => {
-    if (!contents || contents.length === 0) return false
-
-    const allComplete = contents.every((content) => content.analysis && content.analysis.fitScore !== undefined)
-
-    setAllAnalysisComplete(allComplete)
-    return allComplete
-  }
+    };
+    fetchCoverLetter();
+  }, [coverLetterId]);
 
   if (loading) {
-    return <div className="text-center py-10">자기소개서 정보를 불러오는 중...</div>
+    return <div className="text-lg text-center py-8">분석 데이터를 불러오는 중...</div>;
   }
-
   if (error) {
-    return (
-      <Alert variant="destructive" className="mb-6">
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
-    )
+    return <div className="text-red-600 text-center py-8">{error}</div>;
+  }
+  if (!coverLetter || !coverLetter.title) {
+    return <div className="text-lg text-center py-8">자기소개서 정보를 불러올 수 없습니다.</div>;
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 좌측 70%: 상단 정보 + 카드 리스트 */}
-        <div className="lg:col-span-2 space-y-6">
-          <AnalysisHeader
-            title={coverLetter?.title || "제목 없음"}
-            onJobCategoryChange={setSelectedJobCategory}
-            onJobTitleChange={setSelectedJobTitle}
-          />
-
-          {allAnalysisComplete && (
-            <Alert className="bg-green-50 border-green-200 mb-6">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">모든 항목에 대한 분석이 완료되었습니다.</AlertDescription>
-            </Alert>
-          )}
-
-          <FitAnalysisCardList
-            coverLetterId={coverLetterId}
-            contents={coverLetter?.contents || []}
-            jobTitle={selectedJobTitle}
-            onAnalysisComplete={(contents) => checkAllAnalysisComplete(contents)}
-          />
-        </div>
-        {/* 우측 30%: 분석 현황/요약 */}
-        <div className="lg:col-span-1">
-          <AnalysisSidebar contents={coverLetter?.contents || []} />
-        </div>
+    <>
+      <CoverLetterBasicInfoCard
+        coverLetterData={{ title: coverLetter.title, status: coverLetter.status ?? 0, id: coverLetter.id }}
+        setCoverLetterData={() => {}}
+      />
+      <div className="mt-6">
+        <CoverLetterContentEditorList
+          sections={coverLetter.sections || []}
+          onSectionContentUpdate={() => {}}
+          onRequestFeedback={() => {}}
+          onApplyFeedback={() => {}}
+        />
       </div>
-    </div>
-  )
-}
+      <CoverLetterPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        coverLetter={{
+          title: coverLetter.title,
+          sections: (coverLetter.sections || []).map((s: any) => ({ title: s.sectionTitle, content: s.content })),
+          updatedAt: new Date(),
+        }}
+      />
+      <div className="flex flex-col md:flex-row justify-end pt-6 gap-3">
+        <button
+          type="button"
+          className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 shadow"
+          onClick={() => setIsPreviewOpen(true)}
+        >
+          한 번에 보기
+        </button>
+      </div>
+    </>
+  );
+};

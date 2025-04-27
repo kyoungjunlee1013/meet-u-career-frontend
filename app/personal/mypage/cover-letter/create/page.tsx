@@ -15,12 +15,8 @@ export default function CreateCoverLetterPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <PersonalHeader toggleSidebar={toggleSidebar} />
-      <div
-        className={`pt-16 transition-all duration-300 ${
-          sidebarOpen ? "md:pl-64" : "md:pl-0"
-        }`}
-      >
+      <PersonalHeader/>
+      <div className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:pl-64' : 'md:pl-0'}`}>
         <PersonalSidebar activeItem="자기소개서 관리" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <CoverLetterEditor id={null} isEditMode={false} />

@@ -1,97 +1,34 @@
 "use client"
 
-import { useState } from "react"
 import { JobCard } from "@/components/business/jobs/JobCard"
+import { useState } from "react"
 
-export const JobsTable = () => {
+interface JobsTableProps {
+  jobs: any[];
+  loading?: boolean;
+  error?: string | null;
+}
+
+export const JobsTable = ({ jobs = [], loading = false, error = null }: JobsTableProps) => {
   const tableHeaders = [
     { label: "전체", value: "all" },
-    { label: "지원됨", value: "지원됨" },
-    { label: "승인 대기", value: "승인 대기" },
-    { label: "게시 중", value: "게시 중" },
-    { label: "반려됨", value: "반려됨" },
-  ]
+    { label: "진행 중", value: "active" },
+    { label: "임시/반려", value: "draft_rejected" },
+    { label: "종료", value: "ended" },
+  ];
 
-  const [activeTab, setActiveTab] = useState("all")
+  const [activeTab, setActiveTab] = useState("all");
 
-  const jobPostings = [
-    {
-      id: 1,
-      title: "웹 백엔드 개발자 채용",
-      status: "게시 중",
-      statusLabel: "게시 중",
-      daysLeft: "D-12",
-      views: 312,
-      applicants: 14,
-      location: "서울",
-      workType: "정규직",
-      experience: "경력 3년↑",
-      salary: "3,000-4,000만원",
-      postedDate: "2025.04.01",
-      deadline: "2025.04.25",
-    },
-    {
-      id: 2,
-      title: "프론트엔드 개발자 (React)",
-      status: "게시 중",
-      statusLabel: "게시 중",
-      daysLeft: "D-32",
-      views: 245,
-      applicants: 8,
-      location: "서울",
-      workType: "정규직",
-      experience: "경력 무관",
-      salary: "3,500-4,500만원",
-      postedDate: "2025.04.05",
-      deadline: "2025.05.15",
-    },
-    {
-      id: 3,
-      title: "DevOps 엔지니어",
-      status: "승인 대기",
-      statusLabel: "승인 대기",
-      views: 0,
-      applicants: 0,
-      location: "상암",
-      workType: "정규직",
-      experience: "경력 5년↑",
-      salary: "5,000-7,000만원",
-      postedDate: "2025.04.10",
-      deadline: "2025.05.30",
-    },
-    {
-      id: 4,
-      title: "모바일 앱 개발자 (Android/iOS)",
-      status: "지원됨",
-      statusLabel: "지원됨",
-      views: 0,
-      applicants: 0,
-      location: "서울",
-      workType: "계약직",
-      experience: "경력 1년↑",
-      salary: "3,000-4,000만원",
-      postedDate: "2025.04.12",
-      deadline: "2025.06.15",
-    },
-    {
-      id: 5,
-      title: "데이터 분석가",
-      status: "반려됨",
-      statusLabel: "반려됨",
-      error: "공고 내용이 불충분합니다. 직무 설명과 지원 요건을 더 상세히 작성해주세요.",
-      views: 0,
-      applicants: 0,
-      location: "서울",
-      workType: "정규직",
-      experience: "경력 2년↑",
-      salary: "4,000-5,000만원",
-      postedDate: "2025.04.08",
-      deadline: "2025.05.20",
-    },
-  ]
+  // status 필터 매핑 (추천 그룹핑)
+  const statusFilterMap: Record<string, number[]|null> = {
+    all: null,
+    active: [1,2,4],           // 승인 대기, 게시 중, 승인 완료
+    draft_rejected: [0,3],     // 임시 저장, 반려됨
+    ended: [5],                // 게시 종료
+  };
 
-  // Filter job postings based on active tab
-  const filteredJobs = activeTab === "all" ? jobPostings : jobPostings.filter((job) => job.status === activeTab)
+  const filter = statusFilterMap[activeTab];
+  const filteredJobs = !filter ? jobs : jobs.filter(job => filter.includes(job.status));
 
   return (
     <div>
@@ -113,8 +50,43 @@ export const JobsTable = () => {
         ))}
       </div>
       <div className="space-y-4 mt-4">
-        {filteredJobs.length > 0 ? (
-          filteredJobs.map((job) => <JobCard key={job.id} job={job} />)
+        {loading ? (
+          <div className="text-center py-8 text-gray-400">로딩 중...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : filteredJobs.length > 0 ? (
+          filteredJobs.map((job) => (
+            <JobCard
+              key={job.id}
+              job={{
+                id: job.id,
+                title: job.title,
+                status: job.status, // 숫자 그대로 넘기고, 필요시 JobCard에서 변환
+                statusLabel: job.statusLabel,
+                location: job.locationName,
+                salary: job.salaryRange,
+                workType: job.jobType,
+                experience: (() => {
+                  switch (job.experienceLevel) {
+                    case 1: return "신입";
+                    case 2: return "경력";
+                    case 3: return "신입/경력";
+                    default: return "";
+                  }
+                })(),
+                deadline: job.expirationDate ? String(job.expirationDate).slice(0, 10) : '',
+                views: job.viewCount,
+                applicants: job.applyCount,
+                description: job.description,
+                companyName: job.companyName,
+                // --- 광고 관련 필드 전달 ---
+                isAdvertised: job.isAdvertised,
+                adType: job.adType,
+                adStartDate: job.adStartDate,
+                adEndDate: job.adEndDate,
+              }}
+            />
+          ))
         ) : (
           <div className="text-center py-8 text-gray-500">해당 탭에 표시할 채용공고가 없습니다.</div>
         )}

@@ -2,27 +2,28 @@ import { z } from "zod"
 
 export const jobPostingSchema = z.object({
   title: z.string().min(1, "제목을 입력해주세요."),
-  jobCategoryId: z.string().min(1, "직무 카테고리를 선택해주세요."),
-  employmentType: z.enum(["FULL_TIME", "PART_TIME", "CONTRACT", "INTERNSHIP", "FREELANCE"]),
-  workType: z.enum(["OFFICE", "REMOTE", "HYBRID"]),
-  location: z.string().min(1, "근무지를 입력해주세요."),
-  salary: z.string().min(1, "급여를 입력해주세요."),
-  careerLevel: z.enum(["ANY", "ENTRY", "JUNIOR", "MID", "SENIOR", "EXECUTIVE"]),
-  educationLevel: z.enum(["ANY", "HIGH_SCHOOL", "ASSOCIATE", "BACHELOR", "MASTER", "DOCTORATE"]),
-  requiredSkills: z.array(z.string()),
+  jobCategoryIds: z.array(z.number()), // 복수 선택, DTO와 일치
+  jobUrl: z.string().optional().or(z.literal("")),
+  industry: z.string().min(1, "산업 분야를 입력해주세요."),
+  jobType: z.string().min(1, "고용 형태를 선택해주세요."), // 문자열로 변경
+  locationCode: z.string().min(1, "근무 지역을 선택해주세요."),
+  experienceLevel: z.number(), // int로 변경
+  educationLevel: z.number(), // int로 변경
+  salaryCode: z.number().optional(), // 코드형
+  salaryRange: z.string().optional(), // 텍스트
   openingDate: z.string(),
-  closingDate: z.string(),
-  applicationMethod: z.enum(["EMAIL", "WEBSITE", "PHONE"]),
-  contactEmail: z.string().email("유효한 이메일 주소를 입력해주세요.").optional().or(z.literal("")),
-  contactWebsite: z.string().url("유효한 URL을 입력해주세요.").optional().or(z.literal("")),
-  contactPhone: z.string().optional().or(z.literal("")),
-  description: z.object({
-    duties: z.string().min(1, "주요 업무를 입력해주세요."),
-    requirements: z.string().min(1, "자격 요건을 입력해주세요."),
-    preferences: z.string().optional().or(z.literal("")),
-    benefits: z.string().optional().or(z.literal("")),
-  }),
+  expirationDate: z.string(),
+  closeType: z.number().optional(),
+  keyword: z.array(z.string()), // 배열로 관리, API 전송 시 join
   templateType: z.number(),
-})
+  description: z.object({
+    duties: z.string(),
+    requirements: z.string(),
+    preferences: z.string(),
+    benefits: z.string(),
+  }),
+  // applyMethod: z.string().optional(),
+  // applyEmail: z.string().optional(),
+});
 
-export type JobPostingFormData = z.infer<typeof jobPostingSchema>
+export type JobPostingFormData = z.infer<typeof jobPostingSchema>;

@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { AdBadge } from "@/components/business/common/AdBadge"
 
 import { useState } from "react"
 import Link from "next/link"
@@ -18,28 +19,48 @@ import {
   X,
 } from "lucide-react"
 
+// JobCard에 전달되는 job 객체 타입 정의
 interface JobCardProps {
   job: {
-    id: number
-    title: string
-    status: string
-    statusLabel: string
-    daysLeft?: string
-    views: number
-    applicants: number
-    location: string
-    workType: string
-    experience: string
-    salary: string
-    postedDate: string
-    deadline: string
-    error?: string
-    description?: string
-    requirements?: string
-    benefits?: string
-    companyName?: string
-  }
+    id?: number;
+    title?: string;
+    status?: number | string;
+    statusLabel?: string;
+    daysLeft?: string;
+    views?: number;
+    applicants?: number;
+    location?: string;
+    workType?: string;
+    experience?: string;
+    salary?: string;
+    postedDate?: string;
+    deadline?: string;
+    error?: string;
+    description?: string;
+    requirements?: string;
+    benefits?: string;
+    companyName?: string;
+    // --- 광고 관련 필드 (조건부 제공) ---
+    /**
+     * 광고 정보가 있는 경우에만 true (현재 광고 중/예정)
+     * 없거나 만료된 경우 undefined/null/false
+     */
+    isAdvertised?: boolean;
+    /**
+     * 광고 타입 (1: BASIC, 2: STANDARD, 3: PREMIUM)
+     */
+    adType?: 1 | 2 | 3;
+    /**
+     * 광고 시작일 (ISO8601)
+     */
+    adStartDate?: string;
+    /**
+     * 광고 종료일 (ISO8601)
+     */
+    adEndDate?: string;
+  };
 }
+
 
 export const JobCard = ({ job }: JobCardProps) => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -59,7 +80,7 @@ export const JobCard = ({ job }: JobCardProps) => {
     }
   }
 
-  const isRejected = job.status === "반려됨"
+  const isRejected = (job.statusLabel ?? "") === "반려됨"
 
   return (
     <>
@@ -70,10 +91,15 @@ export const JobCard = ({ job }: JobCardProps) => {
             <ChevronDown className="h-5 w-5 text-gray-400" />
           </div>
 
-          <div className="flex items-center text-sm mb-2">
-            <span className={`mr-2 font-medium ${getStatusColor(job.status)}`}>{job.statusLabel}</span>
+          {/* 광고 배지 부분을 AdBadge 컴포넌트로 교체 */}
+          <div className="flex items-center text-sm mb-2 gap-2">
+            <span className={`mr-2 font-medium ${getStatusColor(job.statusLabel as string)}`}>{job.statusLabel}</span>
             {job.daysLeft && (
               <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs font-medium">{job.daysLeft}</span>
+            )}
+            {/* 광고 배지: 공고 관리/결제 내역에서 동일하게 사용 */}
+            {job.adType && job.adStartDate && job.adEndDate && (
+              <AdBadge adType={job.adType} period={job.adEndDate && job.adStartDate ? Math.ceil((new Date(job.adEndDate).getTime() - new Date(job.adStartDate).getTime()) / (1000*60*60*24)) : 0} />
             )}
           </div>
 
@@ -123,9 +149,9 @@ export const JobCard = ({ job }: JobCardProps) => {
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-100 px-4 py-3 flex justify-between">
+        <div className="border-t border-gray-100 px-4 py-3 flex gap-2 justify-between">
           <Link
-            href={`/business/jobs/register?id=${job.id}`}
+            href={`/business/jobs/${job.id}/edit`}
             className="text-gray-600 hover:text-gray-900 flex items-center text-sm"
           >
             <Edit className="h-4 w-4 mr-1" />
@@ -138,6 +164,23 @@ export const JobCard = ({ job }: JobCardProps) => {
             <ExternalLink className="h-4 w-4 mr-1" />
             <span>미리보기</span>
           </button>
+          <Link href={`/business/jobs/${job.id}/payment`} passHref>
+            <button
+              className={`px-4 py-2 rounded-md font-medium ${
+                job.status === 2 || job.status === 3
+                  ? "bg-green-600 text-white hover:bg-green-700"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
+              disabled={!(job.status === 2 || job.status === 3)}
+              title={!(job.status === 2 || job.status === 3) ? "게시중/승인된 공고만 광고 신청 가능" : ""}
+              onClick={() => {
+                console.log('광고 신청 버튼 클릭 - job.id:', job.id);
+                console.log('광고 신청 버튼 클릭 - job 전체:', job);
+              }}
+            >
+              광고 신청
+            </button>
+          </Link>
         </div>
       </div>
 

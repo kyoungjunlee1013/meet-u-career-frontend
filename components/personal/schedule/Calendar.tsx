@@ -4,86 +4,59 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { ScheduleModal } from "./ScheduleModal"
 
-export type ScheduleType = "interview" | "deadline" | "personal"
+// 엔티티 기반 일정 유형 상수(enum)
+export enum ScheduleEventType {
+  APPLICATION_DEADLINE = 1,   // 지원 마감
+  BOOKMARK_DEADLINE = 2,      // 스크랩 마감
+  COMPANY_EVENT = 3,          // 기업 행사
+  PERSONAL_EVENT = 4,         // 개인 커스텀 일정
+}
 
+// 엔티티 기반 ScheduleItem 타입
 export interface ScheduleItem {
-  id: string
-  title: string
-  date: string
-  type: ScheduleType
-  description?: string
-  day?: number
+  id: string;
+  eventType: ScheduleEventType;
+  title: string;
+  description?: string;
+  relatedId?: string;
+  company?: { id: string; name: string } | null;
+  companyId?: string;
+  companyName?: string;
+  startDateTime: string; // ISO
+  endDateTime: string;   // ISO
+  isAllDay: boolean;
+  updatedAt?: string;     // ISO (기업 일정에는 없을 수 있음)
 }
 
 interface CalendarProps {
-  activeFilters: ScheduleType[]
-  onScheduleUpdate: (schedules: ScheduleItem[]) => void
+  schedules: ScheduleItem[];
+  activeFilters: ScheduleEventType[];
+  onScheduleUpdate: (schedule: ScheduleItem) => void;
+  onAddSchedule: (schedule: ScheduleItem) => void;
+  onDelete: (id: string) => void;
+  currentMonth: number;
+  setCurrentMonth: React.Dispatch<React.SetStateAction<number>>;
+  currentYear: number;
+  setCurrentYear: React.Dispatch<React.SetStateAction<number>>;
+  readOnly?: boolean;
 }
 
-export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => {
+export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSchedule, onDelete, currentMonth, setCurrentMonth, currentYear, setCurrentYear, readOnly = false }: CalendarProps) => {
   const [view, setView] = useState<"month" | "week" | "day">("month")
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [currentMonth, setCurrentMonth] = useState(currentDate.getMonth())
-  const [currentYear, setCurrentYear] = useState(currentDate.getFullYear())
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedSchedule, setSelectedSchedule] = useState<ScheduleItem | undefined>(undefined)
   const [isEditing, setIsEditing] = useState(false)
-  const [selectedDay, setSelectedDay] = useState<number | null>(null)
-  const [schedules, setSchedules] = useState<ScheduleItem[]>([
-    {
-      id: "1",
-      title: "카카오 프론트엔드 면접",
-      date: "2025-04-04",
-      type: "interview",
-      day: 4,
-    },
-    {
-      id: "2",
-      title: "라인 자기소개서 제출",
-      date: "2025-04-06",
-      type: "personal",
-      day: 6,
-    },
-    {
-      id: "3",
-      title: "라인 인턴십 마감",
-      date: "2025-04-10",
-      type: "deadline",
-      day: 10,
-    },
-    {
-      id: "4",
-      title: "토플 시험접수 마감",
-      date: "2025-04-12",
-      type: "personal",
-      day: 12,
-    },
-    {
-      id: "5",
-      title: "삼성 테크인턴 지원",
-      date: "2025-04-15",
-      type: "interview",
-      day: 15,
-    },
-    {
-      id: "6",
-      title: "네이버 서류 합격자 발표",
-      date: "2025-04-20",
-      type: "interview",
-      day: 20,
-    },
-  ])
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  useEffect(() => {
-    onScheduleUpdate(schedules)
-  }, [schedules, onScheduleUpdate])
+
+  
 
   const getCalendarData = () => {
     // Get the first day of the month (0-6, where 0 is Sunday)
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay()
 
-    // Convert from Sunday-based (0-6) to Monday-based (0-6)
-    const firstDayIndex = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1
+    // 일요일(0)부터 시작하도록 변경
+    const firstDayIndex = firstDayOfMonth; // 0:일, 1:월, ..., 6:토
 
     // Get the last day of the month
     const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0).getDate()
@@ -136,7 +109,7 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
 
   const calendarData = getCalendarData()
 
-  const weekdays = ["월", "화", "수", "목", "금", "토", "일"]
+  const weekdays = ["일", "월", "화", "수", "목", "금", "토"]
 
   const goToPreviousMonth = () => {
     if (currentMonth === 0) {
@@ -208,43 +181,37 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
 
   const openAddModal = (day?: number) => {
     if (day) {
-      setSelectedDay(day)
-
-      // Use today as default
-      const today = new Date()
-      let formattedDate = formatDateString(today)
-
-      try {
-        // Create a valid date for the selected day
-        const selectedDate = createValidDate(currentYear, currentMonth, day)
-
-        // Verify the date is valid
-        if (!isNaN(selectedDate.getTime())) {
-          formattedDate = formatDateString(selectedDate)
-        }
-      } catch (error) {
-        console.error("Error creating date:", error)
-        // Continue with today's date as fallback
-      }
+      setSelectedDate(new Date(currentYear, currentMonth, day))
 
       // Create a new schedule with the formatted date
       setSelectedSchedule({
         id: "",
+        eventType: ScheduleEventType.PERSONAL_EVENT,
         title: "",
-        date: formattedDate,
-        type: "interview",
-        day: day,
+        description: "",
+        relatedId: undefined,
+        company: null,
+        // 클릭한 날짜를 'YYYY-MM-DDT00:00'으로 세팅
+        startDateTime: formatDateString(new Date(currentYear, currentMonth, day)) + 'T00:00',
+        endDateTime: formatDateString(new Date(currentYear, currentMonth, day)) + 'T00:00',
+        isAllDay: false,
+        updatedAt: formatDateString(new Date()),
       })
     } else {
-      setSelectedDay(null)
+      setSelectedDate(null)
       // When no day is selected, create a schedule for today
       const today = new Date()
       setSelectedSchedule({
         id: "",
+        eventType: ScheduleEventType.PERSONAL_EVENT,
         title: "",
-        date: formatDateString(today),
-        type: "interview",
-        day: today.getDate(),
+        description: "",
+        relatedId: undefined,
+        company: null,
+        startDateTime: formatDateString(today),
+        endDateTime: formatDateString(today),
+        isAllDay: false,
+        updatedAt: formatDateString(today),
       })
     }
 
@@ -260,7 +227,7 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
 
   const handleSaveSchedule = (schedule: ScheduleItem) => {
     try {
-      const scheduleDate = new Date(schedule.date)
+      const scheduleDate = new Date(schedule.startDateTime)
 
       // Verify the date is valid
       if (isNaN(scheduleDate.getTime())) {
@@ -269,15 +236,15 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
 
       const updatedSchedule = {
         ...schedule,
-        day: scheduleDate.getDate(),
       }
 
       if (isEditing) {
-        setSchedules(schedules.map((s) => (s.id === schedule.id ? updatedSchedule : s)))
+        // 수정: 단일 일정만 전달
+        onScheduleUpdate(updatedSchedule);
       } else {
-        // Generate a unique ID for new schedules
-        const newId = Date.now().toString()
-        setSchedules([...schedules, { ...updatedSchedule, id: newId }])
+        // 추가: 새로운 일정 객체 생성 후 onAddSchedule로 전달
+        const newId = Date.now().toString();
+        onAddSchedule({ ...updatedSchedule, id: newId });
       }
     } catch (error) {
       console.error("Error saving schedule:", error)
@@ -286,31 +253,23 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
   }
 
   const getFilteredSchedules = (day: number, month: string) => {
-    if (month !== "current") return []
-
-    // For current month events
-    return schedules.filter((schedule) => {
-      try {
-        const scheduleDate = new Date(schedule.date)
-
-        // Skip invalid dates
-        if (isNaN(scheduleDate.getTime())) return false
-
-        const isMatchingDay = scheduleDate.getDate() === day
-        const isMatchingMonth = scheduleDate.getMonth() === currentMonth
-        const isMatchingYear = scheduleDate.getFullYear() === currentYear
-        const isMatchingDate = isMatchingDay && isMatchingMonth && isMatchingYear
-
-        return isMatchingDate && (activeFilters.length === 0 || activeFilters.includes(schedule.type))
-      } catch (error) {
-        return false
-      }
-    })
+    return schedules.filter((event: ScheduleItem) => {
+      if (month !== "current") return false;
+      if (activeFilters.length > 0 && !activeFilters.includes(event.eventType)) return false;
+      // 기간 일정 연속 표시: 셀 날짜가 일정의 시작~종료 사이에 포함되는지 (날짜만 비교)
+      const cellDate = new Date(currentYear, currentMonth, day, 0, 0, 0, 0);
+      const start = new Date(event.startDateTime);
+      const end = new Date(event.endDateTime);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(0, 0, 0, 0);
+      // 셀 날짜가 기간 내에 포함되면 표시
+      return start <= cellDate && cellDate <= end;
+    });
   }
 
   return (
     <div className="bg-white border rounded-md p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col gap-2 mb-6">
         <div className="flex gap-2">
           <button
             className={`px-3 py-1 text-sm rounded-md ${view === "month" ? "bg-gray-200" : "hover:bg-gray-100"}`}
@@ -331,7 +290,7 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
             다음
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-center">
           <button className="p-1 rounded-md hover:bg-gray-100" onClick={goToPreviousMonth}>
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -341,14 +300,16 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
           <button className="p-1 rounded-md hover:bg-gray-100" onClick={goToNextMonth}>
             <ChevronRight className="h-5 w-5" />
           </button>
+          {!readOnly && (
+            <button
+              className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700"
+              onClick={() => openAddModal()}
+            >
+              <Plus className="h-4 w-4" />
+              <span className="text-sm">일정 추가</span>
+            </button>
+          )}
         </div>
-        <button
-          className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-md hover:bg-blue-700"
-          onClick={() => openAddModal()}
-        >
-          <Plus className="h-4 w-4" />
-          <span className="text-sm">일정 추가</span>
-        </button>
       </div>
 
       <div className="grid grid-cols-7 gap-0 border-t border-l">
@@ -371,38 +332,46 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
               className={`min-h-[100px] p-2 border-r border-b relative 
               ${day.month !== "current" ? "bg-gray-100" : ""} 
               ${isToday ? "bg-blue-50" : ""}`}
-              onClick={() => day.month === "current" && openAddModal(day.day)}
+              onClick={() => !readOnly && day.month === "current" && openAddModal(day.day)}
             >
               <div className={`text-sm mb-2 ${isToday ? "font-bold text-blue-600" : ""}`}>{day.day}</div>
-              {getFilteredSchedules(day.day, day.month).map((event) => {
-                let bgColor = "bg-blue-100 text-blue-800"
-                let borderColor = "border-blue-200"
+              {getFilteredSchedules(day.day, day.month).map((event: ScheduleItem) => {
+                let bgColor = "bg-blue-100 text-blue-800";
+                let borderColor = "border-blue-200";
 
-                if (event.type === "interview") {
-                  bgColor = "bg-blue-100 text-blue-800"
-                  borderColor = "border-blue-200"
-                }
-                if (event.type === "deadline") {
-                  bgColor = "bg-yellow-100 text-yellow-800"
-                  borderColor = "border-yellow-200"
-                }
-                if (event.type === "personal") {
-                  bgColor = "bg-green-100 text-green-800"
-                  borderColor = "border-green-200"
+                // eventType(enum) 기반 색상 매핑
+                switch (event.eventType) {
+                  case ScheduleEventType.APPLICATION_DEADLINE:
+                    bgColor = "bg-blue-100 text-blue-800";
+                    borderColor = "border-blue-200";
+                    break;
+                  case ScheduleEventType.BOOKMARK_DEADLINE:
+                    bgColor = "bg-yellow-100 text-yellow-800";
+                    borderColor = "border-yellow-200";
+                    break;
+                  case ScheduleEventType.COMPANY_EVENT:
+                    bgColor = "bg-purple-100 text-purple-800";
+                    borderColor = "border-purple-200";
+                    break;
+                  case ScheduleEventType.PERSONAL_EVENT:
+                    bgColor = "bg-green-100 text-green-800";
+                    borderColor = "border-green-200";
+                    break;
                 }
 
                 return (
                   <div
                     key={event.id}
-                    className={`${bgColor} text-xs p-1.5 rounded border ${borderColor} mb-1 truncate cursor-pointer hover:opacity-80`}
+                    className={`${bgColor} text-xs p-1.5 rounded border ${borderColor} mb-1 truncate ${!readOnly ? 'cursor-pointer hover:opacity-80' : 'cursor-default opacity-60'}`}
                     onClick={(e) => {
-                      e.stopPropagation()
-                      openEditModal(event)
+                      if (readOnly) return;
+                      e.stopPropagation();
+                      openEditModal(event);
                     }}
                   >
                     {event.title}
                   </div>
-                )
+                );
               })}
             </div>
           )
@@ -415,6 +384,7 @@ export const Calendar = ({ activeFilters, onScheduleUpdate }: CalendarProps) => 
         onSave={handleSaveSchedule}
         schedule={selectedSchedule}
         isEditing={isEditing}
+        onDelete={onDelete}
       />
     </div>
   )

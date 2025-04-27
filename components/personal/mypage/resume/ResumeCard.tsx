@@ -5,7 +5,7 @@ import { FileText, File, LinkIcon, Eye, Edit, Star, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ResumePreviewModal } from "./ResumePreviewModal"
 import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import axios from "axios"
+import { apiClient } from "@/api/apiClient"
 
 interface Resume {
   id: number
@@ -41,16 +41,15 @@ interface ResumeCardProps {
   resume: Resume
   onSetPrimary: (id: number) => void
   onDelete: (id: number) => void
+  onPreview: (id: number) => void;
 }
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toISOString().slice(0, 10);
 };
 
-export const ResumeCard = ({ resume, onSetPrimary, onDelete }: ResumeCardProps) => {
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+export const ResumeCard = ({ resume, onSetPrimary, onDelete, onPreview }: ResumeCardProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [previewResume, setPreviewResume] = useState<Resume | null>(null)
 
   const getResumeTypeIcon = () => {
     switch (resume.resumeType) {
@@ -78,24 +77,19 @@ export const ResumeCard = ({ resume, onSetPrimary, onDelete }: ResumeCardProps) 
     }
   }
 
-  const handleDelete = () => {
-    onDelete(resume.id)
-    setIsDeleteModalOpen(false)
-  }
-
-  const fetchResumeDetail = async (id: number) => {
-  const res = await axios.get(`/api/personal/resume/view/${id}`);
-  return res.data.data;
-};
-
-const handlePreview = async () => {
+  const handleDelete = async () => {
   try {
-    const detail = await fetchResumeDetail(resume.id);
-    setPreviewResume(detail);
-    setIsPreviewOpen(true);
+    await apiClient.delete(`/api/personal/resume/${resume.id}`);
+    onDelete(resume.id);
   } catch (err) {
-    alert("이력서 상세 정보를 불러오지 못했습니다.");
+    alert("이력서 삭제에 실패했습니다.");
+  } finally {
+    setIsDeleteModalOpen(false);
   }
+}
+
+  const handlePreview = () => {
+  onPreview(resume.id);
 };
 
   return (
@@ -126,7 +120,7 @@ const handlePreview = async () => {
 
       <div className="border-t border-gray-200 p-4">
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" className="flex-1" onClick={handlePreview}>
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => onPreview(resume.id)}>
             <Eye className="h-4 w-4 mr-1" />
             미리보기
           </Button>
@@ -134,7 +128,7 @@ const handlePreview = async () => {
             variant="outline"
             size="sm"
             className="flex-1 flex items-center justify-center"
-            onClick={() => (window.location.href = `/personal/mypage/resume/${resume.id}/edit`)}
+            onClick={() => (window.location.href = `/personal/mypage/resume/create?id=${resume.id}`)}
           >
             <Edit className="h-4 w-4 mr-1" />
             수정
@@ -143,7 +137,14 @@ const handlePreview = async () => {
             variant="outline"
             size="sm"
             className={`flex-1 ${resume.isPrimary ? "bg-blue-50 text-blue-600" : ""}`}
-            onClick={() => onSetPrimary(resume.id)}
+            onClick={async () => {
+              try {
+                await apiClient.patch(`/api/personal/resume/${resume.id}/represent`);
+                onSetPrimary(resume.id);
+              } catch (err) {
+                alert("대표 이력서 설정에 실패했습니다.");
+              }
+            }}
             disabled={resume.isPrimary}
           >
             <Star className={`h-4 w-4 mr-1 ${resume.isPrimary ? "fill-blue-600" : ""}`} />
@@ -161,9 +162,6 @@ const handlePreview = async () => {
         </div>
       </div>
 
-      {isPreviewOpen && previewResume && (
-        <ResumePreviewModal resume={previewResume} isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} />
-      )}
 
       {isDeleteModalOpen && (
         <DeleteConfirmModal

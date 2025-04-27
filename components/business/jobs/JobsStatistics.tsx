@@ -1,13 +1,23 @@
 "use client"
 
-export const JobsStatistics = () => {
+interface JobsStatisticsProps {
+  jobs: any[];
+}
+
+export const JobsStatistics = ({ jobs = [] }: JobsStatisticsProps) => {
+  const total = jobs.length;
+  const pending = jobs.filter(job => job.status === 1).length;
+  const active = jobs.filter(job => job.status === 2).length;
+  const rejected = jobs.filter(job => job.status === 3).length;
+  const totalViews = jobs.reduce((sum, job) => sum + (job.viewCount || 0), 0);
+
   const stats = [
-    { label: "전체 공고", value: "5", color: "text-blue-600" },
-    { label: "승인 대기", value: "1", color: "text-amber-500" },
-    { label: "게시 중", value: "2", color: "text-green-500" },
-    { label: "반려됨", value: "1", color: "text-red-500" },
-    { label: "총 열람 수", value: "557", color: "text-purple-500" },
-  ]
+    { label: "전체 공고", value: total, color: "text-blue-600" },
+    { label: "승인 대기", value: pending, color: "text-amber-500" },
+    { label: "게시 중", value: active, color: "text-green-500" },
+    { label: "반려됨", value: rejected, color: "text-red-500" },
+    { label: "총 열람 수", value: totalViews, color: "text-purple-500" },
+  ];
 
   return (
     <div className="grid grid-cols-5 gap-4 mb-6">
@@ -18,5 +28,5 @@ export const JobsStatistics = () => {
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
