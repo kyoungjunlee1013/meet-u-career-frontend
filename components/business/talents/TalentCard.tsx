@@ -1,9 +1,8 @@
 "use client"
 
-import { Bookmark, Building, GraduationCap } from "lucide-react"
+import { Building, GraduationCap } from "lucide-react"
 import { SkillTag } from "./SkillTag"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
 
 interface Talent {
   id: number
@@ -23,8 +22,6 @@ interface TalentCardProps {
 }
 
 export const TalentCard = ({ talent }: TalentCardProps) => {
-  const [isBookmarked, setIsBookmarked] = useState(talent.bookmarked)
-
   return (
     <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
       <div className="p-4">
@@ -37,9 +34,6 @@ export const TalentCard = ({ talent }: TalentCardProps) => {
               <p className="text-xs text-gray-500 mt-1">{talent.location}</p>
             </div>
           </div>
-          <button className="text-gray-400 hover:text-blue-500" onClick={() => setIsBookmarked(!isBookmarked)}>
-            <Bookmark className={`h-5 w-5 ${isBookmarked ? "fill-blue-500 text-blue-500" : ""}`} />
-          </button>
         </div>
 
         <div className="flex gap-4 mt-3 text-xs text-gray-500">
@@ -67,12 +61,10 @@ export const TalentCard = ({ talent }: TalentCardProps) => {
 
       <div className="flex border-t border-gray-200">
         <Button variant="ghost" className="flex-1 rounded-none h-10 text-blue-500 hover:bg-blue-50">
-          프로필 보기
+          이력서 보기
         </Button>
         <div className="w-px bg-gray-200"></div>
-        <Button variant="ghost" className="flex-1 rounded-none h-10 text-gray-600 hover:bg-gray-50">
-          연락하기
-        </Button>
+        {/* 연락하기 버튼 삭제 */}
       </div>
     </div>
   )
