@@ -1,62 +1,106 @@
-import { useState, useMemo } from "react";
-import { OffersHeader } from "./OffersHeader";
-import { OffersStats } from "./OffersStats";
-import { OffersTabs } from "./OffersTabs";
-import { OffersFilter } from "./OffersFilter";
-import { OffersList } from "./OffersList";
+"use client"
 
-const OFFERS = [
-  {
-    id: 1,
-    company: "(주)서울인HR",
-    position: "프론트엔드 개발자",
-    location: "서울 강남구",
-    deadline: "2023-03-20",
-    description: "React, TypeScript 경험이 있는 프론트엔드 개발자를 찾고 있습니다. 3년 이상의 경력자 우대합니다.",
-    status: "검토중",
-  },
-  {
-    id: 2,
-    company: "테크스타트(주)",
-    position: "백엔드 개발자",
-    location: "서울 서초구",
-    deadline: "2023-03-18",
-    description:
-      "Node.js, Express, MongoDB 경험이 있는 백엔드 개발자를 찾고 있습니다. 클라우드 서비스 경험자 우대합니다.",
-    status: "수락함",
-  },
-  {
-    id: 3,
-    company: "글로벌소프트(주)",
-    position: "풀스택 개발자",
-    location: "서울 영등포구",
-    deadline: "2023-03-15",
-    description: "React와 Node.js를 활용한 풀스택 개발 경험이 있는 개발자를 찾고 있습니다. AWS 경험자 우대합니다.",
-    status: "거절함",
-  },
-];
+import axios from "axios"
+import { useState, useEffect, useMemo } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { OffersHeader } from "./OffersHeader"
+import { OffersStats } from "./OffersStats"
+import { OffersTabs, type TabType } from "./OffersTabs"
+import { OffersFilter } from "./OffersFilter"
+import { OfferCard } from "./OfferCard"
 
-export function OffersContent() {
-  const [activeTab, setActiveTab] = useState("전체");
-  const counts = useMemo(() => ({
-    "전체": OFFERS.length,
-    "검토중": OFFERS.filter(o => o.status === "검토중").length,
-    "수락함": OFFERS.filter(o => o.status === "수락함").length,
-    "거절함": OFFERS.filter(o => o.status === "거절함").length,
-  }), []);
-  const filtered = activeTab === "전체" ? OFFERS : OFFERS.filter(o => o.status === activeTab);
+interface Offer {
+  id: number
+  company: string
+  position: string
+  location: string
+  deadline: string
+  description: string
+  status: '검토중' | '수락함' | '거절함'
+}
+
+interface OffersContentProps {
+  offers: Offer[]
+  loading: boolean
+  error: string | null
+}
+
+export function OffersContent({ offers = [], loading, error }: OffersContentProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const rawTab = searchParams.get("tab")
+  const isValidTab = (val: string | null): val is TabType => {
+    return val === '전체' || val === '검토중' || val === '수락함' || val === '거절함'
+  }
+  const initialTab: TabType = isValidTab(rawTab) ? rawTab : '전체'
+
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab)
+  const [localOffers, setLocalOffers] = useState<Offer[]>([])
+
+  useEffect(() => {
+    const fixed: Offer[] = offers.map((o) => ({
+      ...o,
+      status: o.status as '검토중' | '수락함' | '거절함',
+    }))
+    setLocalOffers(fixed)
+  }, [offers])
+
+  const counts = useMemo(() => {
+    return {
+      전체: localOffers.length,
+      검토중: localOffers.filter((o) => o.status === '검토중').length,
+      수락함: localOffers.filter((o) => o.status === '수락함').length,
+      거절함: localOffers.filter((o) => o.status === '거절함').length,
+    }
+  }, [localOffers])
+
+  const filtered = useMemo(() => {
+    return activeTab === '전체'
+      ? localOffers
+      : localOffers.filter((o) => o.status === activeTab)
+  }, [localOffers, activeTab])
+
+  const updateOfferStatus = (id: number, nextTab: '수락함' | '거절함') => {
+    setLocalOffers((prev) => prev.map(o => o.id === id ? { ...o, status: nextTab } : o))
+    setActiveTab(nextTab)
+    const params = new URLSearchParams(window.location.search)
+    params.set("tab", nextTab)
+    router.replace(`?${params.toString()}`)
+  }
+
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab)
+    const params = new URLSearchParams(window.location.search)
+    params.set("tab", tab)
+    router.replace(`?${params.toString()}`)
+  }
+
+  if (loading) return <p className="text-center p-4">로딩 중...</p>
+  if (error) return <p className="text-red-500 text-center p-4">{error}</p>
 
   return (
     <div className="space-y-6">
       <OffersHeader />
-      <OffersStats />
+      <OffersStats counts={counts} />
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <OffersTabs activeTab={activeTab} onTabChange={setActiveTab} counts={counts} />
+        <OffersTabs
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          counts={counts}
+        />
         <div className="mt-4 flex justify-end">
           <OffersFilter />
         </div>
-        <OffersList offers={filtered} />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+          {filtered.map((offer) => (
+            <OfferCard
+              key={offer.id}
+              offer={offer}
+              onActionComplete={(nextTab) => updateOfferStatus(offer.id, nextTab)}
+            />
+          ))}
+        </div>
       </div>
     </div>
-  );
+  )
 }

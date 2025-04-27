@@ -1,15 +1,16 @@
 import type React from "react"
 import { FileText, Clock, Award } from "lucide-react"
 
-export function OffersStats() {
+export function OffersStats({ counts }: { counts: Record<string, number> }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <StatCard icon={<FileText />} count={3} label="총 제안" />
-      <StatCard icon={<Clock />} count={1} label="검토중" />
-      <StatCard icon={<Award />} count={1} label="수락함" />
+      <StatCard icon={<FileText />} count={counts['전체']} label="총 제안" />
+      <StatCard icon={<Clock />} count={counts['검토중']} label="검토중" />
+      <StatCard icon={<Award />} count={counts['수락함']} label="수락함" />
     </div>
   )
 }
+
 
 function StatCard({ icon, count, label }: { icon: React.ReactNode; count: number; label: string }) {
   return (
