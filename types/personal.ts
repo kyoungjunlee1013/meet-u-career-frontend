@@ -1,16 +1,16 @@
 // types/personal.ts
 
 export interface mypagePersonalInfo {
-    account: {
-        id: number;
-        email: string;
-        name: string;
-        profileImageKey: string;
-    };
+  account: {
+    id: number;
+    email: string;
+    name: string;
+    profileImageKey: string;
+  };
 }
 
 export interface PersonalMyPageInfo {
-   account: {
+  account: {
     id: number;
     email: string;
     name: string;
@@ -44,4 +44,5 @@ export interface PersonalMyPageInfo {
     deadline: string;
     preferredSkills: string;
   }[];
+  accessToken?: string;  // accessToken 속성 추가
 }

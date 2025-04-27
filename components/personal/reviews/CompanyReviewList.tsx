@@ -53,10 +53,10 @@ export const CompanyReviewList = ({ searchKeyword }: Props) => {
         </h2>
 
         {loading ? (
-          <p className="text-gray-500 text-sm">불러오는 중...</p>
-        ) : companies.length === 0 ? (
-          <p className="text-gray-500 text-sm">검색 결과가 없습니다.</p>
-        ) : (
+            <p className="text-gray-500 text-sm">불러오는 중...</p>
+          ) : !companies || companies.length === 0 ? (
+            <p className="text-gray-500 text-sm">검색 결과가 없습니다.</p>
+          ) : (
           <div className="space-y-4">
             {companies.map((company) => (
               <div key={company.companyId} className="border rounded-lg p-4 hover:shadow-md transition-shadow">

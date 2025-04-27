@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import NotificationDropdown from "./NotificationDropdown"
-import ChatDropdown from "./ChatDropdown"
+import ChatDropdown from "@/components/home/ChatDropdown"
 import ProfileDropdown from "./ProfileDropdown"
 import { useUserStore } from "@/store/useUserStore";
 

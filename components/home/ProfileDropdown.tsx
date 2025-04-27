@@ -9,13 +9,22 @@ import { useUserStore } from "@/store/useUserStore";
 
 const ProfileDropdown = () => {
   const router = useRouter();
-  const { clearTokens } = useAuthStore();
+  const { accessToken, clearTokens } = useAuthStore.getState(); // 🔥 accessToken 가져오기
   const { clearUserInfo } = useUserStore();
 
   const handleLogout = async () => {
     try {
       // 서버에 로그아웃 요청 (refreshToken 삭제)
-      await axios.post("/api/personal/auth/logout", {}, { withCredentials: true });
+      await axios.post(
+        "/api/personal/auth/logout",
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // 🔥 토큰 추가
+          },
+        }
+      );
 
       // 클라이언트에 저장된 토큰, 유저정보 삭제
       clearTokens();

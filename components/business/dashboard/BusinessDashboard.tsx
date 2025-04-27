@@ -1,43 +1,49 @@
-"use client"
+"use client";
 
-import { BusinessHeader } from "@/components/business/layout/BusinessHeader"
-import { CompanyProfile } from "./CompanyProfile"
-import { JobStatistics } from "./JobStatistics"
-import { ViewStatistics } from "./ViewStatistics"
-import { JobPostingsList } from "./JobPostingsList"
-import { useSearchParams } from "next/navigation"
-import { useDashboardData } from "@/app/hooks/useDashboardData"
+import { useEffect, useState } from "react";
+import { fetchBusinessDashboard, BusinessDashboardData } from "@/lib/fetchBusinessDashboard";
+import { BusinessHeader } from "@/components/business/layout/BusinessHeader";
+import { CompanyProfile } from "./CompanyProfile";
+import { JobStatistics } from "./JobStatistics";
+import { ViewStatistics } from "./ViewStatistics";
+import { JobPostingsList } from "./JobPostingsList";
 
 export const BusinessDashboard = () => {
-  const searchParams = useSearchParams()
-  const companyIdParam = searchParams.get("companyId")
-  const companyId = companyIdParam ? parseInt(companyIdParam, 10) : null
+  const [data, setData] = useState<BusinessDashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data, loading } = useDashboardData(companyId)
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const dashboardData = await fetchBusinessDashboard();
+        console.log("🔥 최종 받은 대시보드 데이터:", dashboardData); // 이거 추가
+        setData(dashboardData);
+      } catch (error) {
+        console.error("❌ 대시보드 데이터 가져오기 실패", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, []);
+  
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
-  if (loading || !data) return <div className="p-6">로딩 중...</div>
+  if (!data) {
+    return <div className="min-h-screen flex items-center justify-center">데이터를 불러올 수 없습니다.</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <BusinessHeader />
       <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <CompanyProfile
-          companyId={data.companyId}
-          companyName={data.companyName}
-          industry={data.industry}
-          address={data.address}
-          foundedDate={data.foundedDate}
-          employeeScale={data.employeeScale}
-        />
-        <JobStatistics
-          total={data.totalJobPostings}
-          active={data.activeJobPostings}
-          nearing={data.nearingDeadlineJobPostings}
-          closed={data.closedJobPostings}
-        />
-        <ViewStatistics postings={data.jobPostings} />
-        <JobPostingsList postings={data.jobPostings} />
+        <CompanyProfile data={data} />
+        <JobStatistics data={data} />
+        <ViewStatistics data={data} />
+        <JobPostingsList data={data.jobPostings} />
       </main>
     </div>
-  )
-}
+  );
+};
