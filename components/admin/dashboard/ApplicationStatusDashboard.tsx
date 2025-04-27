@@ -1,78 +1,115 @@
-import { ApplicationMetricCards } from "./ApplicationMetricCards"
-import { ApplicationTrendChart } from "./ApplicationTrendChart"
-import { ApplicationByJobTypeChart } from "./ApplicationByJobTypeChart"
-import { ApplicationConversionRates } from "./ApplicationConversionRates"
-import { ApplicationByAgeChart } from "./ApplicationByAgeChart"
-import { TopApplicationCompanies } from "./TopApplicationCompanies"
-import { ApplicationTimeAnalysis } from "./ApplicationTimeAnalysis"
+"use client";
+
+import { useEffect, useState } from "react";
+import { MetricApplicationsCards } from "./MetricApplicationsCards";
+import { ApplicationTrendChart } from "./ApplicationTrendChart";
+import { ApplicationByJobTypeChart } from "./ApplicationByJobTypeChart";
+import { ApplicationByAgeChart } from "./ApplicationByAgeChart";
+import { TopApplicationCompanies } from "./TopApplicationCompanies";
+import { ApplicationTimeAnalysis } from "./ApplicationTimeAnalysis";
+import { apiClient } from "@/api/apiClient";
+import { DashboardApplicationMetrics } from "@/types/dashboard";
 
 export default function ApplicationStatusDashboard() {
+  const [metrics, setMetrics] = useState<DashboardApplicationMetrics>({
+    totalApplications: {
+      current: 0,
+      previous: 0,
+      growthRate: 0,
+    },
+    acceptedApplications: {
+      current: 0,
+      previous: 0,
+      growthRate: 0,
+    },
+    rejectedApplications: {
+      current: 0,
+      previous: 0,
+      growthRate: 0,
+    },
+    applicationTrends: [],
+    conversionRates: [],
+    applicantAgeGroupChart: [],
+    top5Companies: [],
+    applicationTimeStats: [],
+    jobCategoryPostings: [],
+  });
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await apiClient.get(`/api/admin/dashboard/applicationstats`);
+        const data = response.data?.data;
+
+        setMetrics({
+          totalApplications: data?.totalApplications,
+          acceptedApplications: data?.acceptedApplications,
+          rejectedApplications: data?.rejectedApplications,
+          applicationTrends: data?.applicationTrends,
+          conversionRates: data?.conversionRates,
+          applicantAgeGroupChart: data?.applicantAgeGroupChart,
+          top5Companies: data?.top5Companies,
+          applicationTimeStats: data?.applicationTimeStats,
+          jobCategoryPostings: data?.jobCategoryPostings,
+        });
+      } catch (error) {
+        console.error("채용 공고 통계 API 호출 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-6 mt-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="h-24 bg-gray-200 rounded-lg" />
+          <div className="h-24 bg-gray-200 rounded-lg" />
+          <div className="h-24 bg-gray-200 rounded-lg" />
+        </div>
+
+        <div className="h-64 bg-gray-200 rounded-lg" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-64 bg-gray-200 rounded-lg" />
+          <div className="h-64 bg-gray-200 rounded-lg" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-64 bg-gray-200 rounded-lg" />
+          <div className="h-64 bg-gray-200 rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      <ApplicationMetricCards />
-
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium">지원 추이</h2>
-          <div className="flex space-x-2">
-            <button className="px-3 py-1 text-xs rounded border border-gray-200 text-gray-600 hover:bg-gray-50">
-              일간
-            </button>
-            <button className="px-3 py-1 text-xs rounded border border-gray-200 text-gray-600 hover:bg-gray-50">
-              주간
-            </button>
-            <button className="px-3 py-1 text-xs rounded bg-blue-500 text-white">월간</button>
-            <button className="px-3 py-1 text-xs rounded border border-gray-200 text-gray-600 hover:bg-gray-50">
-              연간
-            </button>
-          </div>
-        </div>
-        <ApplicationTrendChart />
+    <>
+      <div className="mt-6">
+        <MetricApplicationsCards
+          totalApplications={metrics.totalApplications}
+          acceptedApplications={metrics.acceptedApplications}
+          rejectedApplications={metrics.rejectedApplications}
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium">직무별 지원 현황</h2>
-            <button className="text-gray-500 text-xs">상세 보기</button>
-          </div>
-          <ApplicationByJobTypeChart />
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium">지원 전환율</h2>
-            <button className="text-gray-500 text-xs">상세 보기</button>
-          </div>
-          <ApplicationConversionRates />
-        </div>
+      <div className="mt-6">
+        <ApplicationTrendChart data={metrics.applicationTrends} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium">지원자 연령분포</h2>
-            <button className="text-gray-500 text-xs">상세 보기</button>
-          </div>
-          <ApplicationByAgeChart />
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium">지원자 많은 기업 TOP 5</h2>
-            <button className="text-gray-500 text-xs">상세 보기</button>
-          </div>
-          <TopApplicationCompanies />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <ApplicationByAgeChart data={metrics.applicantAgeGroupChart} />
+        <ApplicationByJobTypeChart data={metrics.jobCategoryPostings} />
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium">지원 시간 시간</h2>
-          <button className="text-gray-500 text-xs">상세 보기</button>
-        </div>
-        <ApplicationTimeAnalysis />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <TopApplicationCompanies data={metrics.top5Companies} />
+        <ApplicationTimeAnalysis data={metrics.applicationTimeStats} />
       </div>
-    </div>
-  )
+    </>
+  );
 }

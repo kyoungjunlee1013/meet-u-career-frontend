@@ -1,35 +1,67 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { FileText } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useEffect, useState } from "react";
+import { FileText } from "lucide-react";
+import axios from "axios";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const jobPostings = [
-  {
-    id: 1,
-    title: "프론트엔드 개발자 (React/TypeScript)",
-    department: "개발팀",
-    deadline: "2023.12.31",
-    applicants: 24,
-  },
-  {
-    id: 2,
-    title: "백엔드 개발자 (Node.js)",
-    department: "개발팀",
-    deadline: "2023.12.15",
-    applicants: 18,
-  },
-  {
-    id: 3,
-    title: "UI/UX 디자이너",
-    department: "디자인팀",
-    deadline: "2023.12.20",
-    applicants: 12,
-  },
-]
+interface JobPosting {
+  id: number;
+  title: string;
+  department: string;
+  deadline: string;
+  applicants: number;
+}
 
-export const JobPostingCard = () => {
-  const [selectedJob, setSelectedJob] = useState(jobPostings[0])
+interface JobPostingCardProps {
+  onSelectJob: (id: number) => void;
+}
+
+export const JobPostingCard = ({ onSelectJob }: JobPostingCardProps) => {
+  const [jobPostings, setJobPostings] = useState<JobPosting[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState<string>("");
+
+  useEffect(() => {
+    const fetchJobPostings = async () => {
+      try {
+        const token = sessionStorage.getItem("accessToken");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const response = await axios.get("/api/business/applicants", {
+          headers,
+        });
+
+        const data = response.data.data;
+        const formatted = data.map((job: any) => ({
+          id: job.id,
+          title: job.title,
+          department: job.department || "부서 미정",
+          deadline: job.expirationDate?.split("T")[0] || "미정",
+          applicants: job.applicantCount || 0,
+        }));
+
+        setJobPostings(formatted);
+        if (formatted.length > 0) {
+          const firstId = formatted[0].id.toString();
+          setSelectedJobId(firstId);
+          onSelectJob(Number(firstId));
+        }
+      } catch (error) {
+        console.error("채용공고 목록 조회 실패:", error);
+      }
+    };
+
+    fetchJobPostings();
+  }, [onSelectJob]);
+
+  const selectedJob = jobPostings.find(
+    (job) => job.id.toString() === selectedJobId
+  );
 
   return (
     <div className="mb-6 border border-gray-200 rounded-lg p-4 bg-white">
@@ -39,32 +71,45 @@ export const JobPostingCard = () => {
         </div>
         <div className="flex-1">
           <Select
-            defaultValue={selectedJob.id.toString()}
+            value={selectedJobId}
             onValueChange={(value) => {
-              const job = jobPostings.find((j) => j.id.toString() === value)
-              if (job) setSelectedJob(job)
+              setSelectedJobId(value);
+              onSelectJob(Number(value));
             }}
           >
             <SelectTrigger className="border-0 p-0 h-auto shadow-none text-lg font-medium focus:ring-0 focus:ring-offset-0">
-              <SelectValue placeholder={selectedJob.title} />
+              <SelectValue placeholder="채용공고를 선택해 주세요" />
             </SelectTrigger>
             <SelectContent>
-              {jobPostings.map((job) => (
-                <SelectItem key={job.id} value={job.id.toString()}>
-                  {job.title}
-                </SelectItem>
-              ))}
+              {jobPostings.length > 0 ? (
+                jobPostings.map((job) => (
+                  <SelectItem key={job.id} value={job.id.toString()}>
+                    {job.title}
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="p-3 text-sm text-gray-500">
+                  불러올 채용공고가 없습니다
+                </div>
+              )}
             </SelectContent>
           </Select>
-          <div className="mt-1 text-sm text-gray-500">
-            <span>{selectedJob.department}</span>
-            <span className="mx-1">|</span>
-            <span>마감일: {selectedJob.deadline}</span>
-            <span className="mx-1">|</span>
-            <span>지원자: {selectedJob.applicants}명</span>
-          </div>
+
+          {selectedJob ? (
+            <div className="mt-1 text-sm text-gray-500">
+              <span>{selectedJob.department}</span>
+              <span className="mx-1">|</span>
+              <span>마감일: {selectedJob.deadline}</span>
+              <span className="mx-1">|</span>
+              <span>지원자: {selectedJob.applicants}명</span>
+            </div>
+          ) : (
+            <div className="mt-1 text-sm text-gray-400">
+              채용공고 정보를 불러오는 중입니다
+            </div>
+          )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

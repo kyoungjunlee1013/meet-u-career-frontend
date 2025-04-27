@@ -1,29 +1,30 @@
-import axios from "axios";
+import { apiClient } from "@/api/apiClient";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useUserStore } from "@/store/useUserStore";
 
-const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
-
 /**
- * 내 정보 가져오기
+ * 내 정보 가져오기 (apiClient 적용)
  */
 export const fetchMyInfo = async () => {
-    const { accessToken, clearTokens } = useAuthStore.getState();
-    const { setUserInfo, clearUserInfo } = useUserStore.getState();
+  const { accessToken, clearTokens } = useAuthStore.getState();
+  const { setUserInfo, clearUserInfo } = useUserStore.getState();
 
-    try {
-        const response = await axios.get("/api/personal/me", {
-            headers: isLocalhost && accessToken
-                ? { Authorization: `Bearer ${accessToken}` }
-                : undefined,
-            withCredentials: !isLocalhost,
-        });
+  try {
+    const isLocalhost =
+      typeof window !== "undefined" && window.location.hostname === "localhost";
 
-        const userData = response.data.data;
-        setUserInfo(userData);
-    } catch (error) {
-        console.error("/me 불러오기 실패", error);
-        clearTokens();
-        clearUserInfo();
-    }
+    const response = await apiClient.get<any>("/api/user/me", {
+      withCredentials: !isLocalhost,
+      headers: {
+        Authorization: `Bearer ${useAuthStore.getState().accessToken}`, // 최신 값 가져오기
+      },
+    });
+
+    const userData = response.data.data;
+    setUserInfo(userData);
+  } catch (error) {
+    console.error("/me 불러오기 실패", error);
+    clearTokens();
+    clearUserInfo();
+  }
 };

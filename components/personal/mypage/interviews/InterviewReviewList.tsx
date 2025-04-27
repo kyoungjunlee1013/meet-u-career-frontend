@@ -1,19 +1,31 @@
-import { InterviewReviewCard } from "./InterviewReviewCard"
+"use client";
 
-export function InterviewReviewList({ reviews, onEditReview, onViewReview }) {
+import { Review } from "@/types/review";
+import { InterviewReviewCard } from "./InterviewReviewCard";
+
+// ✅ props 타입 정의
+interface InterviewReviewListProps {
+  reviews: Review[];
+  onEditReview: (review: Review) => void;
+  onViewReview: (review: Review) => void;
+}
+
+// ✅ 면접 리뷰 리스트 컴포넌트
+export function InterviewReviewList({
+  reviews,
+  onEditReview,
+  onViewReview,
+}: InterviewReviewListProps) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+    <div className="space-y-4">
       {reviews.map((review) => (
-        <div key={review.id} className="h-full">
-          <div className="p-4 hover:bg-gray-50 transition-colors h-full">
-            <InterviewReviewCard
-              review={review}
-              onEdit={() => onEditReview && onEditReview(review)}
-              onView={() => onViewReview && onViewReview(review)}
-            />
-          </div>
-        </div>
+        <InterviewReviewCard
+          key={review.id}
+          review={review}
+          onEdit={() => onEditReview(review)}
+          onView={() => onViewReview(review)}
+        />
       ))}
     </div>
-  )
+  );
 }

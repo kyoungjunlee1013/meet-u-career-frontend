@@ -5,23 +5,26 @@ interface UserInfo {
   profileId: number | null;
   name: string;
   profileImage?: string;
-  email: string;
   role: "PERSONAL" | "BUSINESS" | "ADMIN" | "SUPER";
 }
 
 interface UserStoreState {
   userInfo: UserInfo | null;
   isUserInfoHydrated: boolean;
+  isLocalhost: boolean;
   setUserInfo: (userInfo: UserInfo) => void;
   clearUserInfo: () => void;
   restoreUserInfo: () => void;
 }
 
-const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
+const isLocalhost =
+  typeof window !== "undefined" && window.location.hostname === "localhost";
 
 export const useUserStore = create<UserStoreState>((set) => ({
   userInfo: null,
   isUserInfoHydrated: false,
+  isLocalhost:
+    typeof window !== "undefined" && window.location.hostname === "localhost",
 
   /**
    * 유저 정보 저장

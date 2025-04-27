@@ -19,7 +19,7 @@ export const PersonalLoginForm = () => {
 
   // 로드 시 저장된 아이디 복구
   useEffect(() => {
-    const savedUserId = sessionStorage.getItem("savedUserId");
+    const savedUserId = localStorage.getItem("savedUserId");
     if (savedUserId) {
       setUserId(savedUserId);
       setRememberMe(true);
@@ -65,9 +65,9 @@ export const PersonalLoginForm = () => {
 
           // 로그인 성공 후 아이디 저장
           if (rememberMe) {
-            sessionStorage.setItem("savedUserId", userId);
+            localStorage.setItem("savedUserId", userId);
           } else {
-            sessionStorage.removeItem("savedUserId");
+            localStorage.removeItem("savedUserId");
           }
 
           await fetchMyInfo();
@@ -78,11 +78,11 @@ export const PersonalLoginForm = () => {
           setServerError("토큰 발급 실패. 다시 로그인 해주세요.");
         }
       } else {
-        setServerError(response.data.message || "로그인 실패");
+        setServerError(response.data.msg);
       }
     } catch (error: any) {
       setServerError(
-        error.response?.data?.message || "로그인 중 오류가 발생했습니다."
+        error.response?.data?.msg
       );
     }
   };
@@ -102,6 +102,7 @@ export const PersonalLoginForm = () => {
           type="text"
           name="userId"
           placeholder="아이디"
+          autoComplete="off"
           value={userId}
           onChange={(e) => {
             setUserId(e.target.value);
@@ -122,10 +123,16 @@ export const PersonalLoginForm = () => {
           type="password"
           name="password"
           placeholder="비밀번호"
+          autoComplete="off"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
             if (passwordError) setPasswordError("");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleLogin();
+            }
           }}
           className={`w-full px-3 py-2.5 border ${passwordError ? "border-red-500" : "border-gray-300"
             } rounded-md focus:outline-none focus:ring-1 ${passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"

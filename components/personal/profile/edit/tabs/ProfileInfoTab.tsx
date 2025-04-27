@@ -13,7 +13,7 @@ export const ProfileInfoTab = () => {
       <div className="mb-8 flex flex-col items-center">
         <div className="w-28 h-28 rounded-full bg-gray-100 relative mb-2 flex items-center justify-center overflow-hidden">
           {profileImage ? (
-            <Image src={profileImage || "/placeholder.svg"} alt="Profile" layout="fill" objectFit="cover" />
+            <Image src={profileImage || "/images/etc/placeholder.svg"} alt="Profile" layout="fill" objectFit="cover" />
           ) : (
             <User className="h-16 w-16 text-gray-300" />
           )}

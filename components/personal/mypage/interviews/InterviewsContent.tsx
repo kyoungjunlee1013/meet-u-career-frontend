@@ -1,153 +1,180 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { InterviewStats } from "./InterviewStats"
-import { InterviewStatusTab } from "./InterviewStatusTab"
-import { InterviewReviewTab } from "./InterviewReviewTab"
-import { InterviewTabs } from "./InterviewTabs"
-import { ReviewModal } from "./review/ReviewModal"
-import { ReviewDetailModal } from "./ReviewDetailModal"
+import { useState, useEffect, useMemo } from "react";
+import axios from "axios";
+import { InterviewTabs } from "./InterviewTabs";
+import { InterviewStatusTab } from "./InterviewStatusTab";
+import  InterviewReviewTab from "./InterviewReviewTab";
+import { InterviewStats } from "./InterviewStats";
+import { ReviewModal } from "./review/ReviewModal";
+import { ReviewDetailModal } from "./ReviewDetailModal";
+import { Interview } from "@/types/interview"; // ✅ 타입 통일 import
 
-const INTERVIEWS = [
-  {
-    id: 1,
-    status: "검토중",
-    date: "2023-06-15T14:00:00",
-    company: "(주)사람인HR",
-    position: "웹 프론트엔드 개발자",
-    location: "서울 강남구 테헤란로 152",
-    time: "오후 2:00",
-    interviewer: "김인사 팀장",
-    logo: "/abstract-company-logo.png",
-  },
-  {
-    id: 2,
-    status: "수락",
-    date: "2023-06-10T10:30:00",
-    company: "테크스타트(주)",
-    position: "React 개발자",
-    location: "온라인 화상면접",
-    time: "오전 10:30",
-    interviewer: "박개발 CTO",
-    hasReview: true,
-    logo: "/abstract-corporate-logo.png",
-  },
-  {
-    id: 3,
-    status: "거절",
-    date: "2023-05-25T15:30:00",
-    company: "글로벌소프트(주)",
-    position: "백엔드 개발자",
-    location: "서울 영등포구 여의도동 45",
-    time: "오후 3:30",
-    interviewer: "이기술 이사",
-    logo: "/abstract-geometric-company.png",
-  },
-  {
-    id: 4,
-    status: "수락",
-    date: "2023-06-20T09:00:00",
-    company: "이노베이션랩스",
-    position: "백엔드 개발자",
-    location: "서울 마포구 상암동 123",
-    time: "오전 9:00",
-    interviewer: "최혁신 CTO",
-    hasReview: false, // 면접 완료, 후기 미작성
-    logo: "/abstract-innovation-logo.png",
-  },
-];
-
-const REVIEWS = [
-  {
-    id: 1,
-    company: "테크스타트(주)",
-    position: "프론트엔드 개발자",
-    date: "2023-06-10",
-    logo: "/abstract-company-logo.png",
-    jobCategory: "프론트엔드 개발",
-    careerLevel: 0, // 신입
-    interviewYearMonth: "2023-06",
-    rating: 2, // 긍정적
-    difficulty: 3, // 3점(보통)
-    interviewType: 1 | 8, // 직무/인성면접, PT면접
-    interviewParticipants: 1,
-    questionsAsked: "자기소개를 해보세요.\n프로젝트에서 가장 어려웠던 점은?",
-    interviewTip: "정직하게 답변하고, 실무 경험을 강조하면 좋아요.",
-    result: 1, // 합격
-    createdAt: "2023-06-15T12:00:00",
-    updatedAt: "2023-06-15T12:00:00",
-  },
-  {
-    id: 2,
-    company: "글로벌소프트(주)",
-    position: "백엔드 개발자",
-    date: "2023-06-05",
-    logo: "/abstract-corporate-logo.png",
-    jobCategory: "백엔드 개발",
-    careerLevel: 1, // 경력
-    interviewYearMonth: "2023-06",
-    rating: 0, // 부정적
-    difficulty: 5, // 5점(매우 어려움)
-    interviewType: 1 | 16, // 직무/인성면접, 실무 과제 및 시험
-    interviewParticipants: 2,
-    questionsAsked: "DB 인덱스란 무엇인가요?\n트랜잭션의 ACID란?",
-    interviewTip: "면접 전에 실무 문제를 꼭 연습하세요.",
-    result: 0, // 불합격
-    createdAt: "2023-06-10T09:00:00",
-    updatedAt: "2023-06-10T09:00:00",
-  },
-];
+// ✅ 리뷰 타입
+interface Review {
+  id: number;
+  company: string;
+  position: string;
+  date: string;
+  logo: string;
+  jobCategory: string;
+  careerLevel: number;
+  interviewYearMonth: string;
+  rating: number;
+  difficulty: number;
+  interviewType: number;
+  interviewParticipants: number;
+  questionsAsked: string;
+  interviewTip: string;
+  result: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export function InterviewsContent() {
   const [activeTab, setActiveTab] = useState("status");
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [editingReview, setEditingReview] = useState(undefined); // undefined로 초기화
+  const [editingReview, setEditingReview] = useState<Interview | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
-  const [viewingReview, setViewingReview] = useState(undefined);
-  const counts = useMemo(() => ({
-    status: INTERVIEWS.length,
-    reviews: REVIEWS.length,
-  }), []);
+  const [viewingReview, setViewingReview] = useState<Review | null>(null);
 
-  // 면접 리뷰 수정 버튼 클릭 시
-  const handleEditReview = (review) => {
-    setEditingReview(review);
+  const fetchInterviews = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+
+      const res = await axios.get("/api/personal/interviews", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const reviewableRes = await axios.post("/api/personal/interview-reviews/reviewable-list", res.data.data);
+      const reviewableMap = new Map<number, boolean>();
+      reviewableRes.data.data.forEach((dto: any) => {
+        reviewableMap.set(dto.applicationId, dto.canWriteReview);
+      });
+
+      const transformed: Interview[] = res.data.data.map((item: any) => ({
+        ...item,
+        canWriteReview: reviewableMap.get(item.applicationId) ?? false,
+        // ✅ status를 number로 명확히 보정
+        status:
+          typeof item.status === "string"
+            ? item.status === "completed"
+              ? 3
+              : item.status === "canceled"
+              ? 4
+              : 1
+            : item.status,
+      }));
+
+      setInterviews(transformed);
+    } catch (err) {
+      console.error("❌ 인터뷰 데이터 불러오기 실패", err);
+    }
+  };
+
+  const fetchReviews = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+
+      const res = await axios.get("/api/personal/interview-reviews", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setReviews(res.data.data);
+    } catch (err) {
+      console.error("❌ 리뷰 목록 불러오기 실패", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchInterviews();
+    fetchReviews();
+  }, []);
+
+  const handleEditReviewFromInterview = (interview: Interview) => {
+    setEditingReview(interview);
     setReviewModalOpen(true);
   };
 
-  // 면접 리뷰 상세보기 버튼 클릭 시
-  const handleViewReview = (review) => {
+  const handleEditReviewFromReview = (review: Review) => {
+    const converted: Interview = {
+      ...review,
+      status: 3,
+      companyId: 0,
+      jobCategoryId: 0,
+      applicationId: 0,
+    };
+    setEditingReview(converted);
+    setReviewModalOpen(true);
+  };
+
+  const handleViewReview = (review: Review) => {
     setViewingReview(review);
     setDetailModalOpen(true);
   };
 
-  // 모달 닫기 시 상태 초기화
   const handleCloseModal = () => {
     setReviewModalOpen(false);
-    setEditingReview(undefined);
+    setEditingReview(null);
   };
+
   const handleCloseDetailModal = () => {
     setDetailModalOpen(false);
-    setViewingReview(undefined);
+    setViewingReview(null);
   };
+
+  const counts = useMemo(() => ({
+    status: interviews.length,
+    reviews: reviews.length,
+  }), [interviews, reviews]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4">
       <h1 className="text-2xl font-bold text-gray-900 pt-6">면접 현황</h1>
-      <InterviewStats />
+
+      {/* ✅ 통계에 인터뷰 리스트 넘기기 */}
+      <InterviewStats interviews={interviews} />
+
       <div className="bg-white rounded-lg shadow-sm p-6">
         <InterviewTabs activeTab={activeTab} onTabChange={setActiveTab} counts={counts} />
-        {/* Tab Content */}
-        {activeTab === "reviews"
-          ? <InterviewReviewTab reviews={REVIEWS} onEditReview={handleEditReview} onViewReview={handleViewReview} />
-          : <InterviewStatusTab interviews={INTERVIEWS} />}
+
+        {activeTab === "reviews" ? (
+          <InterviewReviewTab
+            reviews={reviews}
+            onEditReview={handleEditReviewFromReview}
+            onViewReview={handleViewReview}
+          />
+        ) : (
+          <InterviewStatusTab
+            interviews={interviews}
+            onEditReview={handleEditReviewFromInterview}
+          />
+        )}
       </div>
+
       {reviewModalOpen && editingReview && (
-        <ReviewModal interview={editingReview} onClose={handleCloseModal} />
+        <ReviewModal
+          interview={{ ...editingReview, status: "completed" }}
+          onClose={handleCloseModal}
+          onComplete={() => {
+            fetchInterviews();
+            fetchReviews();
+            handleCloseModal();
+          }}
+        />
       )}
+
       {detailModalOpen && viewingReview && (
-        <ReviewDetailModal isOpen={detailModalOpen} onClose={handleCloseDetailModal} review={viewingReview} />
+        <ReviewDetailModal
+          isOpen={detailModalOpen}
+          onClose={handleCloseDetailModal}
+          review={viewingReview}
+        />
       )}
     </div>
-  )
+  );
 }

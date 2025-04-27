@@ -1,29 +1,73 @@
-"use client"
+"use client";
 
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import {
+  Bar,
+  BarChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { JobTypeData } from "@/types/dashboard";
 
-const data = [
-  { name: "개발", value: 95000 },
-  { name: "마케팅", value: 45000 },
-  { name: "디자인", value: 35000 },
-  { name: "영업", value: 28000 },
-  { name: "엔지니어링", value: 38000 },
-  { name: "경영지원", value: 18000 },
-  { name: "프로덕트", value: 12000 },
-  { name: "기타", value: 11000 },
-]
+interface JobTypeDataProps {
+  data: JobTypeData[];
+}
 
-export function ApplicationByJobTypeChart() {
+export function ApplicationByJobTypeChart({ data }: JobTypeDataProps) {
+  const chartData = data.map((item) => ({
+    categoryName: item.categoryName,
+    jobPostingCount: item.jobPostingCount,
+  }));
+
   return (
-    <div className="h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart layout="vertical" data={data} margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-          <XAxis type="number" axisLine={false} tickLine={false} />
-          <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={60} tick={{ fontSize: 12 }} />
-          <Bar dataKey="value" fill="#4f46e5" radius={[0, 4, 4, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  )
+    <>
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="font-medium">직무별 지원 현황</h3>
+        </div>
+
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              layout="vertical"
+              data={chartData}
+              margin={{ top: 5, right: 30, left: 40, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+              <XAxis type="number" axisLine={false} tickLine={false} />
+              <YAxis
+                dataKey="categoryName"
+                type="category"
+                axisLine={false}
+                tickLine={false}
+                width={60}
+                tick={{ fontSize: 12 }}
+              />
+              <Tooltip
+                formatter={(value: any) => [`${value}건`, "지원 건수"]}
+                labelFormatter={(label: any) => `${label}`}
+                contentStyle={{
+                  backgroundColor: "#1f2937",
+                  border: "none",
+                  borderRadius: "6px",
+                  color: "#fff",
+                }}
+                itemStyle={{ color: "#fff", fontSize: 13 }}
+                labelStyle={{ color: "#fff", fontWeight: "bold" }}
+              />
+              <Bar
+                dataKey="jobPostingCount"
+                fill="#4f46e5"
+                radius={[0, 4, 4, 0]}
+                barSize={30}
+                activeBar={false}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </>
+  );
 }
