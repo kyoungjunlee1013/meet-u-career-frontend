@@ -58,6 +58,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.56.1",
     "react-resizable-panels": "^2.1.7",
+    "react-tooltip": "^5.28.1",
     "react-syntax-highlighter": "^15.6.1",
     "recharts": "latest",
     "sonner": "^1.7.1",
