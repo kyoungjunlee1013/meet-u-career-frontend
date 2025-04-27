@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { CoverLetterBasicInfoCard } from "../CoverLetterBasicInfoCard";
-import { CoachingSectionEditor } from "../../personal/coaching/CoachingSectionEditor";
 import { CoverLetterContentEditorList } from "../CoverLetterContentEditorList";
 import { CoverLetterPreviewModal } from "../CoverLetterPreviewModal";
 import { useMobile } from "@/hooks/use-mobile";
