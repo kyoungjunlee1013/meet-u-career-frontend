@@ -8,7 +8,7 @@ import { ApplicationByAgeChart } from "./ApplicationByAgeChart";
 import { TopApplicationCompanies } from "./TopApplicationCompanies";
 import { ApplicationTimeAnalysis } from "./ApplicationTimeAnalysis";
 import { apiClient } from "@/api/apiClient";
-import { DashboardApplicationMetrics } from "@/types/admin/dashboard";
+import { DashboardApplicationMetrics } from "@/types/dashboard";
 
 export default function ApplicationStatusDashboard() {
   const [metrics, setMetrics] = useState<DashboardApplicationMetrics>({

@@ -10,7 +10,7 @@ export default function NaverCallbackPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const code = searchParams.get("code");
-    const state = searchParams.get("state"); // ✅ 네이버는 state 필수
+    const state = searchParams.get("state"); // 네이버는 state 필수
     const { setTokens } = useAuthStore();
 
     useEffect(() => {

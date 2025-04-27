@@ -1,6 +1,6 @@
 "use client";
 
-import { TopCompanyJobPostings } from "@/types/admin/dashboard";
+import { TopCompanyJobPostings } from "@/types/dashboard";
 
 interface TopCompanyJobPostingsProps {
   data: TopCompanyJobPostings[];

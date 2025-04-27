@@ -45,14 +45,13 @@ const ChatDropdown = () => {
             {chats.map((chat) => (
               <li
                 key={chat.id}
-                className={`p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer ${
-                  chat.unread ? "bg-blue-50" : ""
-                }`}
+                className={`p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer ${chat.unread ? "bg-blue-50" : ""
+                  }`}
               >
                 <div className="flex gap-3">
                   <div className="relative h-10 w-10 rounded-full overflow-hidden flex-shrink-0">
                     <Image
-                      src="/placeholder.svg?height=40&width=40"
+                      src="/images/etc/placeholder.svg?height=40&width=40"
                       alt={`${chat.name} 프로필`}
                       width={40}
                       height={40}

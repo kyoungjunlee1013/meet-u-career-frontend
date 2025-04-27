@@ -1,4 +1,4 @@
-import { JobPostingStatusProps } from "@/types/admin/dashboard";
+import { JobPostingStatusProps } from "@/types/dashboard";
 
 export function JobPostingStatus({ data }: JobPostingStatusProps) {
   const {

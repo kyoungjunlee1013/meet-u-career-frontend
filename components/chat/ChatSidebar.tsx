@@ -75,13 +75,12 @@ export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) 
           <div
             key={chat.id}
             onClick={() => onSelectChat(chat.id)}
-            className={`p-4 flex items-start cursor-pointer hover:bg-gray-100 ${
-              selectedChatId === chat.id ? "bg-gray-100" : ""
-            }`}
+            className={`p-4 flex items-start cursor-pointer hover:bg-gray-100 ${selectedChatId === chat.id ? "bg-gray-100" : ""
+              }`}
           >
             <div className="flex-shrink-0">
               <Image
-                src={chat.avatar || "/placeholder.svg"}
+                src={chat.avatar || "/images/etc/placeholder.svg"}
                 alt={chat.name}
                 width={40}
                 height={40}

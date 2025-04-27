@@ -1,5 +1,5 @@
-import { DashboardJobPostingMetrics } from "@/types/admin/dashboard";
-import { Briefcase, Building, Eye } from "lucide-react"; // Eye 아이콘 추가
+import { DashboardJobPostingMetrics } from "@/types/dashboard";
+import { Briefcase, Building, Eye } from "lucide-react";
 
 export function MetricJobPostingCards({
   metrics,
@@ -63,9 +63,8 @@ function MetricCard({
       <div className="text-2xl font-bold mb-1">{value.toLocaleString()}</div>{" "}
       <div className="text-sm text-gray-500 mb-2">{title}</div>
       <div
-        className={`text-xs ${
-          isPositive ? "text-green-500" : "text-red-500"
-        } flex items-center`}
+        className={`text-xs ${isPositive ? "text-green-500" : "text-red-500"
+          } flex items-center`}
       >
         <span className="mr-1">{isPositive ? "↑" : "↓"}</span>
         <span>{Math.abs(change).toFixed(1)}% 지난 달 대비</span>

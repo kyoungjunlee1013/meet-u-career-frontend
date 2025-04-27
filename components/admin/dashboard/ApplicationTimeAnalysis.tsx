@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   Tooltip
 } from "recharts";
-import { ApplicationTimeStats } from "@/types/admin/dashboard";
+import { ApplicationTimeStats } from "@/types/dashboard";
 
 interface ApplicationTimeStatsProps {
   data: ApplicationTimeStats[];

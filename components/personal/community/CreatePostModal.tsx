@@ -81,10 +81,10 @@ export const CreatePostModal = ({
       alert("해시태그를 선택해주세요!");
       return;
     }
-  
+
     try {
       const formData = new FormData();
-  
+
       const json: any = {
         content: content,
         tagId: TAG_NAME_TO_ID[selectedTag],
@@ -92,7 +92,7 @@ export const CreatePostModal = ({
         title: "임시 제목",
         id: isEditMode ? postId : undefined,
       };
-  
+
       if (isEditMode) {
         if (selectedImage) {
           formData.append("image", selectedImage);
@@ -105,11 +105,11 @@ export const CreatePostModal = ({
           json.postImageKey = null;
         }
       }
-      
-  
+
+
       const blob = new Blob([JSON.stringify(json)], { type: "application/json" });
       formData.append("data", blob);
-  
+
       if (!isEditMode && selectedImage) {
         formData.append("image", selectedImage);
       }
@@ -122,7 +122,7 @@ export const CreatePostModal = ({
         await axios.post("/api/personal/community/posts/create", formData);
         alert("게시글이 등록되었습니다!");
       }
-  
+
       onClose();
       window.location.reload();
     } catch (error) {
@@ -130,8 +130,8 @@ export const CreatePostModal = ({
       alert("게시글 등록/수정에 실패했습니다.");
     }
   };
-  
-  
+
+
 
   const handleTagSelect = (tag: string) => {
     setSelectedTag(tag)
@@ -160,7 +160,7 @@ export const CreatePostModal = ({
         {/* 프로필 + 닉네임 */}
         <div className="flex items-center gap-3 p-4">
           <img
-            src={profileImageUrl || "/default_profile.png"}
+            src={profileImageUrl || "/images/etc/default_profile.png"}
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover"
           />
@@ -185,11 +185,10 @@ export const CreatePostModal = ({
               <button
                 key={tag}
                 onClick={() => handleTagSelect(tag)}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  selectedTag === tag
+                className={`px-3 py-1 rounded-full text-sm ${selectedTag === tag
                     ? "bg-blue-100 text-blue-700"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+                  }`}
               >
                 #{tag}
               </button>

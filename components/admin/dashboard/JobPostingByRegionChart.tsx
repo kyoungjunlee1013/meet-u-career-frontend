@@ -18,7 +18,7 @@ interface JobPostingByRegionChartProps {
   data: LocationStats[];
 }
 
-// ✅ 색상 팔레트 (충분히 다양한 색상 제공)
+// 색상 팔레트 (충분히 다양한 색상 제공)
 const COLORS = [
   "#4F46E5", "#38BDF8", "#FB923C", "#F87171", "#A3A3A3", "#10B981",
   "#FBBF24", "#C084FC", "#EC4899", "#F43F5E", "#14B8A6", "#8B5CF6",
@@ -41,7 +41,7 @@ const processData = (data: LocationStats[]) => {
   return top10;
 };
 
-// ✅ 툴팁 커스터마이징
+// 툴팁 커스터마이징
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length > 0) {
     const { locationName, jobPostingCount } = payload[0].payload;

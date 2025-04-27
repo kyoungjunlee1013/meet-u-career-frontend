@@ -1,10 +1,10 @@
 import { Users, Building2, Briefcase } from "lucide-react";
-import { ApplicationMetricDTO } from "@/types/admin/dashboard";
+import { ApplicationMetric } from "@/types/dashboard";
 
 interface MetricApplicationsCardsProps {
-  totalApplications: ApplicationMetricDTO;
-  acceptedApplications: ApplicationMetricDTO;
-  rejectedApplications: ApplicationMetricDTO;
+  totalApplications: ApplicationMetric;
+  acceptedApplications: ApplicationMetric;
+  rejectedApplications: ApplicationMetric;
 }
 
 export function MetricApplicationsCards({
@@ -56,9 +56,8 @@ function MetricCard({ icon, value, label, change, positive }: MetricCardProps) {
       <div className="text-2xl font-bold mb-1">{value}</div>
       <div className="text-sm text-gray-500 mb-2">{label}</div>
       <div
-        className={`text-xs ${
-          positive ? "text-green-500" : "text-red-500"
-        } flex items-center`}
+        className={`text-xs ${positive ? "text-green-500" : "text-red-500"
+          } flex items-center`}
       >
         <span className="mr-1">{positive ? "↑" : "↓"}</span>
         <span>{Math.abs(change).toFixed(1)}% 지난 달 대비</span>

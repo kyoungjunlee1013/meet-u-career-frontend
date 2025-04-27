@@ -12,7 +12,7 @@ export const PromotionalBanner = () => {
         </div>
         <div className="absolute right-0 bottom-0">
           <Image
-            src="/online-review-typing.png"
+            src="/images/review/online-review-typing.png"
             alt="리뷰 작성 일러스트"
             width={180}
             height={120}
