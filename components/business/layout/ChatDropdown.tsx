@@ -21,7 +21,7 @@ const mockChatMessages: ChatMessage[] = [
     message: "안녕하세요, 면접 일정 관련해서 문의드립니다.",
     time: "10분 전",
     isRead: false,
-    avatar: "/placeholder.svg?height=40&width=40",
+    avatar: "/images/etc/placeholder.svg?height=40&width=40",
   },
   {
     id: "2",
@@ -29,7 +29,7 @@ const mockChatMessages: ChatMessage[] = [
     message: "제출한 이력서 확인 부탁드립니다.",
     time: "30분 전",
     isRead: false,
-    avatar: "/placeholder.svg?height=40&width=40",
+    avatar: "/images/etc/placeholder.svg?height=40&width=40",
   },
   {
     id: "3",
@@ -37,7 +37,7 @@ const mockChatMessages: ChatMessage[] = [
     message: "감사합니다. 다음 주에 뵙겠습니다.",
     time: "2시간 전",
     isRead: true,
-    avatar: "/placeholder.svg?height=40&width=40",
+    avatar: "/images/etc/placeholder.svg?height=40&width=40",
   },
   {
     id: "4",
@@ -45,7 +45,7 @@ const mockChatMessages: ChatMessage[] = [
     message: "포트폴리오 추가 자료 보내드립니다.",
     time: "어제",
     isRead: true,
-    avatar: "/placeholder.svg?height=40&width=40",
+    avatar: "/images/etc/placeholder.svg?height=40&width=40",
   },
 ]
 
@@ -72,7 +72,7 @@ export const ChatDropdown = ({ isOpen, onClose, messageCount = 2 }: ChatDropdown
     const url = chatId ? `/chat?id=${chatId}` : "/chat"
     const width = 1075
     const height = 745
-    
+
     // 브라우저 창 기준 가운데 정렬
     const left = window.innerWidth / 2 + window.screenX - width / 2
     const top = window.innerHeight / 2 + window.screenY - height / 2
@@ -115,9 +115,8 @@ export const ChatDropdown = ({ isOpen, onClose, messageCount = 2 }: ChatDropdown
               <div
                 key={message.id}
                 onClick={() => openChatWindow(message.id)}
-                className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${
-                  !message.isRead ? "bg-blue-50" : ""
-                }`}
+                className={`p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer ${!message.isRead ? "bg-blue-50" : ""
+                  }`}
               >
                 <div className="flex items-start">
                   <div className="flex-shrink-0 mr-3">

@@ -2,24 +2,28 @@
 
 import { ReactNode, useEffect } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useUserStore } from "@/store/useUserStore";
+import { fetchMyInfo } from "@/api/fetchMyInfo";
+import NotificationHandler from "@/components/notification/NotificationHandler";
 
-interface PreventActionWrapperProps {
+interface Props {
   children: ReactNode;
 }
 
-/**
- * PreventActionWrapper
- * - 우클릭, 드래그 방지
- * - 앱 최초 진입 시 쿠키에서 토큰 복구
- */
-export default function PreventActionWrapper({
-  children,
-}: PreventActionWrapperProps) {
-  const { restoreTokensFromCookies } = useAuthStore();
+export default function PreventActionWrapper({ children }: Props) {
+  const { restoreTokens, isHydrated, accessToken } = useAuthStore();
+  const { restoreUserInfo } = useUserStore();
 
   useEffect(() => {
-    restoreTokensFromCookies(); // 앱 최초 진입 시 토큰 복구
+    restoreTokens();
+    restoreUserInfo();
   }, []);
+
+  useEffect(() => {
+    if (isHydrated && accessToken) {
+      fetchMyInfo();
+    }
+  }, [isHydrated, accessToken]);
 
   const preventAction = (e: React.SyntheticEvent) => {
     e.preventDefault();
@@ -27,10 +31,11 @@ export default function PreventActionWrapper({
 
   return (
     <div
-      onContextMenu={preventAction} // 우클릭 방지
-      onDragStart={preventAction} // 드래그 시작 방지
+      onContextMenu={preventAction}
+      onDragStart={preventAction}
       className="min-h-screen"
     >
+      {accessToken && <NotificationHandler />}
       {children}
     </div>
   );

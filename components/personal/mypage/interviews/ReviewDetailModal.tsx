@@ -57,7 +57,7 @@ export function ReviewDetailModal({ isOpen, onClose, review }: { isOpen: boolean
         </DialogHeader>
         <div className="flex flex-col md:flex-row gap-6 my-4">
           <div className="flex flex-col items-center min-w-[120px]">
-            <Image src={review.logo || "/placeholder.svg"} alt={review.company} width={60} height={60} className="rounded-md border mb-2" />
+            <Image src={review.logo || "/images/etc/placeholder.svg"} alt={review.company} width={60} height={60} className="rounded-md border mb-2" />
             <div className="font-semibold text-base text-center">{review.position}</div>
             <div className="text-xs text-gray-500 mt-1">{review.jobCategory}</div>
             <div className="text-xs text-gray-500 mt-1">{careerLevelMap[review.careerLevel ?? 0]}</div>
@@ -70,7 +70,7 @@ export function ReviewDetailModal({ isOpen, onClose, review }: { isOpen: boolean
               <span className="font-medium">전반적 평가:</span> {typeof review.rating === "number" ? ratingMap[review.rating] : "-"}
             </div>
             <div>
-              <span className="font-medium">난이도:</span> {typeof review.difficulty === "number" ? difficultyMap[review.difficulty-1] : "-"}
+              <span className="font-medium">난이도:</span> {typeof review.difficulty === "number" ? difficultyMap[review.difficulty - 1] : "-"}
             </div>
             <div>
               <span className="font-medium">면접 유형:</span> {getInterviewTypeLabels(review.interviewType).join(", ") || "-"}

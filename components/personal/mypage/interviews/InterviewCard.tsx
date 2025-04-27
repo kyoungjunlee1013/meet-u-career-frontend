@@ -1,27 +1,41 @@
-"use client"
-import Image from "next/image"
-import { useState } from "react"
-import { ReviewModal } from "./review/ReviewModal"
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+import { ReviewModal } from "./review/ReviewModal";
 
 interface Interview {
-  id: number
-  company: string
-  position: string
-  date: string
-  status: "scheduled" | "completed" | "canceled"
-  logo: string
-  location?: string
-  time?: string
-  interviewer?: string
-  hasReview?: boolean
+  id: number;
+  company: string;
+  position: string;
+  date: string;
+  status: "scheduled" | "completed" | "canceled";
+  logo: string;
+  location?: string;
+  time?: string;
+  interviewer?: string;
+  hasReview?: boolean;
+  canWriteReview?: boolean;
+
+  companyId: number;
+  jobCategoryId: number;
+  applicationId: number;
+  createdAt?: string;
 }
 
+
 interface InterviewCardProps {
-  interview: Interview
+  interview: Interview;
+  onEdit?: () => void;
 }
 
 export function InterviewCard({ interview }: InterviewCardProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ✅ 작성 여부는 canWriteReview 우선 → false 또는 hasReview === true일 때 true로 간주
+  const [hasReview, setHasReview] = useState(
+    interview.canWriteReview === false || interview.hasReview === true
+  );
 
   const formattedDate = new Date(interview.date).toLocaleString("ko-KR", {
     year: "numeric",
@@ -29,44 +43,53 @@ export function InterviewCard({ interview }: InterviewCardProps) {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  })
+  });
 
-  // 버튼 상태/텍스트 결정
-  let buttonText = ""
-  let buttonDisabled = true
-  let buttonStyle = "w-full py-2 px-4 rounded-md border text-sm font-semibold mt-6 "
+  // ✅ 리뷰 작성 완료 시 호출됨
+  const handleReviewComplete = (id: number) => {
+    if (id === interview.id) {
+      setHasReview(true); // 상태 업데이트
+    }
+  };
+
+  // ✅ 버튼 조건 설정
+  let buttonText = "";
+  let buttonDisabled = true;
+  let buttonStyle = "w-full py-2 px-4 rounded-md border text-sm font-semibold mt-6 ";
+
   if (interview.status === "scheduled") {
-    buttonText = "후기 작성"
-    buttonDisabled = true
-    buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+    buttonText = "후기 작성";
+    buttonDisabled = true;
+    buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed";
   } else if (interview.status === "completed") {
-    if (interview.hasReview) {
-      buttonText = "작성 완료"
-      buttonDisabled = true
-      buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
-    } else {
-      buttonText = "후기 작성"
-      buttonDisabled = false
-      buttonStyle += "bg-blue-50 text-blue-600 border-blue-500 hover:bg-blue-100 cursor-pointer"
+    if (hasReview) {
+      buttonText = "작성 완료";
+      buttonDisabled = true;
+      buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed";
+    } else if (interview.canWriteReview) {
+      buttonText = "후기 작성";
+      buttonDisabled = false;
+      buttonStyle += "bg-blue-50 text-blue-600 border-blue-500 hover:bg-blue-100 cursor-pointer";
     }
   } else if (interview.status === "canceled") {
-    buttonText = "작성 불가"
-    buttonDisabled = true
-    buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+    buttonText = "작성 불가";
+    buttonDisabled = true;
+    buttonStyle += "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed";
   }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col h-full max-w-[350px] w-full mx-auto p-6">
-      {/* 상단: 상태 뱃지 & 날짜 */}
+      {/* 상태 뱃지 & 날짜 */}
       <div className="flex items-center justify-between mb-4">
         <InterviewStatusBadge status={interview.status} />
         <span className="text-xs text-gray-400 font-medium">{formattedDate.split(' ')[0]}</span>
       </div>
-      {/* 회사/포지션 */}
+
+      {/* 회사 및 포지션 */}
       <div className="flex items-center mb-2">
         <div className="h-10 w-10 rounded-md overflow-hidden flex-shrink-0 border border-gray-200 mr-3">
           <Image
-            src={interview.logo || "/placeholder.svg"}
+            src={interview.logo || "/images/etc/placeholder.svg"}
             alt={interview.company}
             width={40}
             height={40}
@@ -78,7 +101,8 @@ export function InterviewCard({ interview }: InterviewCardProps) {
           <p className="text-sm text-gray-600 mt-0.5">{interview.position}</p>
         </div>
       </div>
-      {/* 상세 정보 */}
+
+      {/* 면접 상세 정보 */}
       <div className="flex flex-col gap-1 text-sm text-gray-700 mb-6 mt-2">
         {interview.location && (
           <div className="flex items-center">
@@ -107,7 +131,8 @@ export function InterviewCard({ interview }: InterviewCardProps) {
           </div>
         )}
       </div>
-      {/* 버튼 */}
+
+      {/* 후기 작성 버튼 */}
       <button
         className={buttonStyle}
         disabled={buttonDisabled}
@@ -116,9 +141,14 @@ export function InterviewCard({ interview }: InterviewCardProps) {
       >
         {buttonText}
       </button>
+
       {/* 후기 작성 모달 */}
       {isModalOpen && (
-        <ReviewModal interview={interview} onClose={() => setIsModalOpen(false)} />
+        <ReviewModal
+          interview={interview}
+          onClose={() => setIsModalOpen(false)}
+          onComplete={handleReviewComplete}
+        />
       )}
     </div>
   );
@@ -137,22 +167,16 @@ function InterviewStatusBadge({ status }: { status: "scheduled" | "completed" | 
           </svg>
           면접 예정
         </span>
-      )
+      );
     case "completed":
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-600">
           <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M20 6L9 17L4 12"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           면접 완료
         </span>
-      )
+      );
     case "canceled":
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-600">
@@ -162,8 +186,8 @@ function InterviewStatusBadge({ status }: { status: "scheduled" | "completed" | 
           </svg>
           면접 취소
         </span>
-      )
+      );
     default:
-      return null
+      return null;
   }
 }

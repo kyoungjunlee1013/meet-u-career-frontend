@@ -46,16 +46,15 @@ export const PersonalSidebar = ({ activeItem = "MY홈" }: PersonalSidebarProps) 
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-16 bottom-0 left-0 w-64 bg-white shadow-sm z-20 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-16 bottom-0 left-0 w-64 bg-white shadow-sm z-20 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex flex-col h-full overflow-y-auto">
           <div className="p-4 border-b border-gray-100">
             <div className="flex flex-col items-center">
               <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden mb-2">
                 <Image
-                  src="/vibrant-street-market.png"
+                  src="/images/etc/vibrant-street-market.png"
                   alt="User profile"
                   width={64}
                   height={64}
@@ -89,9 +88,8 @@ export const PersonalSidebar = ({ activeItem = "MY홈" }: PersonalSidebarProps) 
                 <li key={index}>
                   <Link
                     href={item.href}
-                    className={`flex items-center py-3.5 px-4 ${
-                      item.label === activeItem ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-100"
-                    } rounded-md`}
+                    className={`flex items-center py-3.5 px-4 ${item.label === activeItem ? "text-blue-600 bg-blue-50" : "text-gray-700 hover:bg-gray-100"
+                      } rounded-md`}
                   >
                     <item.icon className="h-5 w-5 mr-3" />
                     <span>{item.label}</span>
@@ -145,8 +143,8 @@ const menuItems = [
     href: "/personal/mypage/offers",
   },
   {
-    label: "열람 차단 설정",
+    label: "열람 차단",
     icon: HelpCircle,
-    href: "/personal/mypage/privacy",
+    href: "/personal/mypage/block",
   },
 ]

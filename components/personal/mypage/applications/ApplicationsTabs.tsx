@@ -1,20 +1,28 @@
 import { useState } from "react";
 
-const TAB_LIST = [
-  { key: "전체", label: <>전체 <span className="ml-1 text-blue-600">5</span></> },
-  { key: "지원완료", label: <>지원완료 <span className="ml-1 text-gray-500">1</span></> },
-  { key: "서류통과", label: <>서류통과 <span className="ml-1 text-gray-500">1</span></> },
-  { key: "최종합격", label: <>최종합격 <span className="ml-1 text-gray-500">1</span></> },
-  { key: "불합격", label: <>불합격 <span className="ml-1 text-gray-500">1</span></> },
-];
+// props: total, applied, passed, rejected
+interface ApplicationsTabsProps {
+  activeTab: number | null;
+  onTabChange: (tab: number | null) => void;
+  total: number;
+  applied: number;
+  passed: number;
+  rejected: number;
+}
 
-export const ApplicationsTabs = ({ activeTab, onTabChange }) => {
+export const ApplicationsTabs = ({ activeTab, onTabChange, total, applied, passed, rejected }: ApplicationsTabsProps) => {
+  const TAB_LIST = [
+    { key: null, label: <>전체 <span className="ml-1 text-blue-600">{total}</span></> },
+    { key: 0, label: <>지원완료 <span className="ml-1 text-gray-500">{applied}</span></> },
+    { key: 1, label: <>서류통과 <span className="ml-1 text-gray-500">{passed}</span></> },
+    { key: 2, label: <>불합격 <span className="ml-1 text-gray-500">{rejected}</span></> },
+  ];
   return (
     <div className="border-b border-gray-200">
       <nav className="flex">
         {TAB_LIST.map(tab => (
           <button
-            key={tab.key}
+            key={tab.key === null ? "all" : tab.key}
             type="button"
             className={
               "inline-block py-4 px-4 text-sm font-medium border-b-2 " +

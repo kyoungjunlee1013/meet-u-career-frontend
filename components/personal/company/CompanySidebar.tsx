@@ -23,7 +23,7 @@ export const CompanySidebar = ({ companyId, activeTab = "intro" }: CompanySideba
         <div className="flex justify-center mb-4">
           <div className="w-32 h-12 relative">
             <Image
-              src="/placeholder.svg?height=48&width=128"
+              src="/images/etc/placeholder.svg?height=48&width=128"
               alt="현대자동차 로고"
               width={128}
               height={48}
@@ -51,9 +51,8 @@ export const CompanySidebar = ({ companyId, activeTab = "intro" }: CompanySideba
           <li>
             <Link
               href={`/personal/company/${companyId}/intro`}
-              className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                activeTab === "intro" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`flex items-center px-3 py-2 text-sm rounded-md ${activeTab === "intro" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"
+                }`}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -69,9 +68,8 @@ export const CompanySidebar = ({ companyId, activeTab = "intro" }: CompanySideba
           <li>
             <Link
               href={`/personal/company/${companyId}/reviews`}
-              className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                activeTab === "reviews" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`flex items-center px-3 py-2 text-sm rounded-md ${activeTab === "reviews" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"
+                }`}
             >
               <svg className="w-5 h-5 mr-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                 <path
@@ -87,9 +85,8 @@ export const CompanySidebar = ({ companyId, activeTab = "intro" }: CompanySideba
           <li>
             <Link
               href={`/personal/company/${companyId}/salary`}
-              className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                activeTab === "salary" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`flex items-center px-3 py-2 text-sm rounded-md ${activeTab === "salary" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"
+                }`}
             >
               <svg className="w-5 h-5 mr-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                 <path
@@ -104,9 +101,8 @@ export const CompanySidebar = ({ companyId, activeTab = "intro" }: CompanySideba
           <li>
             <Link
               href={`/personal/company/${companyId}/jobs`}
-              className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                activeTab === "jobs" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"
-              }`}
+              className={`flex items-center px-3 py-2 text-sm rounded-md ${activeTab === "jobs" ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700 hover:bg-gray-50"
+                }`}
             >
               <svg className="w-5 h-5 mr-2 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />

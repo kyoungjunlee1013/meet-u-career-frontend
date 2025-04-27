@@ -88,7 +88,7 @@ export function OfferCard({ offer, onActionComplete }: OfferProps) {
       <div className="flex items-center mb-2">
         <div className="h-10 w-10 rounded-md overflow-hidden flex-shrink-0 border border-gray-200 mr-3">
           <Image
-            src={`/abstract-geometric-shapes.png?height=40&width=40&query=${offer.company} logo`}
+            src={`/images/etc/abstract-geometric-shapes.png?height=40&width=40&query=${offer.company} logo`}
             alt={`${offer.company} 로고`}
             width={40}
             height={40}

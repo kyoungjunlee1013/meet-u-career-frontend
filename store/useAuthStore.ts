@@ -2,74 +2,104 @@ import { create } from "zustand";
 import Cookies from "js-cookie";
 import { toast } from "@/components/ui/use-toast";
 
-/**
- * 인증 상태를 관리하는 Zustand store
- */
 interface AuthState {
-  accessToken: string | null; // 현재 저장된 AccessToken
-  refreshToken: string | null; // 현재 저장된 RefreshToken
-  setTokens: (accessToken: string, refreshToken: string) => void; // AccessToken과 RefreshToken을 저장
-  setAccessToken: (accessToken: string) => void; // AccessToken만 따로 저장
-  clearTokens: () => void; // 저장된 토큰 모두 삭제
-  restoreTokensFromCookies: () => void; // 쿠키에 저장된 토큰 복구
-  logoutWithAlert: () => void; // 세션 만료 시 로그아웃 + 알림
+  accessToken: string | null;
+  refreshToken: string | null;
+  isHydrated: boolean;
+  setTokens: (accessToken: string, refreshToken: string) => void;
+  setAccessToken: (accessToken: string) => void;
+  clearTokens: () => void;
+  restoreTokens: () => void;
+  logoutWithAlert: () => void;
 }
+
+// 현재 환경이 localhost인지 여부
+const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
 
 export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,
   refreshToken: null,
+  isHydrated: false,
 
   /**
-   * AccessToken과 RefreshToken을 저장하고, 쿠키에도 함께 저장
+   * AccessToken과 RefreshToken 저장
+   * - 로컬: sessionStorage
+   * - 운영: Secure 쿠키
    */
   setTokens: (accessToken, refreshToken) => {
-    Cookies.set("accessToken", accessToken, { path: "/" });
-    Cookies.set("refreshToken", refreshToken, { path: "/" });
+    if (isLocalhost) {
+      sessionStorage.setItem("accessToken", accessToken);
+      sessionStorage.setItem("refreshToken", refreshToken);
+    } else {
+      Cookies.set("accessToken", accessToken, { path: "/", secure: true });
+      Cookies.set("refreshToken", refreshToken, { path: "/", secure: true });
+    }
     set({ accessToken, refreshToken });
   },
 
   /**
-   * AccessToken만 별도로 갱신하고, 쿠키에도 저장
+   * AccessToken만 별도 저장
    */
   setAccessToken: (accessToken) => {
-    Cookies.set("accessToken", accessToken, { path: "/" });
+    if (isLocalhost) {
+      sessionStorage.setItem("accessToken", accessToken);
+    } else {
+      Cookies.set("accessToken", accessToken, { path: "/", secure: true });
+    }
     set((state) => ({ ...state, accessToken }));
   },
 
   /**
-   * 저장된 AccessToken, RefreshToken을 삭제 (쿠키와 상태 모두)
+   * 저장된 토큰 삭제
    */
   clearTokens: () => {
-    Cookies.remove("accessToken");
-    Cookies.remove("refreshToken");
+    if (isLocalhost) {
+      sessionStorage.removeItem("accessToken");
+      sessionStorage.removeItem("refreshToken");
+    } else {
+      Cookies.remove("accessToken");
+      Cookies.remove("refreshToken");
+    }
     set({ accessToken: null, refreshToken: null });
   },
 
   /**
-   * 앱 첫 로딩 시, 쿠키에서 토큰 복구
+   * 저장된 토큰 복구
    */
-  restoreTokensFromCookies: () => {
-    const accessToken = Cookies.get("accessToken") || null;
-    const refreshToken = Cookies.get("refreshToken") || null;
-    set({ accessToken, refreshToken });
+  restoreTokens: () => {
+    let accessToken = null;
+    let refreshToken = null;
+    if (isLocalhost) {
+      accessToken = sessionStorage.getItem("accessToken");
+      refreshToken = sessionStorage.getItem("refreshToken");
+    } else {
+      accessToken = Cookies.get("accessToken") || null;
+      refreshToken = Cookies.get("refreshToken") || null;
+    }
+    set({ accessToken, refreshToken, isHydrated: true });
   },
 
   /**
-   * 세션 만료 시 자동 로그아웃 + 알림 띄우기
+   * 세션 만료 시 자동 로그아웃
    */
   logoutWithAlert: () => {
-    Cookies.remove("accessToken");
-    Cookies.remove("refreshToken");
+    if (isLocalhost) {
+      sessionStorage.removeItem("accessToken");
+      sessionStorage.removeItem("refreshToken");
+    } else {
+      Cookies.remove("accessToken");
+      Cookies.remove("refreshToken");
+    }
     set({ accessToken: null, refreshToken: null });
 
     toast({
       title: "세션 만료",
-      description: "로그인 세션이 만료되었습니다. 다시 로그인 해주세요.",
-      variant: "destructive", // 또는 warning 스타일 가능
+      description: "다시 로그인 해주세요.",
+      variant: "destructive",
     });
 
     setTimeout(() => {
-      window.location.href = "/login"; // 1~2초 후 로그인 페이지 이동
+      window.location.href = "/login";
     }, 1500);
   },
 }));

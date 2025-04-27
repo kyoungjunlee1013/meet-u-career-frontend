@@ -38,7 +38,7 @@ export const JobCard = ({
 
   return (
     <div className="group relative rounded-2xl overflow-hidden border bg-white transition-all hover:shadow-md">
-      <Link href="#" className="block">
+      <Link href={`/personal/jobs/${index}`} className="block">
         {/* 상단 고정 그라데이션 선 */}
         <div className={`h-1 w-full ${gradientClass}`} />
 
