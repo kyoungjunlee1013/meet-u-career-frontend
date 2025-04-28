@@ -95,7 +95,7 @@ export const ApplicationModal = ({
 
     try {
       await apiClient.post("/api/personal/resume/apply", {
-        jobId,
+        jobPostingId: jobId,
         resumeId: selectedResume.id,
       });
       alert("입사지원이 완료되었습니다.");

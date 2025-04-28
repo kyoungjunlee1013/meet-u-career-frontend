@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { InfoIcon } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { InfoIcon } from "lucide-react";
+import Link from "next/link";
 
 export const CompanyOverview = () => {
-  const [showTooltip, setShowTooltip] = useState<string | null>(null)
+  const [showTooltip, setShowTooltip] = useState<string | null>(null);
 
   const toggleTooltip = (id: string) => {
     if (showTooltip === id) {
-      setShowTooltip(null)
+      setShowTooltip(null);
     } else {
-      setShowTooltip(id)
+      setShowTooltip(id);
     }
-  }
+  };
 
   return (
     <div className="mb-10">
@@ -36,9 +36,9 @@ export const CompanyOverview = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="font-medium">설립 59년차</span>
+              <span className="font-medium">설립 19년차</span>
             </div>
-            <p className="text-xs text-gray-500">1963년 12월 29일 설립</p>
+            <p className="text-xs text-gray-500">2003년 12월 29일 설립</p>
           </div>
         </div>
 
@@ -63,13 +63,21 @@ export const CompanyOverview = () => {
                   strokeWidth="1.5"
                   strokeLinecap="round"
                 />
-                <path d="M20 18V20H4V18" stroke="#2365F2" strokeWidth="1.5" strokeLinecap="round" />
+                <path
+                  d="M20 18V20H4V18"
+                  stroke="#2365F2"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
               </svg>
-              <span className="font-medium">1000대기업</span>
+              <span className="font-medium">3000대기업</span>
             </div>
             <div className="text-xs text-gray-500 flex items-center justify-center">
               <span>기업규모</span>
-              <button className="text-blue-500 ml-1 relative" onClick={() => toggleTooltip("company-size")}>
+              <button
+                className="text-blue-500 ml-1 relative"
+                onClick={() => toggleTooltip("company-size")}
+              >
                 <InfoIcon size={12} />
                 {showTooltip === "company-size" && (
                   <div className="absolute z-10 w-48 p-2 bg-white border shadow-lg rounded-md text-xs text-left text-gray-700 -translate-x-1/2 left-1/2 mt-1">
@@ -113,11 +121,14 @@ export const CompanyOverview = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              <span className="font-medium">70,462 명</span>
+              <span className="font-medium">1,131 명</span>
             </div>
             <div className="text-xs text-gray-500 flex items-center justify-center">
               <span>사원수</span>
-              <button className="text-blue-500 ml-1 relative" onClick={() => toggleTooltip("employee-count")}>
+              <button
+                className="text-blue-500 ml-1 relative"
+                onClick={() => toggleTooltip("employee-count")}
+              >
                 <InfoIcon size={12} />
                 {showTooltip === "employee-count" && (
                   <div className="absolute z-10 w-48 p-2 bg-white border shadow-lg rounded-md text-xs text-left text-gray-700 -translate-x-1/2 left-1/2 mt-1">
@@ -139,35 +150,38 @@ export const CompanyOverview = () => {
             </tr>
             <tr className="border-b">
               <td className="py-3 px-4 bg-gray-50">대표자명</td>
-              <td className="py-3 px-4">정의선/이동석/무뇨스바르셀로호세안토니오</td>
+              <td className="py-3 px-4">
+                정의선/이동석/무뇨스바르셀로호세안토니오
+              </td>
             </tr>
             <tr className="border-b">
               <td className="py-3 px-4 bg-gray-50">웹사이트</td>
               <td className="py-3 px-4">
                 <Link
-                  href="https://talent.hyundai.com/main/main.hc"
+                  href="www.douzone.com"
                   className="text-blue-500 hover:underline"
                   target="_blank"
                 >
-                  https://talent.hyundai.com/main/main.hc
+                  www.douzone.com
                 </Link>
               </td>
             </tr>
             <tr className="border-b">
               <td className="py-3 px-4 bg-gray-50">사업자번호</td>
-              <td className="py-3 px-4">
-                사업자(법인)번호:220-81-02941 / 복수사업자 등록번호 및 사업자번호 확인/관리 등
-              </td>
+              <td className="py-3 px-4">220-81-02941</td>
             </tr>
             <tr>
               <td className="py-3 px-4 bg-gray-50">주소</td>
               <td className="py-3 px-4">
-                서울 서초구 헌릉로 12 <span className="text-blue-500 text-xs cursor-pointer">지도보기</span>
+                서울 서초구 헌릉로 12{" "}
+                <span className="text-blue-500 text-xs cursor-pointer">
+                  지도보기
+                </span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-  )
-}
+  );
+};

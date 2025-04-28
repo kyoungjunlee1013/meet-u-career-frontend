@@ -203,7 +203,7 @@ export const JobDetailContent = ({
                     : "text-gray-600"
                 }`}
               />
-              <span className="text-xs">{jobPosting.bookmarkCount}</span>
+              {/* <span className="text-xs">{jobPosting.bookmarkCount}</span> */}
             </button>
 
             {/* 지원하기 */}

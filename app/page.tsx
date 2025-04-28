@@ -22,7 +22,7 @@ interface ResponseProps {
 }
 
 export default function HomePage() {
-  const { userInfo, isUserInfoHydrated } = useUserStore();
+  const { userInfo } = useUserStore();
   const [popular, setPopular] = useState<JobProps[]>([]);
   const [latest, setLatest] = useState<JobProps[]>([]);
   const [mostApplied, setMostApplied] = useState<JobProps[]>([]);
@@ -46,10 +46,6 @@ export default function HomePage() {
 
     fetchData();
   }, []);
-
-  if (!isUserInfoHydrated) {
-    return null; // 아직 복구 중이면 화면 그리지 않음
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">

@@ -46,9 +46,12 @@ export const ResumeContent = () => {
           "[ResumeContent] API에서 받아온 이력서 개수:",
           res.data.data.length
         );
+
+        console.log("data : ", res.data.data);
+
         // resumeId -> id 매핑
         const mapped = res.data.data.map((item: any) => ({
-          id: item.resumeId,
+          id: item.id,
           title: item.title,
           updatedAt: item.updatedAt,
           resumeType: item.resumeType,

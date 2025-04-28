@@ -31,7 +31,7 @@ export function PersonalMyPageContent() {
     <div className="space-y-10">
       <ProfileCard
         applicationCount={data.recentApplications?.length}
-        profileImageUrl={data.profile.profileImageUrl}
+        profileImageUrl={`https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/${data.profile.profileImageUrl}`}
         name={data.account.name}
         experience={data.profile.experienceLevel}
         skills={
@@ -45,10 +45,10 @@ export function PersonalMyPageContent() {
         completeness={data.profileCompleteness}
       />
 
-      <RecentApplications
+      {/* <RecentApplications
         applications={data.recentApplications}
         summary={data.summary}
-      />
+      /> */}
 
       <RecommendedJobs
         jobs={data.recommendedJobs.map((job) => ({

@@ -35,12 +35,15 @@ export default function CreateResumePage() {
   // profile 상태 관리
   const [profile, setProfile] = useState<Profile | null>(null);
   // resumeId 상태 관리
-  const [resumeId, setResumeId] = useState<string | undefined>(searchParams.get("id") || undefined);
+  const [resumeId, setResumeId] = useState<string | undefined>(
+    searchParams.get("id") || undefined
+  );
 
   // profile 정보 가져오기
   useEffect(() => {
-    apiClient.get("/api/personal/profile/me")
-      .then(res => setProfile(res.data.data))
+    apiClient
+      .get("/api/personal/profile/me")
+      .then((res) => setProfile(res.data.data))
       .catch(() => setProfile(null));
   }, []);
 
@@ -57,11 +60,11 @@ export default function CreateResumePage() {
         <PersonalSidebar activeItem="이력서 관리" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <ResumeEditor
-  resumeType={resumeType}
-  resumeId={resumeId}
-  profile={profile}
-  isEditMode={!!resumeId}
-/>
+            resumeType={resumeType}
+            resumeId={resumeId}
+            profile={profile}
+            isEditMode={!!resumeId}
+          />
         </div>
       </div>
     </main>

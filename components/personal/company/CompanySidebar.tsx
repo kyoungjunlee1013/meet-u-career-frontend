@@ -24,9 +24,12 @@ export const CompanySidebar = ({
     <div className="bg-white rounded-lg shadow-sm border border-gray-100">
       <div className="p-4 border-b">
         <div className="flex justify-center mb-4">
-          <div className="w-32 h-12 relative">
+          <div
+            className="w-32 h-12 relative"
+            style={{ marginBottom: "80px", marginTop: "10px" }}
+          >
             <Image
-              src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg?height=48&width=128"
+              src="/images/etc/placeholder.svg?height=48&width=128"
               alt="현대자동차 로고"
               width={128}
               height={48}
@@ -34,15 +37,23 @@ export const CompanySidebar = ({
             />
           </div>
         </div>
-        <h2 className="text-base font-bold text-center">현대자동차(주)</h2>
-        <p className="text-xs text-gray-500 text-center mb-3">기업정보</p>
-        <p className="text-xs text-gray-500 mb-2">
-          설립일 및 기업 규모와 자본금 정보
+        <h2
+          className="text-base font-bold text-center"
+          style={{ marginBottom: "5px" }}
+        >
+          로이컨설팅
+        </h2>
+        <p
+          className="text-xs text-gray-500 text-center mb-3"
+          style={{ marginBottom: "10px" }}
+        >
+          기업정보
         </p>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center relative z-10">
           <button
             onClick={toggleLike}
             className="flex items-center text-xs text-gray-500 hover:text-gray-700"
+            style={{ marginLeft: "20px" }}
           >
             <Heart
               className={`w-4 h-4 mr-1 ${
@@ -52,7 +63,10 @@ export const CompanySidebar = ({
             />
             찜하기
           </button>
-          <button className="flex items-center text-xs text-gray-500 hover:text-gray-700">
+          <button
+            className="flex items-center text-xs text-gray-500 hover:text-gray-700"
+            style={{ marginRight: "30px" }}
+          >
             <Share2 className="w-4 h-4 mr-1" size={16} />
             공유
           </button>
@@ -85,32 +99,7 @@ export const CompanySidebar = ({
               기업소개
             </Link>
           </li>
-          <li>
-            <Link
-              href={`/personal/company/${companyId}/reviews`}
-              className={`flex items-center px-3 py-2 text-sm rounded-md ${
-                activeTab === "reviews"
-                  ? "bg-blue-50 text-blue-600 font-medium"
-                  : "text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <svg
-                className="w-5 h-5 mr-2 text-gray-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              기업리뷰
-              <span className="ml-auto bg-blue-100 text-blue-600 text-xs px-1.5 py-0.5 rounded-full">
-                NEW
-              </span>
-            </Link>
-          </li>
+
           <li>
             <Link
               href={`/personal/company/${companyId}/salary`}
@@ -136,7 +125,7 @@ export const CompanySidebar = ({
           </li>
           <li>
             <Link
-              href={`/personal/company/${companyId}/jobs`}
+              href={`/personal/jobs/319`}
               className={`flex items-center px-3 py-2 text-sm rounded-md ${
                 activeTab === "jobs"
                   ? "bg-blue-50 text-blue-600 font-medium"

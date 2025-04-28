@@ -37,8 +37,9 @@ export function ProfileCard({
                   : "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
               }
               alt="프로필 이미지"
-              fill
-              className="object-cover"
+              width={96}
+              height={96}
+              className="object-contain"
             />
           </div>
           <div>
@@ -97,9 +98,9 @@ export function ProfileCard({
 
 function StatBox({ label, count }: { label: string; count: number }) {
   return (
-    <div className="flex flex-col items-center py-4">
-      <span className="text-lg font-bold text-gray-900">{count}</span>
-      <span className="text-xs text-gray-500 mt-1">{label}</span>
+    <div className="flex flex-col items-center py-2">
+      <span className="text-2xl font-bold text-gray-900">{count}</span>
+      <span className="text-sm text-gray-500 mt-2">{label}</span>
     </div>
   );
 }

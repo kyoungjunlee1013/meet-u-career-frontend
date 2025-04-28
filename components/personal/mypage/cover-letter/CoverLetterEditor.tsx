@@ -103,13 +103,15 @@ export function CoverLetterEditor({
       });
       return;
     }
-    if (sections.some((s) => !s.content.trim())) {
-      toast({
-        title: "모든 항목의 본문을 입력해주세요.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // ----------- 확인할 것
+    // if (sections.some((s) => !s.content.trim())) {
+    //   toast({
+    //     title: "모든 항목의 본문을 입력해주세요.",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
+    // ----------- 확인할 것
     setIsSaving(true);
     setSaveProgress(0);
     try {
