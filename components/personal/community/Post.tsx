@@ -441,10 +441,7 @@ export const Post = ({ post }: PostProps) => {
         </button>
 
         {/* 공유 버튼 */}
-        <button
-          className="ml-auto text-gray-500 hover:text-gray-700"
-          onClick={handleShare}
-        >
+        <button className="ml-auto text-gray-500 hover:text-gray-700">
           <Share2 className="h-5 w-5" />
         </button>
       </div>

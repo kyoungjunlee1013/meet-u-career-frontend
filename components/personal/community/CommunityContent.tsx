@@ -55,25 +55,34 @@ export const CommunityContent = () => {
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-6">
       <div className="flex flex-col md:flex-row gap-6">
+        {/* 왼쪽 - UserProfile (고정) */}
         {userInfo && (
           <div className="w-full md:w-64">
-            <UserProfile />
+            <div className="md:sticky md:top-24">
+              <UserProfile />
+            </div>
           </div>
         )}
-        <div className="flex-1">
+
+        {/* 가운데 - PostFeed (스크롤됨) */}
+        <div className="flex-1 min-h-screen">
           <PostFeed
             selectedHashtags={selectedHashtags}
             onOpenFilterModal={handleOpenFilterModal}
             onOpenCreatePostModal={handleOpenCreatePostModal}
           />
         </div>
+
+        {/* 오른쪽 - NewsSidebar + PopularPosts (고정) */}
         <div className="w-full md:w-64 flex flex-col gap-6">
-          <NewsSidebar selectedTags={selectedHashtags} />
-          <PopularPosts />{" "}
-          {/* 뉴스 사이드바 바로 아래에 인기글 컴포넌트 추가 */}
+          <div className="md:sticky md:top-24 flex flex-col gap-6">
+            <NewsSidebar selectedTags={selectedHashtags} />
+            <PopularPosts />
+          </div>
         </div>
       </div>
 
+      {/* 필터 모달 */}
       {isFilterModalOpen && (
         <HashtagFilterModal
           onClose={handleCloseFilterModal}
@@ -82,11 +91,12 @@ export const CommunityContent = () => {
         />
       )}
 
+      {/* 글 작성 모달 */}
       {isCreatePostModalOpen && (
         <CreatePostModal
           onClose={handleCloseCreatePostModal}
-          profileImageUrl="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png" // 기본 프로필 이미지
-          userName="User1" // 기본 사용자 이름
+          profileImageUrl="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
+          userName="User1"
         />
       )}
     </div>

@@ -47,7 +47,7 @@ export const ApplicationsTable = ({ data }: ApplicationsTableProps) => {
           {data.length === 0 ? (
             <tr>
               <td colSpan={6} className="text-center py-8 text-gray-400">
-                해당 상태의 지원 내역이 없습니다.
+                지원 내역이 없습니다.
               </td>
             </tr>
           ) : (

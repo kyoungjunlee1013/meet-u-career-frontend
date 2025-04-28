@@ -28,7 +28,7 @@ export function NotificationDropdown() {
   // 개별 알림 읽음 처리
   const handleRead = async (id: number) => {
     try {
-      await apiClient.post(`/api/notification/read`, { id });
+      await apiClient.post(`/api/notification/read`, { notificationId: id });
       markAsRead(id);
     } catch (error) {
       console.error("알림 읽음 처리 실패:", error);

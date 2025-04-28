@@ -21,7 +21,7 @@ export function InterviewStatusTab({
   if (!interviews.length) {
     return (
       <div className="text-center text-gray-400 py-8">
-        해당 상태의 면접 일정이 없습니다.
+        면접 일정이 없습니다.
       </div>
     );
   }

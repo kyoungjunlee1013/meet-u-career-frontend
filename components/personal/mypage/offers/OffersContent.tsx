@@ -55,7 +55,8 @@ export default function OffersContent() {
       })
       .catch((err) => {
         console.error(err);
-        setError("오퍼 데이터를 불러올 수 없습니다.");
+        // setError("데이터를 불러오는 중 오류가 발생했습니다.");
+        setError("받은 제안이 없습니다.");
       })
       .finally(() => setLoading(false));
   }, []);
@@ -107,7 +108,7 @@ export default function OffersContent() {
         {loading ? (
           <div className="py-8 text-center text-gray-400">불러오는 중...</div>
         ) : error ? (
-          <div className="py-8 text-center text-red-500">{error}</div>
+          <div className="py-8 text-center text-gray-400">{error}</div>
         ) : (
           <OffersList
             key={`${activeTab}-${offers.map((o) => o.status).join(",")}`} // 리렌더 보장
