@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import Image from "next/image"
+import Image from "next/image";
 
 interface Props {
-  reviewCount: number
+  reviewCount: number;
 }
 
 export const PromotionalBanner = ({ reviewCount }: Props) => {
@@ -15,7 +15,8 @@ export const PromotionalBanner = ({ reviewCount }: Props) => {
             현재 {reviewCount.toLocaleString()}개의 기업리뷰가 등록됐어요!
           </h3>
           <p className="text-white text-sm">
-            당신의 회사 경험이 다른 구직자들에게 도움이 될 거예요. <span className="underline">지금 참여하기</span>
+            당신의 회사 경험이 다른 구직자들에게 도움이 될 거예요.{" "}
+            <span className="underline">지금 참여하기</span>
           </p>
         </div>
         <div className="absolute right-0 bottom-0">
@@ -28,7 +29,9 @@ export const PromotionalBanner = ({ reviewCount }: Props) => {
           />
         </div>
       </div>
-      <div className="absolute top-4 right-4 bg-white rounded-full px-3 py-1 text-xs">리뷰어에게 상품 ✓</div>
+      <div className="absolute top-4 right-4 bg-white rounded-full px-3 py-1 text-xs">
+        리뷰어에게 상품 ✓
+      </div>
     </div>
-  )
-}
+  );
+};

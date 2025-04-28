@@ -1,22 +1,20 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { X, ImageIcon } from "lucide-react"
-import axios from "axios"
-import { useUserStore } from "@/store/useUserStore"
+import { useState, useRef, useEffect } from "react";
+import { X, ImageIcon } from "lucide-react";
+import { useUserStore } from "@/store/useUserStore";
+import { apiClient } from "@/api/apiClient";
 
 interface CreatePostModalProps {
-  onClose: () => void
-  profileImageUrl: string
-  userName: string
-  initialContent?: string
-  initialTag?: string | null
-  initialImageUrl?: string | null
-  initialImageKey?: string | null
-  isEditMode?: boolean
-  postId?: number
-
-
+  onClose: () => void;
+  profileImageUrl: string;
+  userName: string;
+  initialContent?: string;
+  initialTag?: string | null;
+  initialImageUrl?: string | null;
+  initialImageKey?: string | null;
+  isEditMode?: boolean;
+  postId?: number;
 }
 
 export const CreatePostModal = ({
@@ -31,48 +29,52 @@ export const CreatePostModal = ({
   postId,
 }: CreatePostModalProps) => {
   const { userInfo } = useUserStore();
-  const [content, setContent] = useState(initialContent)
-  const [selectedTag, setSelectedTag] = useState<string | null>(initialTag)
-  const [selectedImage, setSelectedImage] = useState<File | null>(null)
-  const [previewImage, setPreviewImage] = useState<string | null>(initialImageUrl)
-  const [imageKey, setImageKey] = useState<string | null>(initialImageKey)
+  const [content, setContent] = useState(initialContent);
+  const [selectedTag, setSelectedTag] = useState<string | null>(initialTag);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(
+    initialImageUrl
+  );
+  const [imageKey, setImageKey] = useState<string | null>(initialImageKey);
 
-
-  const modalRef = useRef<HTMLDivElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const TAG_NAME_TO_ID: Record<string, number> = {
-    "이직": 1,
-    "연봉": 2,
-    "면접": 3,
-    "취업": 4,
-    "자기소개서": 5,
-    "커리어": 6,
-    "자격증": 7,
-  }
+    이직: 1,
+    연봉: 2,
+    면접: 3,
+    취업: 4,
+    자기소개서: 5,
+    커리어: 6,
+    자격증: 7,
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose()
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
+    };
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [onClose])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
 
   // 파일명 추출 함수
   const extractFileName = (url: string) => {
     try {
-      const decodedUrl = decodeURIComponent(url)
-      const parts = decodedUrl.split("/")
-      return parts[parts.length - 1].split("?")[0]
+      const decodedUrl = decodeURIComponent(url);
+      const parts = decodedUrl.split("/");
+      return parts[parts.length - 1].split("?")[0];
     } catch {
-      return "이미지 파일"
+      return "이미지 파일";
     }
-  }
+  };
 
   const handlePostSubmit = async () => {
     if (!content.trim()) {
@@ -99,7 +101,12 @@ export const CreatePostModal = ({
         if (selectedImage) {
           formData.append("image", selectedImage);
         } else if (previewImage && imageKey) {
-          if (!previewImage.includes("https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png") && !previewImage.includes("generic-app-icon.png")) {
+          if (
+            !previewImage.includes(
+              "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
+            ) &&
+            !previewImage.includes("generic-app-icon.png")
+          ) {
             json.postImageKey = imageKey;
           }
         } else {
@@ -108,8 +115,9 @@ export const CreatePostModal = ({
         }
       }
 
-
-      const blob = new Blob([JSON.stringify(json)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(json)], {
+        type: "application/json",
+      });
       formData.append("data", blob);
 
       if (!isEditMode && selectedImage) {
@@ -117,16 +125,16 @@ export const CreatePostModal = ({
       }
       console.log("FormData 보내기 직전:", [...formData.entries()]);
 
-      const token = sessionStorage.getItem('accessToken');
+      const token = sessionStorage.getItem("accessToken");
       if (isEditMode) {
-        await axios.post("/api/personal/community/posts/edit", formData, {
+        await apiClient.post("/api/personal/community/posts/edit", formData, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         alert("게시글이 수정되었습니다!");
       } else {
-        await axios.post("/api/personal/community/posts/create", formData, {
+        await apiClient.post("/api/personal/community/posts/create", formData, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -142,28 +150,41 @@ export const CreatePostModal = ({
     }
   };
 
-
-
   const handleTagSelect = (tag: string) => {
-    setSelectedTag(tag)
-  }
+    setSelectedTag(tag);
+  };
 
   const handleImageUploadClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  }
+  };
 
-  const availableTags = ["면접", "이직", "연봉", "취업", "자기소개서", "커리어", "자격증"]
+  const availableTags = [
+    "면접",
+    "이직",
+    "연봉",
+    "취업",
+    "자기소개서",
+    "커리어",
+    "자격증",
+  ];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div ref={modalRef} className="bg-white rounded-lg w-full max-w-md shadow-lg">
-
+      <div
+        ref={modalRef}
+        className="bg-white rounded-lg w-full max-w-md shadow-lg"
+      >
         {/* 상단: 제목 + 닫기 버튼 */}
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-lg font-medium">{isEditMode ? "게시글 수정" : "게시글 작성"}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <h2 className="text-lg font-medium">
+            {isEditMode ? "게시글 수정" : "게시글 작성"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -171,7 +192,10 @@ export const CreatePostModal = ({
         {/* 프로필 + 닉네임 */}
         <div className="flex items-center gap-3 p-4">
           <img
-            src={profileImageUrl || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"}
+            src={
+              profileImageUrl ||
+              "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
+            }
             alt="Profile"
             className="w-10 h-10 rounded-full object-cover"
           />
@@ -196,10 +220,11 @@ export const CreatePostModal = ({
               <button
                 key={tag}
                 onClick={() => handleTagSelect(tag)}
-                className={`px-3 py-1 rounded-full text-sm ${selectedTag === tag
-                  ? "bg-blue-100 text-blue-700"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  selectedTag === tag
+                    ? "bg-blue-100 text-blue-700"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
                 #{tag}
               </button>
@@ -211,12 +236,15 @@ export const CreatePostModal = ({
         <div className="p-4 flex flex-col gap-2">
           {/* 기존 업로드된 이미지 표시 */}
           {previewImage && !selectedImage && (
-            <div className="flex items-center text-xs text-gray-600 p-2 bg-gray-50 rounded-md justify-between overflow-x-auto max-w-full">
-              <span className="truncate">현재 이미지: {extractFileName(previewImage)}</span>
-              <button onClick={() => {
-                setPreviewImage(null);
-                setImageKey(null); // 이미지 삭제 시 키도 함께 삭제
-              }} className="text-red-500 ml-2">
+            <div className="flex items-center text-xs text-gray-600 p-2 bg-gray-50 rounded-md justify-between">
+              <span>현재 이미지: {extractFileName(previewImage)}</span>
+              <button
+                onClick={() => {
+                  setPreviewImage(null);
+                  setImageKey(null); // 이미지 삭제 시 키도 함께 삭제
+                }}
+                className="text-red-500 ml-2"
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -246,7 +274,10 @@ export const CreatePostModal = ({
             />
 
             {/* 이미지 첨부 버튼 */}
-            <button onClick={handleImageUploadClick} className="flex items-center text-gray-700">
+            <button
+              onClick={handleImageUploadClick}
+              className="flex items-center text-gray-700"
+            >
               <ImageIcon className="h-5 w-5 mr-1" />
               <span className="text-sm">이미지 첨부</span>
             </button>
@@ -259,10 +290,8 @@ export const CreatePostModal = ({
               {isEditMode ? "수정하기" : "게시하기"}
             </button>
           </div>
-
         </div>
-
       </div>
     </div>
-  )
-}
+  );
+};

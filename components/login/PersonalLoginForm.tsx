@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Link from "next/link";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 import { fetchMyInfo } from "@/api/fetchMyInfo";
+import { apiClient } from "@/api/apiClient";
 
 export const PersonalLoginForm = () => {
   const router = useRouter();
@@ -43,7 +43,7 @@ export const PersonalLoginForm = () => {
     if (hasError) return;
 
     try {
-      const response = await axios.post(
+      const response = await apiClient.post(
         "/api/personal/auth/login",
         {
           userId,
@@ -112,9 +112,11 @@ export const PersonalLoginForm = () => {
             setUserId(e.target.value);
             if (userIdError) setUserIdError("");
           }}
-          className={`w-full px-3 py-2.5 border ${userIdError ? "border-red-500" : "border-gray-300"
-            } rounded-md focus:outline-none focus:ring-1 ${userIdError ? "focus:ring-red-500" : "focus:ring-blue-500"
-            }`}
+          className={`w-full px-3 py-2.5 border ${
+            userIdError ? "border-red-500" : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-1 ${
+            userIdError ? "focus:ring-red-500" : "focus:ring-blue-500"
+          }`}
         />
         {userIdError && (
           <p className="text-red-500 text-xs mt-1">{userIdError}</p>
@@ -138,9 +140,11 @@ export const PersonalLoginForm = () => {
               handleLogin();
             }
           }}
-          className={`w-full px-3 py-2.5 border ${passwordError ? "border-red-500" : "border-gray-300"
-            } rounded-md focus:outline-none focus:ring-1 ${passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"
-            }`}
+          className={`w-full px-3 py-2.5 border ${
+            passwordError ? "border-red-500" : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-1 ${
+            passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"
+          }`}
         />
         {passwordError && (
           <p className="text-red-500 text-xs mt-1">{passwordError}</p>

@@ -1,20 +1,24 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { PromotionalCarousel } from "./PromotionalCarousel"
-import { BusinessRegistrationForm } from "./BusinessRegistrationForm"
+import { useState } from "react";
+import Link from "next/link";
+import { PromotionalCarousel } from "./PromotionalCarousel";
+import { BusinessRegistrationForm } from "./BusinessRegistrationForm";
 
 interface RegisterTabsProps {
-  onCreateIdClick: () => void
+  onCreateIdClick: () => void;
 }
 
 export const RegisterTabs = ({ onCreateIdClick }: RegisterTabsProps) => {
-  const [activeTab, setActiveTab] = useState<"personal" | "business">("personal")
+  const [activeTab, setActiveTab] = useState<string>("personal");
 
   const handleTabChange = (tab: "personal" | "business") => {
-    setActiveTab(tab)
-  }
+    setActiveTab(tab);
+
+    if (tab === "personal") {
+      onCreateIdClick();
+    }
+  };
 
   return (
     <div className="flex flex-col md:flex-row h-full min-h-[calc(100vh-56px)]">
@@ -29,9 +33,9 @@ export const RegisterTabs = ({ onCreateIdClick }: RegisterTabsProps) => {
             <div className="max-w-md w-full px-6">
               <div className="flex border-b mb-10">
                 <button
-                  className={`flex-1 py-4 text-center font-medium ${
+                  className={`flex-1 py-4 text-center font-medium text-xl ${
                     activeTab === "personal"
-                      ? "text-blue-600 border-b-2 border-blue-600"
+                      ? "text-blue-600 border-b-4 border-blue-600"
                       : "text-gray-500 hover:bg-gray-50"
                   }`}
                   onClick={() => handleTabChange("personal")}
@@ -39,9 +43,9 @@ export const RegisterTabs = ({ onCreateIdClick }: RegisterTabsProps) => {
                   개인회원
                 </button>
                 <button
-                  className={`flex-1 py-4 text-center font-medium ${
+                  className={`flex-1 py-4 text-center font-medium text-xl ${
                     activeTab === "business"
-                      ? "text-blue-600 border-b-2 border-blue-600"
+                      ? "text-blue-600 border-b-4 border-blue-600"
                       : "text-gray-500 hover:bg-gray-50"
                   }`}
                   onClick={() => handleTabChange("business")}
@@ -50,60 +54,11 @@ export const RegisterTabs = ({ onCreateIdClick }: RegisterTabsProps) => {
                 </button>
               </div>
 
-              <div className="mb-10">
-                <p className="text-center text-sm text-gray-600 mb-6">소셜 계정으로 간편 로그인</p>
-                <div className="flex justify-center gap-4 mb-10">
-                  <Link
-                    href="/auth/naver"
-                    className="w-12 h-12 rounded-full bg-[#03C75A] flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                    aria-label="네이버 로그인"
-                  >
-                    <span className="font-bold text-sm">N</span>
-                  </Link>
-
-                  <Link
-                    href="/auth/kakao"
-                    className="w-12 h-12 rounded-full bg-[#FEE500] flex items-center justify-center text-black hover:opacity-90 transition-opacity"
-                    aria-label="카카오 로그인"
-                  >
-                    <span className="font-bold text-sm">K</span>
-                  </Link>
-
-                  <Link
-                    href="/auth/google"
-                    className="w-12 h-12 rounded-full bg-white border flex items-center justify-center text-black hover:opacity-90 transition-opacity"
-                    aria-label="구글 로그인"
-                  >
-                    <span className="font-bold text-sm">G</span>
-                  </Link>
-
-                  <Link
-                    href="/auth/facebook"
-                    className="w-12 h-12 rounded-full bg-[#1877F2] flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                    aria-label="페이스북 로그인"
-                  >
-                    <span className="font-bold text-sm">F</span>
-                  </Link>
-
-                  <Link
-                    href="/auth/apple"
-                    className="w-12 h-12 rounded-full bg-black flex items-center justify-center text-white hover:opacity-90 transition-opacity"
-                    aria-label="애플 로그인"
-                  >
-                    <span className="font-bold text-sm">A</span>
-                  </Link>
-                </div>
-              </div>
-
-              <button
-                onClick={onCreateIdClick}
-                className="w-full py-3.5 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors text-sm font-medium"
-              >
-                사람인 통합 아이디 만들기
-              </button>
-
               <div className="mt-6 text-center">
-                <Link href="/login" className="text-xs text-gray-500 hover:underline">
+                <Link
+                  href="/login"
+                  className="text-mds text-gray-500 hover:underline"
+                >
                   이미 계정이 있나요? 로그인
                 </Link>
               </div>
@@ -117,5 +72,5 @@ export const RegisterTabs = ({ onCreateIdClick }: RegisterTabsProps) => {
         </>
       )}
     </div>
-  )
-}
+  );
+};

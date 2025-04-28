@@ -6,6 +6,8 @@ interface UserInfo {
   name: string;
   profileImage?: string;
   role: "PERSONAL" | "BUSINESS" | "ADMIN" | "SUPER";
+  companyName: string;
+  position: string;
 }
 
 interface UserStoreState {

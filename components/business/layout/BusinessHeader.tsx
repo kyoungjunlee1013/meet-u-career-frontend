@@ -1,38 +1,51 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Bell,
   Building2,
   ChevronDown,
   LogOut,
   MessageSquare,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useEffect, useRef, useState, MouseEvent as ReactMouseEvent } from "react"
-import { NotificationDropdown } from "./NotificationDropdown"
-import { ChatDropdown } from "./ChatDropdown"
-import Image from "next/image"
-import { useNotificationStore } from "@/store/useNotificationStore"
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  useEffect,
+  useRef,
+  useState,
+  MouseEvent as ReactMouseEvent,
+} from "react";
+import { NotificationDropdown } from "./NotificationDropdown";
+import { ChatDropdown } from "./ChatDropdown";
+import Image from "next/image";
+import { useNotificationStore } from "@/store/useNotificationStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import { apiClient } from "@/api/apiClient";
+import { useUserStore } from "@/store/useUserStore";
 
 interface NavItem {
-  label: string
-  href: string
+  label: string;
+  href: string;
 }
 
 export const BusinessHeader = () => {
-  const pathname: string = usePathname()
-  const router = useRouter()
+  const pathname: string = usePathname();
+  const router = useRouter();
 
-  const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [isNotificationOpen, setIsNotificationOpen] = useState<boolean>(false)
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(false)
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState<boolean>(false);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+
+  const { clearTokens } = useAuthStore();
+  const { userInfo, clearUserInfo } = useUserStore();
+  const { clearNotifications } = useNotificationStore(); // 알림 초기화 추가
 
   const { notifications, isLoaded } = useNotificationStore();
-  const hasUnreadNotification = isLoaded && notifications.some((n) => n.isRead === 0);
+  const hasUnreadNotification =
+    isLoaded && notifications.some((n) => n.isRead === 0);
 
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const navItems: NavItem[] = [
     { label: "대시보드", href: "/business/dashboard" },
@@ -40,38 +53,63 @@ export const BusinessHeader = () => {
     { label: "지원자 관리", href: "/business/applicants" },
     { label: "인재 검색", href: "/business/talents" },
     { label: "일정 관리", href: "/business/schedule" },
-  ]
+  ];
 
-  const handleLogout = (): void => {
-    console.log("Logging out...")
-    router.push("/login")
-  }
+  const handleLogout = async () => {
+    try {
+      // 서버에 로그아웃 요청 (refreshToken 삭제)
+      await apiClient.post(
+        "/api/personal/auth/logout",
+        {},
+        { withCredentials: true }
+      );
+
+      // 클라이언트에 저장된 토큰, 유저정보, 알림 초기화
+      clearTokens();
+      clearUserInfo();
+      clearNotifications(); // 알림 초기화 호출
+
+      // 로그인 페이지로 이동
+      router.push("/login");
+    } catch (error) {
+      console.error("로그아웃 실패", error);
+
+      // 강제 클리어 후 이동
+      clearTokens();
+      clearUserInfo();
+      clearNotifications();
+      router.push("/login");
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent): void => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
       }
-    }
+    };
 
     const handleEscKey = (event: KeyboardEvent): void => {
       if (event.key === "Escape") {
-        setIsOpen(false)
-        setIsNotificationOpen(false)
-        setIsChatOpen(false)
+        setIsOpen(false);
+        setIsNotificationOpen(false);
+        setIsChatOpen(false);
       }
-    }
+    };
 
     if (isOpen || isNotificationOpen || isChatOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
-      document.addEventListener("keydown", handleEscKey)
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscKey);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-      document.removeEventListener("keydown", handleEscKey)
-    }
-  }, [isOpen, isNotificationOpen, isChatOpen])
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscKey);
+    };
+  }, [isOpen, isNotificationOpen, isChatOpen]);
 
   return (
     <header className="sticky top-0 z-50 bg-[#1a3365] text-white py-3 px-6">
@@ -97,7 +135,7 @@ export const BusinessHeader = () => {
                       "text-sm font-medium hover:text-white/90 transition-colors",
                       pathname.startsWith(item.href)
                         ? "border-b-2 border-white pb-1"
-                        : "text-white/80",
+                        : "text-white/80"
                     )}
                   >
                     {item.label}
@@ -114,10 +152,10 @@ export const BusinessHeader = () => {
           <div className="relative">
             <button
               onClick={(e: ReactMouseEvent) => {
-                e.stopPropagation()
-                setIsNotificationOpen((prev) => !prev)
-                setIsChatOpen(false)
-                setIsOpen(false)
+                e.stopPropagation();
+                setIsNotificationOpen((prev) => !prev);
+                setIsChatOpen(false);
+                setIsOpen(false);
               }}
               className="focus:outline-none focus:ring-2 focus:ring-white/30 rounded-full p-1"
               aria-label="알림"
@@ -137,10 +175,10 @@ export const BusinessHeader = () => {
           <div className="relative">
             <button
               onClick={(e: ReactMouseEvent) => {
-                e.stopPropagation()
-                setIsChatOpen((prev) => !prev)
-                setIsNotificationOpen(false)
-                setIsOpen(false)
+                e.stopPropagation();
+                setIsChatOpen((prev) => !prev);
+                setIsNotificationOpen(false);
+                setIsOpen(false);
               }}
               className="focus:outline-none focus:ring-2 focus:ring-white/30 rounded-full p-1"
               aria-label="메시지"
@@ -165,12 +203,12 @@ export const BusinessHeader = () => {
               aria-expanded={isOpen}
               aria-haspopup="true"
             >
-              <span className="text-white/80">(주)서울인</span>
-              <span className="font-medium">김채원님</span>
+              <span className="text-white/80">{userInfo?.companyName}</span>
+              <span className="font-medium">{userInfo?.name}</span>
               <ChevronDown
                 className={cn(
                   "h-4 w-4 text-white/80 transition-transform duration-200",
-                  isOpen ? "rotate-180" : "",
+                  isOpen ? "rotate-180" : ""
                 )}
               />
             </button>
@@ -181,16 +219,20 @@ export const BusinessHeader = () => {
                 role="menu"
               >
                 <div className="py-1 border-b border-gray-100">
-                  <div className="px-4 py-2 text-sm text-gray-700 font-medium">김채원님</div>
-                  <div className="px-4 py-1 text-xs text-gray-500">(주)서울인 - 인사팀장</div>
+                  <div className="px-4 py-2 text-sm text-gray-700 font-medium">
+                    {userInfo?.name}님
+                  </div>
+                  <div className="px-4 py-1 text-xs text-gray-500">
+                    {userInfo?.companyName} - {userInfo?.position}
+                  </div>
                 </div>
                 <div className="py-1">
                   <button
                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     role="menuitem"
                     onClick={() => {
-                      setIsOpen(false)
-                      router.push("/business/profile")
+                      setIsOpen(false);
+                      router.push("/business/profile");
                     }}
                   >
                     <Building2 className="mr-2 h-4 w-4" />
@@ -199,11 +241,11 @@ export const BusinessHeader = () => {
                 </div>
                 <div className="py-1 border-t border-gray-100">
                   <button
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
                     role="menuitem"
                     onClick={handleLogout}
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
+                    <LogOut size={16} className="mr-2" />
                     로그아웃
                   </button>
                 </div>
@@ -213,5 +255,5 @@ export const BusinessHeader = () => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};

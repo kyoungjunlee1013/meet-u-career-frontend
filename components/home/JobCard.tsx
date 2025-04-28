@@ -25,7 +25,9 @@ export const JobCard = ({
   useEffect(() => {
     if (!thumbnailUrl || thumbnailUrl.trim() === "") {
       const randomNumber = Math.floor(Math.random() * 15) + 1;
-      setRandomThumbnail(`https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/thumbnail/thumbnail_${randomNumber}.jpg`);
+      setRandomThumbnail(
+        `https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/thumbnail/thumbnail_${randomNumber}.jpg`
+      );
     }
   }, [thumbnailUrl]);
 
@@ -69,15 +71,15 @@ export const JobCard = ({
         </div>
 
         {/* 하단 해시태그 + D-Day + 별 */}
-        <div className="flex justify-between items-center px-3 py-2 bg-black/70 text-white text-xs">
+        <div className="flex justify-between items-center px-3 py-2 text-white text-xs">
           {hashtag ? (
             <div className="truncate">#{hashtag}</div>
           ) : (
             <div /> // 해시태그 없으면 비워서 공간 맞춤
           )}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 text-red-600">
             <span>{dDay}</span>
-            <button className="text-white">
+            {/* <button className="text-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -90,7 +92,7 @@ export const JobCard = ({
               >
                 <path d="M12 2c.4 0 .8.2 1 .6l2.1 4.2 4.6.7c.8.1 1.1 1.1.5 1.7l-3.3 3.2.8 4.5c.1.8-.7 1.4-1.4 1l-4-2.1-4 2.1c-.7.4-1.5-.2-1.4-1l.8-4.5-3.3-3.2c-.6-.6-.3-1.6.5-1.7l4.6-.7L11 2.6c.2-.4.6-.6 1-.6z" />
               </svg>
-            </button>
+            </button> */}
           </div>
         </div>
       </Link>

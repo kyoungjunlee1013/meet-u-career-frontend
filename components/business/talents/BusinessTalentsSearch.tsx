@@ -1,57 +1,55 @@
-"use client"
-
-import { BusinessHeader } from "@/components/business/layout/BusinessHeader"
-import { TalentsHeader } from "./TalentsHeader"
-import { TalentsSearch } from "./TalentsSearch"
-import { TalentsFilter } from "./TalentsFilter"
-import { TalentsGrid } from "./TalentsGrid"
-import { useState, useEffect } from "react"
-import axios from "axios"
+import { useState, useEffect } from "react";
+import { apiClient } from "@/api/apiClient";
+import { TalentsGrid } from "./TalentsGrid";
+import { TalentsFilter } from "./TalentsFilter";
+import { BusinessHeader } from "../layout/BusinessHeader";
+import { TalentsHeader } from "./TalentsHeader";
+import { TalentsSearch } from "./TalentsSearch";
 
 // Filter state type
-type DateRange = '' | '1w' | '1m' | '3m'
+type DateRange = "" | "1w" | "1m" | "3m";
 interface FilterState {
-  location: string
-  experience: string[]
-  education: string
-  employmentType: string[]
-  salary: number[]
-  applyDate: DateRange
+  location: string;
+  experience: string[];
+  education: string;
+  employmentType: string[];
+  salary: number[];
+  applyDate: DateRange;
 }
 
 // Backend DTO for talent
 interface TalentDto {
-  id: number
-  name: string
-  title: string
-  location: string
-  experience: string
-  education: string
-  skills: string[]
-  moreSkills: number
-  description: string
-  profileImageKey: string
+  id: number;
+  name: string;
+  title: string;
+  location: string;
+  experience: string;
+  education: string;
+  skills: string[];
+  moreSkills: number;
+  description: string;
+  profileImageKey: string;
 }
 
 // API response wrapper
 interface ApiResult<T> {
-  code: number
-  message: string
-  count: number
-  data: T
+  code: number;
+  message: string;
+  count: number;
+  data: T;
 }
 
 // Front-end Model for talent
 interface TalentModel extends TalentDto {
-  employmentType: string
-  salary: number
-  applyDate: string
-  bookmarked: boolean
+  employmentType: string;
+  salary: number;
+  applyDate: string;
+  bookmarked: boolean;
 }
 
 export const BusinessTalentsSearch = () => {
-  const [isFilterOpen, setIsFilterOpen] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<FilterState>({
     location: "",
     experience: [], // ["0-2", "3-5", "5+"]
@@ -59,26 +57,34 @@ export const BusinessTalentsSearch = () => {
     employmentType: [], // ["정규직", "비정규직", "계약직"]
     salary: [0, 15000],
     applyDate: "",
-  })
+  });
 
   const handleFilterChange = (newFilters: Partial<FilterState>) =>
-    setFilters(f => ({ ...f, ...newFilters }))
-  const handleFilterReset = () => setFilters({
-    location: "",
-    experience: [],
-    education: "",
-    employmentType: [],
-    salary: [0, 15000],
-    applyDate: "",
-  })
+    setFilters((f) => ({ ...f, ...newFilters }));
+  const handleFilterReset = () =>
+    setFilters({
+      location: "",
+      experience: [],
+      education: "",
+      employmentType: [],
+      salary: [0, 15000],
+      applyDate: "",
+    });
 
-  // Fetch talents from backend
-  const [talents, setTalents] = useState<TalentModel[]>([])
+  // Talents data with loading and error handling
+  const [talents, setTalents] = useState<TalentModel[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    axios.get<ApiResult<TalentDto[]>>("/business/talents")
-      .then(response => {
-        const dtos = response.data.data
-        const enriched = dtos.map(d => ({
+    const fetchTalents = async () => {
+      setLoading(true); // Start loading
+      try {
+        const response = await apiClient.get<ApiResult<TalentDto[]>>(
+          "/business/talents"
+        );
+        const dtos = response.data.data;
+        const enriched = dtos.map((d) => ({
           id: d.id,
           name: d.name,
           title: d.title,
@@ -89,15 +95,22 @@ export const BusinessTalentsSearch = () => {
           moreSkills: d.moreSkills,
           profileImageKey: d.profileImageKey,
           description: d.description,
-          employmentType: '',
+          employmentType: "",
           salary: 0,
-          applyDate: '',
+          applyDate: "",
           bookmarked: false,
-        }))
-        setTalents(enriched)
-      })
-      .catch(console.error)
-  }, [])
+        }));
+        setTalents(enriched);
+      } catch (err) {
+        console.error(err);
+        setError("인재 목록을 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false); // End loading
+      }
+    };
+
+    fetchTalents();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -123,10 +136,23 @@ export const BusinessTalentsSearch = () => {
           )}
 
           <div className="flex-1">
-            <TalentsGrid talents={talents} searchQuery={searchQuery} filters={filters} />
+            {/* 로딩 상태, 에러 상태, 그리고 정상 데이터 상태 처리 */}
+            {loading ? (
+              <div className="py-8 text-center text-gray-400">
+                불러오는 중...
+              </div>
+            ) : error ? (
+              <div className="py-8 text-center text-red-500">{error}</div>
+            ) : (
+              <TalentsGrid
+                talents={talents}
+                searchQuery={searchQuery}
+                filters={filters}
+              />
+            )}
           </div>
         </div>
       </main>
     </div>
-  )
-}
+  );
+};

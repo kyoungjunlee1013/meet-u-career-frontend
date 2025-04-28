@@ -72,7 +72,7 @@ export function ResumeBasicInfoCard({ resumeData, setResumeData }: ResumeBasicIn
         <div className="flex flex-col items-center">
           <div className="relative w-32 h-32 rounded-md overflow-hidden bg-gray-200 mb-2">
             <Image
-              src={resumeData.profileImage || "/vibrant-street-market.png"}
+              src={resumeData.profileImage || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"}
               alt="Profile"
               width={128}
               height={128}

@@ -1,7 +1,9 @@
-import { Info, X } from "lucide-react";
+"use client";
+
 import { useEffect, useState } from "react";
-import axios from "axios";
-import React from "react";
+import { Loader2 } from "lucide-react";
+import { apiClient } from "@/api/apiClient";
+import { Info, X } from "lucide-react";
 
 export interface Log {
   id: string;
@@ -45,16 +47,25 @@ export default function LogsTable({ filter }: LogsTableProps) {
   const [selectedLog, setSelectedLog] = useState<Log | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    axios
-      .get("/api/admin/logs")
-      .then((res) => setLogs(res.data.data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    const fetchLogs = async () => {
+      setLoading(true);
+      try {
+        const response = await apiClient.get<{ data: Log[] }>(
+          "/api/admin/logs",
+          {
+            params: filter,
+          }
+        );
+        setLogs(response.data.data);
+      } catch (err: any) {
+        console.log("err : ", err);
+        setError("데이터를 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLogs();
   }, [filter]);
-
-  if (loading) return <div>로딩 중...</div>;
-  if (error) return <div>에러: {error}</div>;
 
   const closeModal = () => setSelectedLog(null);
 
@@ -77,7 +88,11 @@ export default function LogsTable({ filter }: LogsTableProps) {
       const userId = log.userId?.toLowerCase() || "";
       const action = log.action?.toLowerCase() || "";
       const ip = log.ipAddress?.toLowerCase() || "";
-      if (!userId.includes(keyword) && !action.includes(keyword) && !ip.includes(keyword)) {
+      if (
+        !userId.includes(keyword) &&
+        !action.includes(keyword) &&
+        !ip.includes(keyword)
+      ) {
         return false;
       }
     }
@@ -86,71 +101,122 @@ export default function LogsTable({ filter }: LogsTableProps) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-            <th className="px-6 py-3"></th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {filteredLogs.map((log) => (
-            <tr
-              key={log.id}
-              className="hover:bg-gray-50 cursor-pointer"
-              onClick={() => setSelectedLog(log)}
-            >
-              <td className="px-6 py-4 text-sm font-medium text-amber-800">{log.id}</td>
-              <td className="px-6 py-4 text-sm text-gray-900">{log.userId}</td>
-              <td className="px-6 py-4">
-                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(log.type)}`}>{log.type}</span>
-              </td>
-              <td className="px-6 py-4 text-sm text-gray-900">{log.action}</td>
-              <td className="px-6 py-4 text-sm text-gray-900">{log.ipAddress}</td>
-              <td className="px-6 py-4 text-sm text-gray-900">{log.createdAt}</td>
-              <td className="px-6 py-4 text-right text-sm font-medium">
-                <button
-                  className="text-gray-400 hover:text-gray-600"
-                  onClick={(e) => { e.stopPropagation(); setSelectedLog(log); }}
+      {loading ? (
+        <div className="py-8 text-center text-gray-400">불러오는 중...</div>
+      ) : error ? (
+        <div className="py-8 text-center text-red-500">{error}</div>
+      ) : (
+        <>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Action
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  IP
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredLogs.map((log) => (
+                <tr
+                  key={log.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => setSelectedLog(log)}
                 >
-                  <Info className="h-5 w-5" />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  <td className="px-6 py-4 text-sm font-medium text-amber-800">
+                    {log.id}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {log.userId}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(
+                        log.type
+                      )}`}
+                    >
+                      {log.type}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {log.action}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {log.ipAddress}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {log.createdAt}
+                  </td>
+                  <td className="px-6 py-4 text-right text-sm font-medium">
+                    <button
+                      className="text-gray-400 hover:text-gray-600"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedLog(log);
+                      }}
+                    >
+                      <Info className="h-5 w-5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      {selectedLog && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={closeModal}
-        >
-          <div
-            className="bg-white rounded-lg p-6 w-full max-w-md relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          {selectedLog && (
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
               onClick={closeModal}
             >
-              <X className="h-5 w-5" />
-            </button>
-            <div className="space-y-2">
-              <p><strong>ID:</strong> {selectedLog.id}</p>
-              <p><strong>User:</strong> {selectedLog.userId}</p>
-              <p><strong>Type:</strong> {selectedLog.type}</p>
-              <p><strong>Action:</strong> {selectedLog.action}</p>
-              <p><strong>IP:</strong> {selectedLog.ipAddress}</p>
-              <p><strong>Date:</strong> {selectedLog.createdAt}</p>
+              <div
+                className="bg-white rounded-lg p-6 w-full max-w-md relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                  onClick={closeModal}
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <div className="space-y-2">
+                  <p>
+                    <strong>ID:</strong> {selectedLog.id}
+                  </p>
+                  <p>
+                    <strong>User:</strong> {selectedLog.userId}
+                  </p>
+                  <p>
+                    <strong>Type:</strong> {selectedLog.type}
+                  </p>
+                  <p>
+                    <strong>Action:</strong> {selectedLog.action}
+                  </p>
+                  <p>
+                    <strong>IP:</strong> {selectedLog.ipAddress}
+                  </p>
+                  <p>
+                    <strong>Date:</strong> {selectedLog.createdAt}
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
     </div>
   );

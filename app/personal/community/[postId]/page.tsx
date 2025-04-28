@@ -10,7 +10,6 @@ export default function PostDetailPage() {
   const params = useParams();
   const postId = params?.postId as string;
 
-  const router = useRouter();
   const [postData, setPostData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,21 +17,18 @@ export default function PostDetailPage() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const token = useAuthStore.getState().accessToken;
-
-        if (!token) {
-          alert("로그인이 필요합니다.");
-          router.push("/login"); // 토큰 없으면 로그인 페이지로 이동
-          return;
-        }
-
-        const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
-        const response = await apiClient.get(`/api/personal/community/posts/detail/${postId}`, {
-          withCredentials: !isLocalhost,
-          headers: {
-            Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
-          },
-        });
+        const isLocalhost =
+          typeof window !== "undefined" &&
+          window.location.hostname === "localhost";
+        const response = await apiClient.get(
+          `/api/personal/community/posts/detail/${postId}`,
+          {
+            withCredentials: !isLocalhost,
+            headers: {
+              Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+            },
+          }
+        );
         console.log("받은 상세 데이터:", response.data.data);
         setPostData(mapPostData(response.data.data)); // Post 컴포넌트용 변환
       } catch (err) {
@@ -48,9 +44,15 @@ export default function PostDetailPage() {
     }
   }, [postId]);
 
-  if (loading) return <div className="p-6 text-center text-gray-500">로딩 중...</div>;
+  if (loading)
+    return <div className="p-6 text-center text-gray-500">로딩 중...</div>;
   if (error) return <div className="p-6 text-center text-red-500">{error}</div>;
-  if (!postData) return <div className="p-6 text-center text-gray-500">게시글이 존재하지 않습니다.</div>;
+  if (!postData)
+    return (
+      <div className="p-6 text-center text-gray-500">
+        게시글이 존재하지 않습니다.
+      </div>
+    );
 
   return (
     <div className="flex justify-center py-10 px-4 bg-gray-50 min-h-screen">
@@ -70,7 +72,9 @@ function mapPostData(data: any) {
     id: data.id,
     author: {
       name: `user${data.accountId}`, // accountId로 임시 표시 (추후 닉네임 연동 가능)
-      avatar: data.profileImageUrl || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png",
+      avatar:
+        data.profileImageUrl ||
+        "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png",
     },
     content: data.content,
     image: data.postImageUrl || null,

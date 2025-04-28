@@ -64,9 +64,14 @@ export const CompanyInfo = ({
             {/* 3열: 설립일 + 홈페이지 */}
             <div className="flex text-sm text-gray-600">
               <p className="w-28 text-gray-500">설립일</p>
-              <p className="flex-1">{company.foundedDate} ({getYearsSinceFounded(company.foundedDate)}년차)</p>
+              <p className="flex-1">
+                {company.foundedDate} (
+                {getYearsSinceFounded(company.foundedDate)}년차)
+              </p>
               <p className="w-28 text-gray-500">홈페이지</p>
-              <p className="flex-1 truncate" title="www.test.com">{company.website}</p>
+              <p className="flex-1 truncate" title="www.test.com">
+                {company.website}
+              </p>
             </div>
 
             {/* 4열: 주소 */}
@@ -81,7 +86,11 @@ export const CompanyInfo = ({
           {/* 우측 로고 */}
           <div className="w-32 h-20 flex-shrink-0 flex items-center justify-center ml-8">
             <Image
-              src={company.logoKey ? company.logoKey : "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/logo/logo6.png"}
+              src={
+                company.logoKey
+                  ? company.logoKey
+                  : "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/logo/logo6.png"
+              }
               alt="회사 로고"
               width={100}
               height={50}
@@ -92,11 +101,17 @@ export const CompanyInfo = ({
 
         {/* 버튼 구역 */}
         <div className="p-4 flex flex-wrap gap-2 justify-start">
-          <Link href="#" className="flex items-center border rounded-md px-4 py-2 text-sm hover:bg-gray-50">
+          <Link
+            href="#"
+            className="flex items-center border rounded-md px-4 py-2 text-sm hover:bg-gray-50"
+          >
             채용정보 {openJobPostingCount}건
             <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
-          <Link href="#" className="flex items-center border rounded-md px-4 py-2 text-sm hover:bg-gray-50">
+          <Link
+            href="#"
+            className="flex items-center border rounded-md px-4 py-2 text-sm hover:bg-gray-50"
+          >
             면접후기 {interviewReviewCount}건
             <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
@@ -110,7 +125,10 @@ export const CompanyInfo = ({
           >
             기업정보 전체보기
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12L8.59 16.59Z" fill="#666666"></path>
+              <path
+                d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12L8.59 16.59Z"
+                fill="#666666"
+              ></path>
             </svg>
           </Link>
         </div>

@@ -1,4 +1,4 @@
-import Image from "next/image"
+import Image from "next/image";
 
 export const RelatedCompanies = () => {
   const companies = [
@@ -34,7 +34,7 @@ export const RelatedCompanies = () => {
       salary: "5천만원/연",
       logo: "/abstract-geometric-company.png",
     },
-  ]
+  ];
 
   return (
     <div className="bg-white rounded-lg p-6">
@@ -50,7 +50,10 @@ export const RelatedCompanies = () => {
             <div className="flex gap-3">
               <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden">
                 <Image
-                  src={company.logo || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"}
+                  src={
+                    company.logo ||
+                    "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"
+                  }
                   alt={`${company.name} 로고`}
                   width={40}
                   height={40}
@@ -61,7 +64,9 @@ export const RelatedCompanies = () => {
                 <h4 className="font-medium text-sm">
                   {index + 1}. {company.name}
                 </h4>
-                <p className="text-xs text-gray-600 mt-1">{company.description}</p>
+                <p className="text-xs text-gray-600 mt-1">
+                  {company.description}
+                </p>
                 <p className="text-xs text-gray-500 mt-1">
                   직원 {company.employees} · {company.salary}
                 </p>
@@ -104,5 +109,5 @@ export const RelatedCompanies = () => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};

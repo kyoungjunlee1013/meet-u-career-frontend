@@ -69,8 +69,11 @@ export default function AdminDashboardPage() {
           <button
             onClick={handleDownloadReport}
             disabled={isDownloading}
-            className={`${isDownloading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
-              } text-white px-4 py-2 rounded-md text-sm`}
+            className={`${
+              isDownloading
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
+            } text-white px-4 py-2 rounded-md text-sm`}
           >
             {isDownloading ? "다운로드 중..." : "보고서 생성"}
           </button>

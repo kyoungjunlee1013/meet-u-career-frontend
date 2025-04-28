@@ -1,60 +1,16 @@
-"use client"
+"use client";
 
-import axios from "axios";
 import { useEffect, useState } from "react";
-import { ResumeHeader } from "./ResumeHeader"
-import { ResumeSummaryStatsCardList } from "./ResumeSummaryStatsCardList"
-import { ResumeTypeTabGroup } from "./ResumeTypeTabGroup"
-import { ResumeCardList } from "./ResumeCardList"
-import { ResumeEmptyState } from "./ResumeEmptyState"
-import { Pagination } from "../bookmarks/Pagination"
-
-// // Mock data for resumes
-// const mockResumes = [
-//   {
-//     id: 1,
-//     title: "백엔드 개발자 이력서",
-//     updatedAt: "2025-04-14",
-//     resumeType: 0, // MeetU 이력서
-//     isPrimary: true,
-//     status: 2, // 공개
-//   },
-//   {
-//     id: 2,
-//     title: "프론트엔드 개발자 이력서",
-//     updatedAt: "2025-04-10",
-//     resumeType: 0, // MeetU 이력서
-//     isPrimary: false,
-//     status: 1, // 비공개
-//   },
-//   {
-//     id: 3,
-//     title: "포트폴리오 PDF",
-//     updatedAt: "2025-04-05",
-//     resumeType: 1, // 파일 이력서
-//     isPrimary: false,
-//     status: 2, // 공개
-//   },
-//   {
-//     id: 4,
-//     title: "노션 이력서",
-//     updatedAt: "2025-03-28",
-//     resumeType: 2, // 링크 이력서
-//     isPrimary: false,
-//     status: 2, // 공개
-//   },
-//   {
-//     id: 5,
-//     title: "영문 이력서",
-//     updatedAt: "2025-03-20",
-//     resumeType: 1, // 파일 이력서
-//     isPrimary: false,
-//     status: 1, // 비공개
-//   },
-// ]
+import { ResumeHeader } from "./ResumeHeader";
+import { ResumeSummaryStatsCardList } from "./ResumeSummaryStatsCardList";
+import { ResumeTypeTabGroup } from "./ResumeTypeTabGroup";
+import { ResumeCardList } from "./ResumeCardList";
+import { ResumeEmptyState } from "./ResumeEmptyState";
+import { Pagination } from "../bookmarks/Pagination";
+import { apiClient } from "@/api/apiClient";
 
 export const ResumeContent = () => {
-  const [activeTab, setActiveTab] = useState<number | null>(null)
+  const [activeTab, setActiveTab] = useState<number | null>(null);
   type Resume = {
     id: number;
     title: string;
@@ -64,39 +20,45 @@ export const ResumeContent = () => {
     status: number;
   };
 
-  const [resumes, setResumes] = useState<Resume[]>([])
+  const [resumes, setResumes] = useState<Resume[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
 
   useEffect(() => {
-    axios.get("/api/personal/resume/list")
-      .then(res => setResumes(res.data.data))
-      .catch(err => {
+    apiClient
+      .get("/api/personal/resume/list")
+      .then((res) => setResumes(res.data.data))
+      .catch((err) => {
         // 에러 처리
         console.error(err);
       });
   }, []);
 
-
-
-
-
   // Filter resumes based on active tab
-  const filteredResumes = activeTab !== null ? resumes.filter((resume) => resume.resumeType === activeTab) : resumes
+  const filteredResumes =
+    activeTab !== null
+      ? resumes.filter((resume) => resume.resumeType === activeTab)
+      : resumes;
 
   // 페이지네이션: 현재 페이지의 이력서만 추출
   const totalPages = Math.max(1, Math.ceil(filteredResumes.length / pageSize));
-  const pagedResumes = filteredResumes.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const pagedResumes = filteredResumes.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   // 페이지/탭 변경 시 1페이지로 리셋
-  useEffect(() => { setCurrentPage(1); }, [activeTab, filteredResumes.length]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, filteredResumes.length]);
 
   // Calculate stats
   const stats = {
     total: resumes.length,
     meetU: resumes.filter((r) => r.resumeType === 0).length,
-    fileAndLink: resumes.filter((r) => r.resumeType === 1 || r.resumeType === 2).length,
-  }
+    fileAndLink: resumes.filter((r) => r.resumeType === 1 || r.resumeType === 2)
+      .length,
+  };
 
   // Handle set primary resume
   const handleSetPrimary = (id: number) => {
@@ -104,14 +66,14 @@ export const ResumeContent = () => {
       prev.map((resume) => ({
         ...resume,
         isPrimary: resume.id === id,
-      })),
-    )
-  }
+      }))
+    );
+  };
 
   // Handle delete resume
   const handleDelete = (id: number) => {
-    setResumes((prev) => prev.filter((resume) => resume.id !== id))
-  }
+    setResumes((prev) => prev.filter((resume) => resume.id !== id));
+  };
 
   return (
     <div className="space-y-6">
@@ -122,9 +84,17 @@ export const ResumeContent = () => {
 
         {filteredResumes.length > 0 ? (
           <>
-            <ResumeCardList resumes={pagedResumes} onSetPrimary={handleSetPrimary} onDelete={handleDelete} />
+            <ResumeCardList
+              resumes={pagedResumes}
+              onSetPrimary={handleSetPrimary}
+              onDelete={handleDelete}
+            />
             <div className="mt-8 flex justify-center">
-              <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
           </>
         ) : (
@@ -132,5 +102,5 @@ export const ResumeContent = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { FileText } from "lucide-react";
-import axios from "axios";
 import {
   Select,
   SelectContent,
@@ -10,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { apiClient } from "@/api/apiClient";
 
 interface JobPosting {
   id: number;
@@ -32,7 +32,7 @@ export const JobPostingCard = ({ onSelectJob }: JobPostingCardProps) => {
       try {
         const token = sessionStorage.getItem("accessToken");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get("/api/business/applicants", {
+        const response = await apiClient.get("/api/business/applicants", {
           headers,
         });
 

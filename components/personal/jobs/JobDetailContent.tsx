@@ -10,6 +10,7 @@ import { ApplicationModal } from "./ApplicationModal";
 import { apiClient } from "@/api/apiClient";
 import { JobPostingType } from "@/types/job";
 import { useUserStore } from "@/store/useUserStore";
+import Image from "next/image";
 
 interface JobDetailContentProps {
   jobId: string;
@@ -196,10 +197,11 @@ export const JobDetailContent = ({
               className="flex flex-col justify-center items-center w-14 h-12 border border-gray-300 rounded-md text-sm text-gray-600 hover:text-gray-800"
             >
               <Star
-                className={`h-4 w-4 mb-0.5 ${jobPosting.bookmarked
-                  ? "text-yellow-400 fill-yellow-400"
-                  : "text-gray-600"
-                  }`}
+                className={`h-4 w-4 mb-0.5 ${
+                  jobPosting.bookmarked
+                    ? "text-yellow-400 fill-yellow-400"
+                    : "text-gray-600"
+                }`}
               />
               <span className="text-xs">{jobPosting.bookmarkCount}</span>
             </button>
@@ -276,12 +278,14 @@ export const JobDetailContent = ({
         </div>
 
         <div className="mb-24">
-          <div className="bg-gray-100 h-60 flex items-center justify-center rounded-md mb-8">
-            <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center">
-              <span className="text-gray-400">
-                공고 이미지 또는 회사 이미지
-              </span>
-            </div>
+          <div className="bg-gray-100 h-80 flex items-center justify-center rounded-md mb-8 overflow-hidden relative">
+            <Image
+              src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/diverse-team-meeting.png"
+              alt="공고 이미지 또는 회사 이미지"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
 
           <div className="space-y-6">

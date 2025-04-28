@@ -7,8 +7,6 @@ import LogsManagement from "@/components/admin/logs/LogsManagement";
 export default function LogsPage() {
   const isChecking = useAuthGuard("admin"); // admin만 접근 가능
 
-  console.log("isChecking ,", isChecking);
-
   if (isChecking) return null; // 검사 중일 땐 아무것도 렌더링하지 않음
 
   return (

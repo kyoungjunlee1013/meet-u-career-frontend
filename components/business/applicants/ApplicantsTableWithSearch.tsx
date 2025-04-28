@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
-import axios from "axios";
 import { ApplicantsSearch } from "./ApplicantsSearch";
 import { ApplicantsStatistics } from "./ApplicantsStatistics";
 import type { ApplicantStatus } from "@/types/applicants";
+import { apiClient } from "@/api/apiClient";
 
 interface Applicant {
   id: number;
@@ -141,7 +141,7 @@ export const ApplicantsTableWithSearch = ({
 
     const fetchApplicants = async () => {
       try {
-        const response = await axios.get(
+        const response = await apiClient.get(
           `/api/business/applicants/${jobPostingId}`
         );
         const formatted = response.data.data.map((applicant: any) => ({

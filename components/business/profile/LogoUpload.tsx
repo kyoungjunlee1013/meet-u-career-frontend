@@ -1,55 +1,55 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef } from "react"
-import Image from "next/image"
-import { Camera, X } from "lucide-react"
+import { useState, useRef } from "react";
+import Image from "next/image";
+import { Camera, X } from "lucide-react";
 
 interface LogoUploadProps {
-  defaultLogo?: string
-  onLogoChange: (file: File | null) => void
+  defaultLogo?: string;
+  onLogoChange: (file: File | null) => void;
 }
 
 export const LogoUpload = ({
   defaultLogo = "/placeholder.svg?height=120&width=120",
   onLogoChange,
 }: LogoUploadProps) => {
-  const [previewUrl, setPreviewUrl] = useState<string>(defaultLogo)
-  const [isHovering, setIsHovering] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [previewUrl, setPreviewUrl] = useState<string>(defaultLogo);
+  const [isHovering, setIsHovering] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     // Check if file is an image
     if (!file.type.startsWith("image/")) {
-      alert("이미지 파일만 업로드 가능합니다.")
-      return
+      alert("이미지 파일만 업로드 가능합니다.");
+      return;
     }
 
     // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert("파일 크기는 5MB 이하여야 합니다.")
-      return
+      alert("파일 크기는 5MB 이하여야 합니다.");
+      return;
     }
 
-    const reader = new FileReader()
+    const reader = new FileReader();
     reader.onload = () => {
-      setPreviewUrl(reader.result as string)
-    }
-    reader.readAsDataURL(file)
-    onLogoChange(file)
-  }
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    onLogoChange(file);
+  };
 
   const handleRemoveLogo = () => {
-    setPreviewUrl(defaultLogo)
-    onLogoChange(null)
+    setPreviewUrl(defaultLogo);
+    onLogoChange(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ""
+      fileInputRef.current.value = "";
     }
-  }
+  };
 
   return (
     <div className="flex flex-col items-center">
@@ -59,7 +59,10 @@ export const LogoUpload = ({
         onMouseLeave={() => setIsHovering(false)}
       >
         <Image
-          src={previewUrl || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"}
+          src={
+            previewUrl ||
+            "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"
+          }
           alt="Company logo"
           width={128}
           height={128}
@@ -105,7 +108,9 @@ export const LogoUpload = ({
         로고 변경
       </button>
 
-      <p className="text-xs text-gray-500 mt-1">권장 크기: 500x500px, 최대 5MB</p>
+      <p className="text-xs text-gray-500 mt-1">
+        권장 크기: 500x500px, 최대 5MB
+      </p>
     </div>
-  )
-}
+  );
+};

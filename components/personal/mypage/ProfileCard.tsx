@@ -1,18 +1,20 @@
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 
 interface Props {
-  profileImageUrl: string,
-  name: string
-  experience: number
-  skills: string[]
-  resumeViews: number
-  offerCount: number
-  bookmarkCount: number
-  completeness: number
+  applicationCount: number;
+  profileImageUrl: string;
+  name: string;
+  experience: number;
+  skills: string[];
+  resumeViews: number;
+  offerCount: number;
+  bookmarkCount: number;
+  completeness: number;
 }
 
 export function ProfileCard({
+  applicationCount,
   profileImageUrl,
   name,
   experience,
@@ -28,14 +30,16 @@ export function ProfileCard({
       <div className="flex justify-between items-start mb-8">
         <div className="flex items-center gap-6">
           <div className="w-24 h-24 rounded-full bg-gray-200 overflow-hidden relative">
-            {profileImageUrl && (
-              <Image
-                src={`/${profileImageUrl}`}
-                alt="프로필 이미지"
-                fill
-                className="object-cover"
-              />
-            )}
+            <Image
+              src={
+                profileImageUrl
+                  ? profileImageUrl
+                  : "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
+              }
+              alt="프로필 이미지"
+              fill
+              className="object-cover"
+            />
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -47,8 +51,10 @@ export function ProfileCard({
                 프로필 수정
               </Link>
             </div>
-            <p className="text-base text-gray-600 mb-2">경력 {experience}년</p>
-            <div className="flex gap-2 mb-2 flex-wrap">              
+            <p className="text-base text-gray-600 mb-2">
+              {experience > 0 ? `경력 ${experience}년` : "신입"}
+            </p>
+            <div className="flex gap-2 mb-2 flex-wrap">
               {skills.map((skill, idx) => (
                 <span
                   key={idx}
@@ -65,7 +71,9 @@ export function ProfileCard({
         <div className="min-w-[220px]">
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm text-gray-700">프로필 완성도</span>
-            <span className="text-sm font-semibold text-blue-600">{completeness}%</span>
+            <span className="text-sm font-semibold text-blue-600">
+              {completeness}%
+            </span>
           </div>
           <div className="w-44 bg-gray-200 rounded-full h-2 mb-2">
             <div
@@ -78,13 +86,13 @@ export function ProfileCard({
 
       {/* 하단 통계 */}
       <div className="grid grid-cols-4 divide-x bg-white rounded-lg">
-        <StatBox label="지원 현황" count={resumeViews} />
+        <StatBox label="지원 현황" count={applicationCount} />
         <StatBox label="이력서 열람" count={resumeViews} />
         <StatBox label="받은 제안" count={offerCount} />
         <StatBox label="스크랩" count={bookmarkCount} />
       </div>
     </div>
-  )
+  );
 }
 
 function StatBox({ label, count }: { label: string; count: number }) {
@@ -93,5 +101,5 @@ function StatBox({ label, count }: { label: string; count: number }) {
       <span className="text-lg font-bold text-gray-900">{count}</span>
       <span className="text-xs text-gray-500 mt-1">{label}</span>
     </div>
-  )
+  );
 }

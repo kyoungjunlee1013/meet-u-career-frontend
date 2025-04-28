@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Search } from "lucide-react"
-import { usePathname, useRouter } from "next/navigation"
-import Image from "next/image"
-import { useSearchStore } from "@/hooks/useSearchStore"
-import { useState } from "react"
+import Link from "next/link";
+import { Search } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
+import { useSearchStore } from "@/hooks/useSearchStore";
+import { useState } from "react";
 
 export const Header = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const [search, setSearch] = useState<string>("");  // 헤더에서 관리되는 검색어
-  const { setStoreKeyword } = useSearchStore();  // zustand에서의 keyword 상태 설정 함수
+  const [search, setSearch] = useState<string>(""); // 헤더에서 관리되는 검색어
+  const { setStoreKeyword } = useSearchStore(); // zustand에서의 keyword 상태 설정 함수
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -51,24 +51,36 @@ export const Header = () => {
         <div className="flex items-center gap-4 text-xs text-gray-600">
           <Link
             href="/login"
-            className={pathname === "/login" ? "border-b-2 border-gray-900 pb-1" : "hover:text-gray-900"}
+            className={
+              pathname === "/login"
+                ? "border-b-2 border-gray-900 pb-1"
+                : "hover:text-gray-900"
+            }
           >
             로그인
           </Link>
           <Link
             href="/register"
-            className={pathname === "/register" ? "border-b-2 border-gray-900 pb-1" : "hover:text-gray-900"}
+            className={
+              pathname === "/register"
+                ? "border-b-2 border-gray-900 pb-1"
+                : "hover:text-gray-900"
+            }
           >
             회원가입
           </Link>
           <Link
             href="/business/dashboard"
-            className={pathname === "/business" ? "border-b-2 border-gray-900 pb-1" : "hover:text-gray-900"}
+            className={
+              pathname === "/business"
+                ? "border-b-2 border-gray-900 pb-1"
+                : "hover:text-gray-900"
+            }
           >
             기업서비스
           </Link>
         </div>
       </div>
     </header>
-  )
-}
+  );
+};

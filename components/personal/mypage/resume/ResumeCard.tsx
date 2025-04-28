@@ -1,102 +1,114 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { FileText, File, LinkIcon, Eye, Edit, Star, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { ResumePreviewModal } from "./ResumePreviewModal"
-import { DeleteConfirmModal } from "./DeleteConfirmModal"
-import axios from "axios"
+import { useState } from "react";
+import {
+  FileText,
+  File,
+  LinkIcon,
+  Eye,
+  Edit,
+  Star,
+  Trash2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ResumePreviewModal } from "./ResumePreviewModal";
+import { DeleteConfirmModal } from "./DeleteConfirmModal";
+import { apiClient } from "@/api/apiClient";
 
 interface Resume {
-  id: number
-  title: string
-  updatedAt: string
-  resumeType: number
-  isPrimary: boolean
-  status: number
-  overview?: string
-  location?: string
-  desiredPosition?: string
-  desiredSalary?: string
-  careerLevel?: string
-  educationLevel?: string
-  skills?: string[]
-  externalLinks?: string[]
-  resumeFileKey?: string
-  resumeFileName?: string
-  resumeUrl?: string
-  coverLetterId?: number
-  coverLetterTitle?: string
-  coverLetterUpdatedAt?: string
+  id: number;
+  title: string;
+  updatedAt: string;
+  resumeType: number;
+  isPrimary: boolean;
+  status: number;
+  overview?: string;
+  location?: string;
+  desiredPosition?: string;
+  desiredSalary?: string;
+  careerLevel?: string;
+  educationLevel?: string;
+  skills?: string[];
+  externalLinks?: string[];
+  resumeFileKey?: string;
+  resumeFileName?: string;
+  resumeUrl?: string;
+  coverLetterId?: number;
+  coverLetterTitle?: string;
+  coverLetterUpdatedAt?: string;
   contents?: {
-    id: number
-    sectionType: number
-    sectionTitle: string
-    contentOrder: number
-    content: any
-  }[]
+    id: number;
+    sectionType: number;
+    sectionTitle: string;
+    contentOrder: number;
+    content: any;
+  }[];
 }
 
 interface ResumeCardProps {
-  resume: Resume
-  onSetPrimary: (id: number) => void
-  onDelete: (id: number) => void
+  resume: Resume;
+  onSetPrimary: (id: number) => void;
+  onDelete: (id: number) => void;
 }
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toISOString().slice(0, 10);
 };
 
-export const ResumeCard = ({ resume, onSetPrimary, onDelete }: ResumeCardProps) => {
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [previewResume, setPreviewResume] = useState<Resume | null>(null)
+export const ResumeCard = ({
+  resume,
+  onSetPrimary,
+  onDelete,
+}: ResumeCardProps) => {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [previewResume, setPreviewResume] = useState<Resume | null>(null);
 
   const getResumeTypeIcon = () => {
     switch (resume.resumeType) {
       case 0:
-        return <FileText className="h-4 w-4" />
+        return <FileText className="h-4 w-4" />;
       case 1:
-        return <File className="h-4 w-4" />
+        return <File className="h-4 w-4" />;
       case 2:
-        return <LinkIcon className="h-4 w-4" />
+        return <LinkIcon className="h-4 w-4" />;
       default:
-        return <FileText className="h-4 w-4" />
+        return <FileText className="h-4 w-4" />;
     }
-  }
+  };
 
   const getResumeTypeLabel = () => {
     switch (resume.resumeType) {
       case 0:
-        return "MeetU"
+        return "MeetU";
       case 1:
-        return "파일"
+        return "파일";
       case 2:
-        return "링크"
+        return "링크";
       default:
-        return "MeetU"
+        return "MeetU";
     }
-  }
+  };
 
   const handleDelete = () => {
-    onDelete(resume.id)
-    setIsDeleteModalOpen(false)
-  }
+    onDelete(resume.id);
+    setIsDeleteModalOpen(false);
+  };
 
   const fetchResumeDetail = async (id: number) => {
-  const res = await axios.get(`/api/personal/resume/view/${id}`);
-  return res.data.data;
-};
+    const res = await apiClient.get(`/api/personal/resume/view/${id}`);
+    return res.data.data;
+  };
 
-const handlePreview = async () => {
-  try {
-    const detail = await fetchResumeDetail(resume.id);
-    setPreviewResume(detail);
-    setIsPreviewOpen(true);
-  } catch (err) {
-    alert("이력서 상세 정보를 불러오지 못했습니다.");
-  }
-};
+  const handlePreview = async () => {
+    try {
+      const detail = await fetchResumeDetail(resume.id);
+      setPreviewResume(detail);
+      setIsPreviewOpen(true);
+    } catch (err) {
+      alert("이력서 상세 정보를 불러오지 못했습니다.");
+    }
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
@@ -108,25 +120,38 @@ const handlePreview = async () => {
               <span className="ml-1">{getResumeTypeLabel()}</span>
             </span>
             {resume.isPrimary && (
-              <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1">대표</span>
+              <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-2 py-1">
+                대표
+              </span>
             )}
           </div>
           <span
             className={`text-xs rounded-full px-2 py-1 ${
-              resume.status === 2 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+              resume.status === 2
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-600"
             }`}
           >
             {resume.status === 2 ? "공개" : "비공개"}
           </span>
         </div>
 
-        <h3 className="text-lg font-medium text-gray-900 mb-1">{resume.title}</h3>
-        <p className="text-sm text-gray-500">최종 수정일: {formatDate(resume.updatedAt)}</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-1">
+          {resume.title}
+        </h3>
+        <p className="text-sm text-gray-500">
+          최종 수정일: {formatDate(resume.updatedAt)}
+        </p>
       </div>
 
       <div className="border-t border-gray-200 p-4">
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="sm" className="flex-1" onClick={handlePreview}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={handlePreview}
+          >
             <Eye className="h-4 w-4 mr-1" />
             미리보기
           </Button>
@@ -134,7 +159,9 @@ const handlePreview = async () => {
             variant="outline"
             size="sm"
             className="flex-1 flex items-center justify-center"
-            onClick={() => (window.location.href = `/personal/mypage/resume/${resume.id}/edit`)}
+            onClick={() =>
+              (window.location.href = `/personal/mypage/resume/${resume.id}/edit`)
+            }
           >
             <Edit className="h-4 w-4 mr-1" />
             수정
@@ -142,11 +169,17 @@ const handlePreview = async () => {
           <Button
             variant="outline"
             size="sm"
-            className={`flex-1 ${resume.isPrimary ? "bg-blue-50 text-blue-600" : ""}`}
+            className={`flex-1 ${
+              resume.isPrimary ? "bg-blue-50 text-blue-600" : ""
+            }`}
             onClick={() => onSetPrimary(resume.id)}
             disabled={resume.isPrimary}
           >
-            <Star className={`h-4 w-4 mr-1 ${resume.isPrimary ? "fill-blue-600" : ""}`} />
+            <Star
+              className={`h-4 w-4 mr-1 ${
+                resume.isPrimary ? "fill-blue-600" : ""
+              }`}
+            />
             대표 설정
           </Button>
           <Button
@@ -162,7 +195,11 @@ const handlePreview = async () => {
       </div>
 
       {isPreviewOpen && previewResume && (
-        <ResumePreviewModal resume={previewResume} isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} />
+        <ResumePreviewModal
+          resume={previewResume}
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+        />
       )}
 
       {isDeleteModalOpen && (
@@ -174,5 +211,5 @@ const handlePreview = async () => {
         />
       )}
     </div>
-  )
-}
+  );
+};

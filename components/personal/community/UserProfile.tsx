@@ -1,16 +1,13 @@
-"use client"
+"use client";
 
+import { apiClient } from "@/api/apiClient";
 import { useState, useEffect } from "react";
 import { MessageSquare } from "lucide-react";
 import { useUserStore } from "@/store/useUserStore";
-import { useAuthStore } from "@/store/useAuthStore";
-import { apiClient } from "@/api/apiClient";
-import { Profile } from "@/types/profile";
 import { MyPostsModal } from "./MyPostsModal"; // ✅ 새 모달 컴포넌트 가져오기
-import { useRouter } from "next/navigation";
+import { Profile } from "@/types/profile";
 
 export const UserProfile = () => {
-  const router = useRouter();
   const { userInfo } = useUserStore();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
@@ -27,14 +24,16 @@ export const UserProfile = () => {
     const fetchProfile = async () => {
       if (!userInfo?.profileId) return;
       try {
-        const isLocalhost = typeof window !== "undefined" && window.location.hostname === "localhost";
-        const response = await apiClient.get(`/api/personal/profile/me?profileId=${userInfo.profileId}`, {
-          withCredentials: !isLocalhost,
-          headers: {
-            Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
-          },
-        });
-        setProfile(response.data.data);
+        const isLocalhost =
+          typeof window !== "undefined" &&
+          window.location.hostname === "localhost";
+        const response = await apiClient.get(
+          `/api/personal/profile/me?profileId=${userInfo.profileId}`,
+          {
+            withCredentials: !isLocalhost,
+          }
+        );
+        setProfile(response.data.data); // ✅ API 결과 저장
       } catch (error) {
         console.error("프로필 조회 실패", error);
       }
@@ -62,14 +61,29 @@ export const UserProfile = () => {
       <div className="border-t px-4 py-3 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">경력</span>
-          <span>{profile?.experienceLevel ? `${profile.experienceLevel}년` : "-"}</span>
+          <span>
+            {profile?.experienceLevel ? `${profile.experienceLevel}년` : "-"}
+          </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">학력</span>
-          <span>{profile?.educationLevel ? EDUCATION_LEVEL_MAP[profile.educationLevel] : "-"}</span>
+          <span>
+            {profile?.educationLevel
+              ? EDUCATION_LEVEL_MAP[profile.educationLevel]
+              : "-"}
+          </span>
         </div>
         <div className="flex flex-col text-sm">
           <span className="text-gray-500 mb-1">보유기술</span>
+          {profile?.skills ? (
+            <ul className="list-disc list-inside text-gray-700">
+              {profile.skills.split(",").map((skill, idx) => (
+                <li key={idx}>{skill.trim()}</li>
+              ))}
+            </ul>
+          ) : (
+            <span className="text-gray-700">-</span>
+          )}
           {profile?.skills ? (
             <ul className="list-disc list-inside text-gray-700">
               {profile.skills.split(",").map((skill, idx) => (
@@ -93,9 +107,7 @@ export const UserProfile = () => {
       </div>
 
       {/* 내가 쓴 글/댓글 모달 */}
-      {showMyPostsModal && (
-        <MyPostsModal onClose={handleCloseMyPostsModal} />
-      )}
+      {showMyPostsModal && <MyPostsModal onClose={handleCloseMyPostsModal} />}
     </div>
   );
 };

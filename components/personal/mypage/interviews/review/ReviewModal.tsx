@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { apiClient } from "@/api/apiClient";
 
 interface Interview {
   id: number;
@@ -32,7 +32,11 @@ interface ReviewModalProps {
   onComplete: (id: number) => void;
 }
 
-export function ReviewModal({ interview, onClose, onComplete }: ReviewModalProps) {
+export function ReviewModal({
+  interview,
+  onClose,
+  onComplete,
+}: ReviewModalProps) {
   // ✅ 폼 상태
   const [rating, setRating] = useState(2);
   const [difficulty, setDifficulty] = useState(3);
@@ -42,15 +46,20 @@ export function ReviewModal({ interview, onClose, onComplete }: ReviewModalProps
   // ✅ 수정 가능 여부 (30일 제한)
   const created = interview.createdAt ? new Date(interview.createdAt) : null;
   const now = new Date();
-  const editable = created ? ((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)) <= 30 : true;
+  const editable = created
+    ? (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24) <= 30
+    : true;
 
   // ✅ 기존 값이 있으면 상태 초기화
   useEffect(() => {
     if (interview) {
       if (typeof interview.rating === "number") setRating(interview.rating);
-      if (typeof interview.difficulty === "number") setDifficulty(interview.difficulty);
-      if (typeof interview.questionsAsked === "string") setQuestions(interview.questionsAsked);
-      if (typeof interview.interviewTip === "string") setTip(interview.interviewTip);
+      if (typeof interview.difficulty === "number")
+        setDifficulty(interview.difficulty);
+      if (typeof interview.questionsAsked === "string")
+        setQuestions(interview.questionsAsked);
+      if (typeof interview.interviewTip === "string")
+        setTip(interview.interviewTip);
     }
   }, [interview]);
 
@@ -73,11 +82,12 @@ export function ReviewModal({ interview, onClose, onComplete }: ReviewModalProps
         result: 1,
       };
 
-      await axios.post("/api/personal/interview-reviews", payload);
+      await apiClient.post("/api/personal/interview-reviews", payload);
       alert("면접 후기가 저장되었습니다.");
       onComplete(interview.id);
       onClose();
     } catch (err) {
+      alert("후기 저장 중 문제가 발생했습니다.");
       alert("후기 저장 중 문제가 발생했습니다.");
       console.error("❌ 후기 저장 실패", err);
     }
@@ -150,10 +160,11 @@ export function ReviewModal({ interview, onClose, onComplete }: ReviewModalProps
           type="button"
           onClick={handleSubmit}
           disabled={!editable}
-          className={`w-full mt-6 py-2 px-4 rounded ${editable
-            ? "bg-blue-600 text-white hover:bg-blue-700"
-            : "bg-gray-200 text-gray-500 cursor-not-allowed"
-            }`}
+          className={`w-full mt-6 py-2 px-4 rounded ${
+            editable
+              ? "bg-blue-600 text-white hover:bg-blue-700"
+              : "bg-gray-200 text-gray-500 cursor-not-allowed"
+          }`}
         >
           {editable ? "후기 저장" : "수정 기한 만료"}
         </button>

@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import Image from "next/image"
+import Image from "next/image";
 
 interface Props {
-  companyName: string
-  logoKey: string | null
-  industry: string
-  address: string
-  businessNumber: string
-  website: string
+  companyName: string;
+  logoKey: string | null;
+  industry: string;
+  address: string;
+  businessNumber: string;
+  website: string;
 }
 
 export const CompanyHeader = ({
@@ -26,7 +26,10 @@ export const CompanyHeader = ({
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-[120px] h-[120px] bg-white rounded-md border flex items-center justify-center overflow-hidden">
               <Image
-                src={logoKey || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"}
+                src={
+                  logoKey ||
+                  "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"
+                }
                 alt={`${companyName} 로고`}
                 width={100}
                 height={40}
@@ -36,7 +39,9 @@ export const CompanyHeader = ({
 
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-2xl font-bold text-gray-900">{companyName}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {companyName}
+                </h1>
                 <span className="text-[11px] text-blue-700 border border-blue-500 rounded px-1 py-[2px] font-medium">
                   기업정보
                 </span>
@@ -47,7 +52,8 @@ export const CompanyHeader = ({
               </div>
 
               <div className="text-sm text-gray-600 mb-1">
-                사업자번호: <span className="font-semibold">{businessNumber}</span>
+                사업자번호:{" "}
+                <span className="font-semibold">{businessNumber}</span>
               </div>
 
               <div className="text-sm mt-1">
@@ -65,5 +71,5 @@ export const CompanyHeader = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

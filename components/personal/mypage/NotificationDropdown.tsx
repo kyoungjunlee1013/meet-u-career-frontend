@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect } from "react";
 import { formatDistanceToNow } from "date-fns";
@@ -7,12 +7,8 @@ import { apiClient } from "@/api/apiClient";
 import { useNotificationStore } from "@/store/useNotificationStore";
 
 export function NotificationDropdown() {
-  const {
-    notifications,
-    markAsRead,
-    markAllAsRead,
-    setNotifications,
-  } = useNotificationStore();
+  const { notifications, markAsRead, markAllAsRead, setNotifications } =
+    useNotificationStore();
 
   // 최초 알림 목록 불러오기
   useEffect(() => {
@@ -32,7 +28,7 @@ export function NotificationDropdown() {
   // 개별 알림 읽음 처리
   const handleRead = async (id: number) => {
     try {
-      await apiClient.post(`/api/notification/read/${id}`);
+      await apiClient.post(`/api/notification/read`, { notificationId: id });
       markAsRead(id);
     } catch (error) {
       console.error("알림 읽음 처리 실패:", error);
@@ -72,12 +68,15 @@ export function NotificationDropdown() {
               <li
                 key={notification.id}
                 onClick={() => handleRead(notification.id)}
-                className={`p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer ${notification.isRead === 0 ? "bg-white" : "bg-gray-50"
-                  }`}
+                className={`p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer ${
+                  notification.isRead === 0 ? "bg-white" : "bg-gray-50"
+                }`}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-sm font-medium">{notification.message}</p>
+                    <p className="text-sm font-medium">
+                      {notification.message}
+                    </p>
                     <p className="text-xs text-gray-500 mt-1">
                       {formatDistanceToNow(new Date(notification.createdAt), {
                         addSuffix: true,
@@ -95,5 +94,5 @@ export function NotificationDropdown() {
         )}
       </div>
     </div>
-  )
+  );
 }

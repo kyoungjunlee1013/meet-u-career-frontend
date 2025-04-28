@@ -1,51 +1,51 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { Heart, MessageSquare, Share2, MoreHorizontal } from "lucide-react"
-import Image from "next/image"
-import axios from "axios"
-import { CreatePostModal } from "./CreatePostModal"
-import { useUserStore } from "@/store/useUserStore"
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
+import { Heart, MessageSquare, Share2, MoreHorizontal } from "lucide-react";
+import Image from "next/image";
+import { CreatePostModal } from "./CreatePostModal";
+import { useUserStore } from "@/store/useUserStore";
+import { apiClient } from "@/api/apiClient";
 
 //----------------------------------------
 // 인터페이스 정의
 //----------------------------------------
 interface Author {
-  name: string
-  avatar: string
+  name: string;
+  avatar: string;
 }
 
 interface Comment {
-  id: number
-  accountId: number
-  authorAvatar: string
-  authorName: string
-  content: string
-  createdAt: string
+  id: number;
+  accountId: number;
+  authorAvatar: string;
+  authorName: string;
+  content: string;
+  createdAt: string;
 }
 
 interface Liker {
-  id: number
-  name: string
-  avatar: string
+  id: number;
+  name: string;
+  avatar: string;
 }
 
 interface PostProps {
   post: {
-    id: number
-    author: Author
-    content: string
-    image: string | null
-    imageKey: string | null
-    likes: number
-    isLiked: boolean
-    comments: number
-    tags: string[]
-    likers: Liker[]
-    commentsList: Comment[]
-    createdAt: string  // 게시글 작성 시간
-  }
+    id: number;
+    author: Author;
+    content: string;
+    image: string | null;
+    imageKey: string | null;
+    likes: number;
+    isLiked: boolean;
+    comments: number;
+    tags: string[];
+    likers: Liker[];
+    commentsList: Comment[];
+    createdAt: string; // 게시글 작성 시간
+  };
 }
 
 //----------------------------------------
@@ -81,28 +81,26 @@ export const formatTimeAgo = (timestamp: string): string => {
     .padStart(2, "0")}.${date.getDate().toString().padStart(2, "0")}`;
 };
 
-
-
 export const Post = ({ post }: PostProps) => {
   //----------------------------------------
   // 상태 관리
   //----------------------------------------
   // 게시글 관련 상태
-  const [showMenu, setShowMenu] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [showMenu, setShowMenu] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // 좋아요 관련 상태
-  const [showLikes, setShowLikes] = useState(false)
-  const [likesCount, setLikesCount] = useState(post.likes)
-  const [isLiked, setIsLiked] = useState(post.isLiked)
+  const [showLikes, setShowLikes] = useState(false);
+  const [likesCount, setLikesCount] = useState(post.likes);
+  const [isLiked, setIsLiked] = useState(post.isLiked);
 
   // 댓글 관련 상태
-  const [showComments, setShowComments] = useState(false)
-  const [commentsCount, setCommentsCount] = useState(post.comments)
-  const [comments, setComments] = useState<Comment[]>(post.commentsList || [])
-  const [commentContent, setCommentContent] = useState("")
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null)
-  const [editingContent, setEditingContent] = useState<string>("")
+  const [showComments, setShowComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(post.comments);
+  const [comments, setComments] = useState<Comment[]>(post.commentsList || []);
+  const [commentContent, setCommentContent] = useState("");
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState<string>("");
 
   // 사용자 정보
   const { userInfo } = useUserStore();
@@ -110,9 +108,9 @@ export const Post = ({ post }: PostProps) => {
   //----------------------------------------
   // 외부 클릭 감지용 참조
   //----------------------------------------
-  const likesRef = useRef<HTMLDivElement>(null)
-  const commentsRef = useRef<HTMLDivElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
+  const likesRef = useRef<HTMLDivElement>(null);
+  const commentsRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   //----------------------------------------
   // 이펙트
@@ -120,78 +118,79 @@ export const Post = ({ post }: PostProps) => {
   // 외부 클릭 시 메뉴/좋아요/댓글 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (likesRef.current && !likesRef.current.contains(event.target as Node)) {
-        setShowLikes(false)
+      if (
+        likesRef.current &&
+        !likesRef.current.contains(event.target as Node)
+      ) {
+        setShowLikes(false);
       }
-      if (commentsRef.current && !commentsRef.current.contains(event.target as Node)) {
-        setShowComments(false)
+      if (
+        commentsRef.current &&
+        !commentsRef.current.contains(event.target as Node)
+      ) {
+        setShowComments(false);
       }
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false)
+        setShowMenu(false);
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
+    };
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   //----------------------------------------
   // 게시글 관련 함수
   //----------------------------------------
   // 메뉴 열기/닫기
   const toggleMenu = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setShowMenu(!showMenu)
-  }
+    e.stopPropagation();
+    setShowMenu(!showMenu);
+  };
 
   // 게시글 수정 버튼 클릭
   const handleEdit = () => {
-    setIsEditModalOpen(true)
-    setShowMenu(false)
-  }
+    setIsEditModalOpen(true);
+    setShowMenu(false);
+  };
 
   // 게시글 삭제
   const handleDelete = async () => {
-    setShowMenu(false)
+    setShowMenu(false);
     if (confirm("게시글을 삭제하시겠습니까?")) {
       try {
-        const token = sessionStorage.getItem('accessToken');
-        await axios.post(`/api/personal/community/posts/delete/${post.id}`,
+        await apiClient.post(
+          `/api/personal/community/posts/delete/${post.id}`,
           {
             accountId: userInfo?.accountId,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
           }
-        )
-        alert("게시글이 삭제되었습니다.")
-        window.location.reload()
+        );
+        alert("게시글이 삭제되었습니다.");
+        window.location.reload();
       } catch (error) {
-        console.error("게시글 삭제 실패", error)
-        alert("게시글 삭제에 실패했습니다.")
+        console.error("게시글 삭제 실패", error);
+        alert("게시글 삭제에 실패했습니다.");
       }
     }
-  }
+  };
 
   //----------------------------------------
   // 좋아요 관련 함수
   //----------------------------------------
   // 좋아요 팝업 열기/닫기
   const toggleLikes = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setShowLikes(!showLikes)
-    if (showComments) setShowComments(false)
-  }
+    e.stopPropagation();
+    setShowLikes(!showLikes);
+    if (showComments) setShowComments(false);
+  };
 
   // 좋아요 토글
   const handleToggleLike = async (e: React.MouseEvent) => {
-    e.stopPropagation()
+    e.stopPropagation();
     try {
-      const token = sessionStorage.getItem('accessToken');
-      const response = await axios.post(
+      const token = sessionStorage.getItem("accessToken");
+      const response = await apiClient.post(
         "/api/community/likes/toggle",
         {
           accountId: userInfo?.accountId,
@@ -202,21 +201,20 @@ export const Post = ({ post }: PostProps) => {
             Authorization: `Bearer ${token}`,
           },
         }
-      )
+      );
       if (response.status === 200) {
         if (!isLiked && response.data.count === 1) {
-          setLikesCount((prev) => prev + 1)
-          setIsLiked(true)
+          setLikesCount((prev) => prev + 1);
+          setIsLiked(true);
         } else if (isLiked && response.data.count === 0) {
-          setLikesCount((prev) => Math.max(0, prev - 1))
-          setIsLiked(false)
+          setLikesCount((prev) => Math.max(0, prev - 1));
+          setIsLiked(false);
         }
       }
     } catch (error) {
-      console.error("좋아요 처리 실패", error)
+      console.error("좋아요 처리 실패", error);
     }
-  }
-
+  };
 
   //----------------------------------------
   // 댓글 관련 함수
@@ -235,12 +233,9 @@ export const Post = ({ post }: PostProps) => {
   // 댓글 목록 불러오기
   const fetchComments = async () => {
     try {
-      const token = sessionStorage.getItem('accessToken');
-      const response = await axios.get(`/api/community/comments/${post.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.get(
+        `/api/community/comments/${post.id}`
+      );
       if (response.status === 200) {
         console.log("서버에서 내려준 댓글 리스트:", response.data.data);
         setComments(response.data.data); // 서버에서 댓글 리스트 받아오기
@@ -248,7 +243,7 @@ export const Post = ({ post }: PostProps) => {
     } catch (error) {
       console.error("댓글 불러오기 실패", error);
     }
-  }
+  };
 
   // 댓글 작성
   const handleCreateComment = async () => {
@@ -258,90 +253,61 @@ export const Post = ({ post }: PostProps) => {
     }
 
     try {
-      const token = sessionStorage.getItem('accessToken');
-      const response = await axios.post(
-        "/api/community/comments/create",
-        {
-          accountId: userInfo?.accountId,
-          postId: post.id,
-          content: commentContent,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await apiClient.post("/api/community/comments/create", {
+        accountId: userInfo?.accountId,
+        postId: post.id,
+        content: commentContent,
+      });
 
       if (response.status === 200) {
         alert("댓글이 등록되었습니다.");
         setCommentContent("");
-        setCommentsCount(prev => prev + 1);
+        setCommentsCount((prev) => prev + 1);
         fetchComments();
       }
     } catch (error) {
       console.error("댓글 작성 실패", error);
       alert("댓글 작성 실패했습니다.");
     }
-  }
-
+  };
 
   // 댓글 삭제
   const handleDeleteComment = async (commentId: number) => {
     if (!confirm("댓글을 삭제하시겠습니까?")) return;
 
     try {
-      const token = sessionStorage.getItem('accessToken');
-      await axios.post(
-        `/api/community/comments/delete/${commentId}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await apiClient.post(`/api/community/comments/delete/${commentId}`);
       alert("댓글이 삭제되었습니다!");
 
       // 댓글 리스트에서 삭제한 댓글 제거
-      setComments((prevComments) => prevComments.filter((comment) => comment.id !== commentId));
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.id !== commentId)
+      );
 
       // 댓글 수 -1 감소
       setCommentsCount((prev) => Math.max(0, prev - 1));
-
     } catch (error) {
       console.error("댓글 삭제 실패", error);
       alert("댓글 삭제에 실패했습니다.");
     }
   };
 
-
-
   // 댓글 수정 모드로 전환
   const handleEditClick = (comment: Comment) => {
-    setEditingCommentId(comment.id)
-    setEditingContent(comment.content)
-  }
+    setEditingCommentId(comment.id);
+    setEditingContent(comment.content);
+  };
 
   // 댓글 수정 저장
   const handleSaveEdit = async () => {
     if (editingCommentId === null) return;
 
     try {
-      const token = sessionStorage.getItem('accessToken');
-      await axios.post(
-        "/api/community/comments/update",
-        {
-          id: editingCommentId,
-          accountId: userInfo?.accountId,
-          content: editingContent,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await apiClient.post("/api/community/comments/update", {
+        id: editingCommentId,
+        accountId: userInfo?.accountId,
+        content: editingContent,
+      });
 
       alert("댓글이 수정되었습니다!");
 
@@ -356,26 +322,11 @@ export const Post = ({ post }: PostProps) => {
 
       setEditingCommentId(null);
       setEditingContent("");
-
     } catch (error) {
       console.error("댓글 수정 실패", error);
       alert("댓글 수정에 실패했습니다.");
     }
   };
-
-  // 공유 버튼 클릭 핸들러
-  const handleShare = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      const shareUrl = `${window.location.origin}/personal/community/${post.id}`;
-      await navigator.clipboard.writeText(shareUrl);
-      alert("링크가 복사되었습니다!");
-    } catch (error) {
-      console.error("링크 복사 실패", error);
-      alert("링크 복사에 실패했습니다.");
-    }
-  };
-
 
   //----------------------------------------
   // 컴포넌트 렌더링
@@ -387,9 +338,13 @@ export const Post = ({ post }: PostProps) => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <img
-              src={post.author.avatar || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"}
+              src={
+                post.author.avatar ||
+                "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
+              }
               onError={(e) => {
-                (e.target as HTMLImageElement).src = "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png";
+                (e.target as HTMLImageElement).src =
+                  "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png";
               }}
               alt="작성자 프로필"
               className="w-10 h-10 rounded-full object-cover mr-3"
@@ -398,7 +353,9 @@ export const Post = ({ post }: PostProps) => {
               <h3 className="font-medium flex items-center gap-2">
                 {post.author.name}
                 {/* 게시글 작성 시간 표시 */}
-                <span className="text-xs text-gray-400">{formatTimeAgo(post.createdAt)}</span>
+                <span className="text-xs text-gray-400">
+                  {formatTimeAgo(post.createdAt)}
+                </span>
               </h3>
             </div>
           </div>
@@ -415,10 +372,16 @@ export const Post = ({ post }: PostProps) => {
                 ref={menuRef}
                 className="absolute right-0 mt-2 w-24 bg-white border rounded shadow-md z-10 flex flex-col text-sm"
               >
-                <button onClick={handleEdit} className="px-3 py-2 hover:bg-gray-100 text-left">
+                <button
+                  onClick={handleEdit}
+                  className="px-3 py-2 hover:bg-gray-100 text-left"
+                >
                   수정
                 </button>
-                <button onClick={handleDelete} className="px-3 py-2 hover:bg-gray-100 text-left text-red-500">
+                <button
+                  onClick={handleDelete}
+                  className="px-3 py-2 hover:bg-gray-100 text-left text-red-500"
+                >
                   삭제
                 </button>
               </div>
@@ -442,7 +405,12 @@ export const Post = ({ post }: PostProps) => {
       {/* 게시글 이미지 */}
       {post.image && (
         <div className="bg-gray-100 aspect-video relative">
-          <Image src={post.image} alt="게시글 이미지" fill className="object-contain object-center" />
+          <Image
+            src={post.image}
+            alt="게시글 이미지"
+            fill
+            className="object-contain object-center"
+          />
         </div>
       )}
 
@@ -450,7 +418,9 @@ export const Post = ({ post }: PostProps) => {
       <div className="p-4 flex items-center">
         {/* 좋아요 버튼 */}
         <button
-          className={`flex items-center gap-1 ${isLiked ? "text-red-500" : "text-gray-500 hover:text-gray-700"}`}
+          className={`flex items-center gap-1 ${
+            isLiked ? "text-red-500" : "text-gray-500 hover:text-gray-700"
+          }`}
           onClick={handleToggleLike}
         >
           <Heart
@@ -462,14 +432,16 @@ export const Post = ({ post }: PostProps) => {
         </button>
 
         {/* 댓글 버튼 */}
-        <button className="flex items-center gap-1 text-gray-500 hover:text-gray-700 ml-4" onClick={toggleComments}>
+        <button
+          className="flex items-center gap-1 text-gray-500 hover:text-gray-700 ml-4"
+          onClick={toggleComments}
+        >
           <MessageSquare className="h-5 w-5" />
           <span className="text-sm">{commentsCount}</span>
         </button>
 
         {/* 공유 버튼 */}
-        <button className="ml-auto text-gray-500 hover:text-gray-700"
-          onClick={handleShare}>
+        <button className="ml-auto text-gray-500 hover:text-gray-700">
           <Share2 className="h-5 w-5" />
         </button>
       </div>
@@ -481,9 +453,16 @@ export const Post = ({ post }: PostProps) => {
           <div className="p-4 space-y-4">
             {comments.map((comment) => (
               <div key={comment.id} className="flex items-start gap-3">
-                <img src={comment.authorAvatar || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"} alt="프로필" className="w-8 h-8 rounded-full object-cover"
+                <img
+                  src={
+                    comment.authorAvatar ||
+                    "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
+                  }
+                  alt="프로필"
+                  className="w-8 h-8 rounded-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png";
+                    (e.target as HTMLImageElement).src =
+                      "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png";
                   }}
                 />
                 <div className="flex-1 bg-gray-100 p-2 rounded-md">
@@ -491,7 +470,9 @@ export const Post = ({ post }: PostProps) => {
                   <p className="text-sm font-medium flex items-center gap-2">
                     {comment.authorName || "알 수 없음"}
                     {/* 댓글 작성 시간 표시 */}
-                    <span className="text-xs text-gray-400">{formatTimeAgo(comment.createdAt)}</span>
+                    <span className="text-xs text-gray-400">
+                      {formatTimeAgo(comment.createdAt)}
+                    </span>
                   </p>
 
                   {/* 댓글 수정 모드 */}
@@ -578,7 +559,10 @@ export const Post = ({ post }: PostProps) => {
       {isEditModalOpen && (
         <CreatePostModal
           onClose={() => setIsEditModalOpen(false)}
-          profileImageUrl={post.author.avatar || "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"}
+          profileImageUrl={
+            post.author.avatar ||
+            "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
+          }
           userName={post.author.name}
           initialContent={post.content}
           initialTag={post.tags?.[0]?.replace("#", "") ?? null}
@@ -589,5 +573,5 @@ export const Post = ({ post }: PostProps) => {
         />
       )}
     </div>
-  )
-}
+  );
+};

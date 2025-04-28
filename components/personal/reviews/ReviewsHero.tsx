@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { Search } from "lucide-react"
-import { useEffect, useState } from "react"
-import { useDebounce } from "@/app/hooks/useDebounce"
+import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useDebounce } from "@/app/hooks/useDebounce";
 
 interface Props {
-  onSearch: (keyword: string) => void
+  onSearch: (keyword: string) => void;
 }
 
 export const ReviewsHero = ({ onSearch }: Props) => {
-  const [input, setInput] = useState("")
-  const debouncedInput = useDebounce(input, 400)
+  const [input, setInput] = useState("");
+  const debouncedInput = useDebounce(input, 400);
 
   useEffect(() => {
-    onSearch(debouncedInput.trim())
-  }, [debouncedInput, onSearch])
+    onSearch(debouncedInput.trim());
+  }, [debouncedInput, onSearch]);
 
   return (
     <div className="bg-white py-12">
@@ -52,5 +52,5 @@ export const ReviewsHero = ({ onSearch }: Props) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

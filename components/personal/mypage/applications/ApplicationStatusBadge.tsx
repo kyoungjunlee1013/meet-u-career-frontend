@@ -1,5 +1,5 @@
 interface ApplicationStatusBadgeProps {
-  status: "서류통과" | "완수완료" | "불합격" | "면접예정";
+  status: "서류통과" | "완수완료" | "불합격" | "면접예정"; // status 값에 리터럴 타입 지정
 }
 
 export const ApplicationStatusBadge = ({

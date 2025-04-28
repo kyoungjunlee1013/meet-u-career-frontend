@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
-import { Info, CheckCircle, EyeOff, Eye } from "lucide-react";
+import { CheckCircle, EyeOff, Eye } from "lucide-react";
 import { ConsentItems } from "./ConsentItems";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/api/apiClient";
 
 const registerSchema = z
   .object({
@@ -107,7 +107,7 @@ export const RegisterForm = () => {
     }
     const timer = setTimeout(async () => {
       try {
-        const res = await axios.post(
+        const res = await apiClient.post(
           "/api/personal/account/check/userid",
           null,
           { params: { userId } }
@@ -208,7 +208,7 @@ export const RegisterForm = () => {
 
     try {
       setCertificationLoading(true);
-      const res = await axios.post("/api/personal/account/certification", {
+      const res = await apiClient.post("/api/personal/account/certification", {
         name,
         email: fullEmail,
       });
@@ -239,7 +239,7 @@ export const RegisterForm = () => {
       );
 
     try {
-      const res = await axios.post(
+      const res = await apiClient.post(
         "/api/personal/account/certification/verify",
         { email: fullEmail, code: certificationCode }
       );
@@ -276,7 +276,7 @@ export const RegisterForm = () => {
     }
 
     try {
-      await axios.post("/api/personal/account/signup", watch());
+      await apiClient.post("/api/personal/account/signup", watch());
       alert("회원가입이 완료되었습니다!");
       router.push("/");
     } catch {
