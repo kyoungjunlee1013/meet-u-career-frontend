@@ -32,8 +32,6 @@ export default function CreateResumePage() {
   const resumeType = searchParams.get("type") || "direct";
   const { sidebarOpen: isSidebarOpen } = useSidebar();
 
-  if (isChecking) return null; // 검사 중일 땐 아무것도 렌더링하지 않음
-
   // profile 상태 관리
   const [profile, setProfile] = useState<Profile | null>(null);
   // resumeId 상태 관리
@@ -46,6 +44,7 @@ export default function CreateResumePage() {
       .catch(() => setProfile(null));
   }, []);
 
+  if (isChecking) return null; // 검사 중일 땐 아무것도 렌더링하지 않음
 
   return (
     <main className="min-h-screen bg-gray-50">

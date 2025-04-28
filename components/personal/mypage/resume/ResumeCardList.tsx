@@ -26,8 +26,8 @@ export const ResumeCardList = ({ resumes, onSetPrimary, onDelete, onPreview }: R
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-      {sortedResumes.map((resume) => (
-        <ResumeCard key={resume.id} resume={resume} onSetPrimary={onSetPrimary} onDelete={onDelete} onPreview={onPreview} />
+      {sortedResumes.map((resume, index) => (
+        <ResumeCard key={resume.id ?? index} resume={resume} onSetPrimary={onSetPrimary} onDelete={onDelete} onPreview={onPreview} />
       ))}
     </div>
   )
