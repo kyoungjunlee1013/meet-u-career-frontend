@@ -3,7 +3,7 @@
 import { apiClient } from "@/api/apiClient";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Post } from "@/components/personal/community/Post";
 
 export default function PostDetailPage() {

@@ -51,13 +51,12 @@ export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) 
           <div
             key={chat.roomId}
             onClick={() => handleSelectChat(chat.roomId.toString())}
-            className={`p-4 flex items-start cursor-pointer hover:bg-gray-100 ${
-              selectedChatId === chat.roomId.toString() ? "bg-gray-100" : ""
-            }`}
+            className={`p-4 flex items-start cursor-pointer hover:bg-gray-100 ${selectedChatId === chat.roomId.toString() ? "bg-gray-100" : ""
+              }`}
           >
             <div className="flex-shrink-0 relative">
               <Image
-                src="/mystical-forest-spirit.png"
+                src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
                 alt="Company Logo"
                 width={40}
                 height={40}

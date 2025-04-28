@@ -13,10 +13,12 @@ export default function ProfileSidebar() {
         <div className="relative mb-4 group">
           <Avatar className="h-32 w-32">
             <AvatarImage
-              src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg?height=128&width=128"
+              src="/images/etc/placeholder.svg?height=128&width=128"
               alt="Profile"
             />
-            <AvatarFallback className="text-3xl">김관</AvatarFallback>
+            <AvatarFallback className="text-3xl">
+              {userInfo?.name?.charAt(0)}
+            </AvatarFallback>
           </Avatar>
           <div className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
             <Button variant="ghost" size="icon" className="text-white">

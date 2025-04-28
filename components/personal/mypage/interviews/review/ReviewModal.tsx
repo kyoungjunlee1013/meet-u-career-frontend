@@ -88,6 +88,7 @@ export function ReviewModal({
       onClose();
     } catch (err) {
       alert("후기 저장 중 문제가 발생했습니다.");
+      alert("후기 저장 중 문제가 발생했습니다.");
       console.error("❌ 후기 저장 실패", err);
     }
   };
