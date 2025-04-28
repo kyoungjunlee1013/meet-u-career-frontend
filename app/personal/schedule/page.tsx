@@ -1,27 +1,36 @@
-"use client";
+import { Header } from "@/components/home/Header"
+import { MainNavigation } from "@/components/home/MainNavigation"
+import { UnifiedScheduleContent } from "@/components/common/schedule/UnifiedScheduleContent"
+import { mapDtoToScheduleItem, createPersonalSchedule, updatePersonalSchedule, deletePersonalSchedule } from "@/components/personal/schedule/ScheduleContent"
+import { ScheduleHeader } from "@/components/personal/schedule/ScheduleHeader"
+import { Footer } from "@/components/home/Footer"
 
-import { useAuthGuard } from "@/hooks/useAuthGuard";
-import { Header } from "@/components/home/Header";
-import { LoginHeader } from "@/components/home/LoginHeader";
-import { MainNavigation } from "@/components/home/MainNavigation";
-import { ScheduleContent } from "@/components/personal/schedule/ScheduleContent";
-import { Footer } from "@/components/home/Footer";
-import { useUserStore } from "@/store/useUserStore";
+import { apiClient } from "@/api/apiClient";
+
+async function fetchPersonalSchedules() {
+  const res = await apiClient.get("/api/personal/calendar/list");
+  // apiClient는 status 체크와 에러 처리를 axios 방식으로 하므로, 필요에 따라 try/catch로 감싸도 됨
+  const json = res.data;
+  return Array.isArray(json.data) ? json.data : [];
+}
 
 export default function SchedulePage() {
-  const { userInfo, isUserInfoHydrated } = useUserStore();
-  const isChecking = useAuthGuard("personal"); // personal만 접근 가능
-
-  if (isChecking || !isUserInfoHydrated) return null; // 검사 중일 땐 아무것도 렌더링하지 않음
-
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {userInfo ? <LoginHeader /> : <Header />}
+      <Header />
       <MainNavigation />
       <main className="flex-1 bg-gray-50">
-        <ScheduleContent />
+        <UnifiedScheduleContent
+          userType="personal"
+          apiEndpoint="/api/personal/calendar/list"
+          createSchedule={createPersonalSchedule}
+          updateSchedule={updatePersonalSchedule}
+          deleteSchedule={deletePersonalSchedule}
+          mapDtoToScheduleItem={mapDtoToScheduleItem}
+          headerComponent={<ScheduleHeader />}
+        />
       </main>
       <Footer />
     </div>
-  );
+  )
 }

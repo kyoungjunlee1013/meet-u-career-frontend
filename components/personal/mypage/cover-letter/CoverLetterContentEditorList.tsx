@@ -18,9 +18,9 @@ export function CoverLetterContentEditorList({
 }: CoverLetterContentEditorListProps) {
   return (
     <div className="space-y-6">
-      {sections.map((section) => (
+      {sections.map((section, idx) => (
         <CoverLetterContentEditorCard
-          key={section.id}
+          key={section.id || idx}
           section={section}
           onSectionTitleChange={(value) => onSectionContentUpdate(section.id, "sectionTitle", value)}
           onContentChange={(value) => onSectionContentUpdate(section.id, "content", value)}

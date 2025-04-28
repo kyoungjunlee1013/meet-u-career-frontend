@@ -20,12 +20,22 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
         <ChevronLeft className="h-5 w-5" />
       </button>
 
-      <button
-        className="w-8 h-8 flex items-center justify-center rounded-md bg-blue-600 text-white"
-        aria-current="page"
-      >
-        1
-      </button>
+      {Array.from({ length: totalPages }, (_, i) => {
+        const page = i + 1;
+        const isActive = page === currentPage;
+        return (
+          <button
+            key={page}
+            onClick={() => onPageChange(page)}
+            className={`w-8 h-8 flex items-center justify-center rounded-md mx-1 ${isActive ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-blue-100'} ${isActive ? '' : 'hover:text-blue-600'}`}
+            aria-current={isActive ? 'page' : undefined}
+            disabled={isActive}
+          >
+            {page}
+          </button>
+        );
+      })}
+
 
       <button
         onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}

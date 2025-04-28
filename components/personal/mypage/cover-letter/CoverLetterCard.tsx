@@ -6,10 +6,10 @@ interface CoverLetterCardProps {
   coverLetter: any
   onDelete: () => void
   onPreview: () => void
+  onAnalyze: () => void
 }
 
-export function CoverLetterCard({ coverLetter, onDelete, onPreview }: CoverLetterCardProps) {
-  // Check if sections is an array, if not, create an empty array
+export function CoverLetterCard({ coverLetter, onDelete, onPreview, onAnalyze }: CoverLetterCardProps) {
   const sections = Array.isArray(coverLetter.sections) ? coverLetter.sections : []
 
   return (
@@ -30,7 +30,7 @@ export function CoverLetterCard({ coverLetter, onDelete, onPreview }: CoverLette
           {sections.length > 2 && <p className="text-xs text-gray-400">+ {sections.length - 2}개 섹션 더 보기</p>}
         </div>
       </CardContent>
-      <CoverLetterCardFooter id={coverLetter.id} onDelete={onDelete} onPreview={onPreview} />
+      <CoverLetterCardFooter id={coverLetter.id} onDelete={onDelete} onPreview={onPreview} onAnalyze={onAnalyze} />
     </Card>
   )
 }

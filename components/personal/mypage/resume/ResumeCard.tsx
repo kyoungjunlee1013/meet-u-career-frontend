@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ResumePreviewModal } from "./ResumePreviewModal";
 import { DeleteConfirmModal } from "./DeleteConfirmModal";
-import { apiClient } from "@/api/apiClient";
+import axios from "axios";
 
 interface Resume {
   id: number;
@@ -96,7 +96,7 @@ export const ResumeCard = ({
   };
 
   const fetchResumeDetail = async (id: number) => {
-    const res = await apiClient.get(`/api/personal/resume/view/${id}`);
+    const res = await axios.get(`/api/personal/resume/view/${id}`);
     return res.data.data;
   };
 

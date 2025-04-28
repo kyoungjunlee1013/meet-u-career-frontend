@@ -53,6 +53,7 @@ export const BusinessHeader = () => {
     { label: "지원자 관리", href: "/business/applicants" },
     { label: "인재 검색", href: "/business/talents" },
     { label: "일정 관리", href: "/business/schedule" },
+    { label: "결제 내역", href: "/business/payments" },
   ];
 
   const handleLogout = async () => {

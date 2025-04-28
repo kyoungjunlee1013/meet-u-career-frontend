@@ -14,9 +14,9 @@ import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown";
 
 export const LoginHeader = () => {
   const router = useRouter();
-  const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
-  const [chatOpen, setChatOpen] = useState<boolean>(false);
-  const [profileOpen, setProfileOpen] = useState<boolean>(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const { userInfo } = useUserStore(); // 내 정보
   const { notifications, isLoaded } = useNotificationStore();

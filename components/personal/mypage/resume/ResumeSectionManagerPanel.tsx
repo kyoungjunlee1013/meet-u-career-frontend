@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"
 import { GripVertical, Plus, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { ResumeSection } from "./ResumeEditor"
@@ -24,19 +24,27 @@ export function ResumeSectionManagerPanel({
   const activeSectionsCount = sections.filter((section) => section.isActive).length;
 
   const handleDragEnd = (result: any) => {
-    if (!result.destination) return;
-    if (result.source.droppableId !== "active-sections" || result.destination.droppableId !== "active-sections") return;
+  if (!result.destination) return;
+  if (result.source.droppableId !== "active-sections" || result.destination.droppableId !== "active-sections") return;
 
-    // Find the indices of active sections in the original sections array
-    let activeIndices = sections.map((s, i) => s.isActive ? i : -1).filter(i => i !== -1);
-    const from = activeIndices[result.source.index];
-    const to = activeIndices[result.destination.index];
+  // 활성 항목만 추출하여 순서 변경
+  const newActiveSections = Array.from(activeSections);
+  const [removed] = newActiveSections.splice(result.source.index, 1);
+  newActiveSections.splice(result.destination.index, 0, removed);
 
-    const reordered = Array.from(sections);
-    const [removed] = reordered.splice(from, 1);
-    reordered.splice(to, 0, removed);
-    onSectionReorder(reordered);
+  // 전체 sections 배열에서 활성 항목의 순서만 newActiveSections 순서로 재배치
+  const newSections = [];
+  let activeIdx = 0;
+  for (const section of sections) {
+    if (section.isActive) {
+      newSections.push(newActiveSections[activeIdx]);
+      activeIdx++;
+    } else {
+      newSections.push(section);
+    }
   }
+  onSectionReorder(newSections);
+}
 
   const activeSections = sections.filter(s => s.isActive);
 const inactiveSections = sections.filter(s => !s.isActive);
@@ -54,7 +62,7 @@ return (
             {(provided) => (
               <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                 {activeSections.map((section, index) => (
-                  <Draggable key={section.id} draggableId={section.id} index={index}>
+                  <Draggable key={String(section.id)} draggableId={String(section.id)} index={index}>
                     {(providedDraggable, snapshot) => (
                       <li
                         ref={providedDraggable.innerRef}
@@ -105,7 +113,7 @@ return (
                 {(provided) => (
                   <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
                     {inactiveSections.map((section, index) => (
-  <Draggable key={section.id} draggableId={section.id} index={index}>
+  <Draggable key={String(section.id)} draggableId={String(section.id)} index={index}>
     {(providedDraggable, snapshot) => (
       <li
         ref={providedDraggable.innerRef}
