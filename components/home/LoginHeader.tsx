@@ -1,36 +1,35 @@
 "use client";
 
-import Link from "next/link";
-import { Search, Bell, MessageSquare, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Bell, MessageSquare, ChevronDown, Search } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import NotificationDropdown from "./NotificationDropdown";
-import ChatDropdown from "./ChatDropdown";
 import ProfileDropdown from "./ProfileDropdown";
 import { useUserStore } from "@/store/useUserStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
-import { useRouter } from "next/navigation";
 import { useSearchStore } from "@/hooks/useSearchStore";
+import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown";
 
 export const LoginHeader = () => {
   const router = useRouter();
-  const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
-  const [chatOpen, setChatOpen] = useState<boolean>(false);
-  const [profileOpen, setProfileOpen] = useState<boolean>(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const { userInfo } = useUserStore(); // 내 정보
-
   const { notifications, isLoaded } = useNotificationStore();
-  const hasUnreadNotification = isLoaded && notifications.some((n) => n.isRead === 0);
+  const hasUnreadNotification =
+    isLoaded && notifications.some((n) => n.isRead === 0);
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const [search, setSearch] = useState<string>("");  // 헤더에서 관리되는 검색어
-  const { setStoreKeyword } = useSearchStore();  // zustand에서의 keyword 상태 설정 함수
+  const [search, setSearch] = useState<string>(""); // 헤더에서 관리되는 검색어
+  const { setStoreKeyword } = useSearchStore(); // zustand에서의 keyword 상태 설정 함수
 
-  // 검색어 입력
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -44,23 +43,25 @@ export const LoginHeader = () => {
 
   // 드롭다운 외부 클릭시 닫기
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
         setNotificationOpen(false);
       }
-      if (chatRef.current && !chatRef.current.contains(event.target as Node)) {
-        setChatOpen(false);
-      }
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setProfileOpen(false);
-      }
-    };
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    if (notificationOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [notificationOpen]);
 
   const toggleNotification = () => {
     setNotificationOpen((prev) => !prev);
@@ -93,7 +94,6 @@ export const LoginHeader = () => {
               priority
             />
           </Link>
-
           <div className="relative flex items-center w-80">
             <Search className="absolute left-4 w-5 h-5 text-blue-500" />
             <input
@@ -161,5 +161,3 @@ export const LoginHeader = () => {
     </header>
   );
 };
-
-export default LoginHeader;
