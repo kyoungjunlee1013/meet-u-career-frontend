@@ -3,8 +3,8 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Users, Clock, CheckCircle, XCircle, CircleDot } from "lucide-react";
-import axios from "axios";
 import type { ApplicantStatus } from "@/types/applicants";
+import { apiClient } from "@/api/apiClient";
 
 type StatCardProps = {
   icon: React.ReactNode;
@@ -74,7 +74,7 @@ export const ApplicantsStatistics = ({
       try {
         const token = sessionStorage.getItem("accessToken");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await axios.get(
+        const response = await apiClient.get(
           `/api/business/applicants/${jobPostingId}/stats`,
           {
             headers,

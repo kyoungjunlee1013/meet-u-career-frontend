@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { Post } from "./Post";
 import { PostFilters } from "./PostFilters";
 import { CreatePostInput } from "./CreatePostInput";
 import { CreatePostModal } from "./CreatePostModal"; // ✅ 모달 직접 가져옴
 import { useUserStore } from "@/store/useUserStore"; // ✅ 추가: user 정보 가져오기
+import { apiClient } from "@/api/apiClient";
 
 interface PostFeedProps {
   selectedHashtags: string[];
@@ -38,9 +38,14 @@ interface PostData {
   isLiked?: boolean;
 }
 
-export const PostFeed = ({ selectedHashtags, onOpenFilterModal }: PostFeedProps) => {
+export const PostFeed = ({
+  selectedHashtags,
+  onOpenFilterModal,
+}: PostFeedProps) => {
   const { userInfo } = useUserStore();
-  const profileImageUrl = userInfo?.profileImage || "/images/etc/profile.png";
+  const profileImageUrl =
+    userInfo?.profileImage ||
+    "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png";
   const userName = userInfo?.name ?? "";
 
   const [posts, setPosts] = useState<PostData[]>([]);
@@ -51,16 +56,9 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal }: PostFeedProps)
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const token = sessionStorage.getItem('accessToken');
-        if (!token) {
-          console.error("AccessToken 없음! API 요청 중단");
-          return;
-        }
-        const res = await axios.get("/api/personal/community/posts/all-posts", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await apiClient.get(
+          "/api/personal/community/posts/all-posts"
+        );
         const posts = res.data.data.posts;
         setPosts(posts);
       } catch (e) {
@@ -74,7 +72,7 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal }: PostFeedProps)
 
   const handleSelectHashtag = (tag: string) => {
     if (selectedTags.includes(tag)) {
-      setSelectedTags(selectedTags.filter(t => t !== tag));
+      setSelectedTags(selectedTags.filter((t) => t !== tag));
     } else {
       setSelectedTags([tag]);
     }
@@ -94,9 +92,11 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal }: PostFeedProps)
         onSelectHashtag={handleSelectHashtag}
         onSelectAll={handleSelectAll}
       />
-      
+
       {/* ✅ CreatePostInput은 onOpen만 받음 */}
-      <CreatePostInput onOpen={() => setIsCreatePostModalOpen(true)} />
+      {userInfo?.accountId && (
+        <CreatePostInput onOpen={() => setIsCreatePostModalOpen(true)} />
+      )}
 
       {isCreatePostModalOpen && (
         <CreatePostModal
@@ -106,12 +106,14 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal }: PostFeedProps)
         />
       )}
 
-      {posts?.filter(post => {
-        if (selectedTags.length === 0) return true;
-        const tagName = TAG_ID_TO_NAME[post.tagId];
-        const hashtag = tagName ? `#${tagName}` : "";
-        return selectedTags.includes(hashtag);
-      }).map(post => {
+      {posts
+        ?.filter((post) => {
+          if (selectedTags.length === 0) return true;
+          const tagName = TAG_ID_TO_NAME[post.tagId];
+          const hashtag = tagName ? `#${tagName}` : "";
+          return selectedTags.includes(hashtag);
+        })
+        .map((post) => {
           const tagName = TAG_ID_TO_NAME[post.tagId];
           const hashtags = tagName ? [`#${tagName}`] : [];
 
@@ -122,7 +124,9 @@ export const PostFeed = ({ selectedHashtags, onOpenFilterModal }: PostFeedProps)
                 id: post.id,
                 author: {
                   name: `user${post.accountId}`,
-                  avatar: post.profileImageUrl || "/images/etc/profile.png",
+                  avatar:
+                    post.profileImageUrl ||
+                    "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png",
                 },
                 content: post.content,
                 image: post.postImageUrl,

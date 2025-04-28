@@ -1,16 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Heart, Share2, ChevronRight, ChevronLeft } from "lucide-react"
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Heart, Share2, ChevronRight, ChevronLeft } from "lucide-react";
 
 interface CompanyReviewDetailProps {
-  companyId: string
+  companyId: string;
 }
 
-export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => {
-  const [isBookmarked, setIsBookmarked] = useState(false)
+export const CompanyReviewDetail = ({
+  companyId,
+}: CompanyReviewDetailProps) => {
+  const [isBookmarked, setIsBookmarked] = useState(false);
 
   // Mock data for the company
   const company = {
@@ -22,7 +24,7 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
     industry: "완성차 제조업",
     address: "서울특별시 서초구 헌릉로 12 (양재동)",
     reviewCount: 345767,
-  }
+  };
 
   // Mock data for related companies
   const relatedCompanies = [
@@ -54,7 +56,7 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
       avgSalary: "5천만원 이상",
       avgSalaryRange: "5000만원/년",
     },
-  ]
+  ];
 
   // Mock data for review statistics
   const reviewStats = [
@@ -103,7 +105,7 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
         { text: "30대", percentage: 24.4 },
       ],
     },
-  ]
+  ];
 
   // Mock data for interview experiences
   const interviewExperiences = [
@@ -115,7 +117,7 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
       question: "면접 시 제시된 어떤점 있나요?",
       answers: [{ text: "좋지 않음 좋음", percentage: 100 }],
     },
-  ]
+  ];
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -125,12 +127,22 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex items-start gap-4">
               <div className="bg-white p-2 rounded-md border w-24 h-24 flex items-center justify-center">
-                <Image src={company.logo || "/images/etc/placeholder.svg"} alt={`${company.name} 로고`} width={80} height={80} />
+                <Image
+                  src={
+                    company.logo ||
+                    "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"
+                  }
+                  alt={`${company.name} 로고`}
+                  width={80}
+                  height={80}
+                />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h1 className="text-xl font-bold">{company.name}</h1>
-                  <span className="text-xs text-gray-500 border border-gray-300 rounded px-1">기업정보</span>
+                  <span className="text-xs text-gray-500 border border-gray-300 rounded px-1">
+                    기업정보
+                  </span>
                 </div>
                 <div className="mt-2 text-xs text-gray-500 flex flex-wrap gap-x-4">
                   <span>사업자 등록번호 {company.registrationNumber}</span>
@@ -144,7 +156,13 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
                   className="flex items-center justify-center w-8 h-8 rounded-full border"
                   onClick={() => setIsBookmarked(!isBookmarked)}
                 >
-                  <Heart className={`h-4 w-4 ${isBookmarked ? "fill-red-500 text-red-500" : "text-gray-400"}`} />
+                  <Heart
+                    className={`h-4 w-4 ${
+                      isBookmarked
+                        ? "fill-red-500 text-red-500"
+                        : "text-gray-400"
+                    }`}
+                  />
                 </button>
                 <button className="flex items-center justify-center w-8 h-8 rounded-full border">
                   <Share2 className="h-4 w-4 text-gray-400" />
@@ -165,27 +183,52 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
               </div>
 
               <button className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-md">
-                <Image src="/images/etc/generic-app-icon.png" alt="회사 정보" width={36} height={36} />
+                <Image
+                  src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/generic-app-icon.png"
+                  alt="회사 정보"
+                  width={36}
+                  height={36}
+                />
                 <span className="text-sm">회사에 대해 기재</span>
               </button>
 
               <button className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-md">
-                <Image src="/images/etc/generic-app-icon.png" alt="리뷰 작성" width={36} height={36} />
+                <Image
+                  src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/generic-app-icon.png"
+                  alt="리뷰 작성"
+                  width={36}
+                  height={36}
+                />
                 <span className="text-sm">리뷰쓰기</span>
               </button>
 
               <button className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-md">
-                <Image src="/images/etc/generic-app-icon.png" alt="채용 정보" width={36} height={36} />
+                <Image
+                  src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/generic-app-icon.png"
+                  alt="채용 정보"
+                  width={36}
+                  height={36}
+                />
                 <span className="text-sm">채용공고 보기</span>
               </button>
 
               <button className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-md">
-                <Image src="/images/etc/generic-app-icon.png" alt="연봉 정보" width={36} height={36} />
+                <Image
+                  src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/generic-app-icon.png"
+                  alt="연봉 정보"
+                  width={36}
+                  height={36}
+                />
                 <span className="text-sm">평균 연봉 4000만원</span>
               </button>
 
               <button className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-md">
-                <Image src="/images/etc/generic-app-icon.png" alt="면접 후기" width={36} height={36} />
+                <Image
+                  src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/generic-app-icon.png"
+                  alt="면접 후기"
+                  width={36}
+                  height={36}
+                />
                 <span className="text-sm">면접 후 합격</span>
               </button>
             </div>
@@ -202,13 +245,22 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
             <div className="bg-teal-500 text-white rounded-lg p-6 mb-6">
               <div className="flex items-center gap-4">
                 <div className="bg-white/20 rounded-full p-3">
-                  <Image src="/images/etc/diverse-group-chatting.png" alt="메시지 아이콘" width={40} height={40} />
+                  <Image
+                    src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/diverse-group-chatting.png"
+                    alt="메시지 아이콘"
+                    width={40}
+                    height={40}
+                  />
                 </div>
                 <div>
                   <h2 className="text-lg font-bold">
-                    현재 {company.reviewCount.toLocaleString()}명의 기업리뷰가 사람인에 등록됐어요!
+                    현재 {company.reviewCount.toLocaleString()}명의 기업리뷰가
+                    사람인에 등록됐어요!
                   </h2>
-                  <p className="text-sm mt-1">당신 또한 회사 경험을 나눠 다른 구직자들을 도와주세요. 리뷰쓰기</p>
+                  <p className="text-sm mt-1">
+                    당신 또한 회사 경험을 나눠 다른 구직자들을 도와주세요.
+                    리뷰쓰기
+                  </p>
                 </div>
               </div>
             </div>
@@ -218,19 +270,33 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
               <h2 className="text-lg font-bold mb-4">전체 리뷰 통계</h2>
 
               <div className="flex gap-2 mb-4 overflow-x-auto">
-                <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-full">전체</button>
-                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">초보자용</button>
-                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">경영진</button>
-                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">근무 환경</button>
-                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">성장 및 학습</button>
-                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">자기계발</button>
+                <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-full">
+                  전체
+                </button>
+                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">
+                  초보자용
+                </button>
+                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">
+                  경영진
+                </button>
+                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">
+                  근무 환경
+                </button>
+                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">
+                  성장 및 학습
+                </button>
+                <button className="px-3 py-1 text-sm bg-gray-100 rounded-full hover:bg-gray-200">
+                  자기계발
+                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {reviewStats.map((stat, index) => (
                   <div key={index} className="border-b pb-4">
                     <h3 className="text-sm font-medium mb-3 flex items-center">
-                      <span className="inline-block w-5 h-5 bg-gray-200 rounded-full text-center text-xs mr-2">Q</span>
+                      <span className="inline-block w-5 h-5 bg-gray-200 rounded-full text-center text-xs mr-2">
+                        Q
+                      </span>
                       {stat.question}
                     </h3>
                     <div className="space-y-3">
@@ -262,9 +328,12 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
 
             {/* Interview Experiences */}
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <h2 className="text-lg font-bold mb-4">인사담당자가 직접 답변했어요!</h2>
+              <h2 className="text-lg font-bold mb-4">
+                인사담당자가 직접 답변했어요!
+              </h2>
               <p className="text-sm text-gray-600 mb-4">
-                2022-11-03 [현대자동차] 대리님 및 기타사원 관리/운영 업체에 등록된 인사담당자입니다.
+                2022-11-03 [현대자동차] 대리님 및 기타사원 관리/운영 업체에
+                등록된 인사담당자입니다.
               </p>
 
               <div className="space-y-6">
@@ -306,7 +375,10 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
 
               <div className="space-y-4">
                 {relatedCompanies.map((company, index) => (
-                  <div key={index} className="border-b pb-3 last:border-b-0 last:pb-0">
+                  <div
+                    key={index}
+                    className="border-b pb-3 last:border-b-0 last:pb-0"
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-medium">{index + 1}</span>
                       <Link
@@ -337,5 +409,5 @@ export const CompanyReviewDetail = ({ companyId }: CompanyReviewDetailProps) => 
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

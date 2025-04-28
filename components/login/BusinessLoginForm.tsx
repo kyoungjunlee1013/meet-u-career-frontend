@@ -3,10 +3,10 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import axios from "axios";
 import { fetchMyInfo } from "@/api/fetchMyInfo";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
+import { apiClient } from "@/api/apiClient";
 
 export const BusinessLoginForm = () => {
   const router = useRouter();
@@ -42,7 +42,7 @@ export const BusinessLoginForm = () => {
     setSuccessMessage("");
 
     try {
-      const response = await axios.post("/api/business/auth/login", {
+      const response = await apiClient.post("/api/business/auth/login", {
         userId,
         password,
       });
@@ -95,8 +95,9 @@ export const BusinessLoginForm = () => {
           autoComplete="off"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
-          className={`w-full px-3 py-2.5 border ${errorMessages.userId ? "border-red-500" : "border-gray-300"
-            } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          className={`w-full px-3 py-2.5 border ${
+            errorMessages.userId ? "border-red-500" : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
         {errorMessages.userId && (
           <p className="text-red-500 text-xs mt-1">{errorMessages.userId}</p>
@@ -111,8 +112,9 @@ export const BusinessLoginForm = () => {
           autoComplete="off"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={`w-full px-3 py-2.5 border ${errorMessages.password ? "border-red-500" : "border-gray-300"
-            } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          className={`w-full px-3 py-2.5 border ${
+            errorMessages.password ? "border-red-500" : "border-gray-300"
+          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
         />
         {errorMessages.password && (
           <p className="text-red-500 text-xs mt-1">{errorMessages.password}</p>

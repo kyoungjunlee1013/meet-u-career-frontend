@@ -8,7 +8,7 @@ import {
   type ApplicantStatus,
   type ResumeApplicationDetail,
 } from "@/types/applicants";
-import axios from "axios";
+import { apiClient } from "@/api/apiClient";
 
 export default function ApplicantDetailPage({
   params,
@@ -26,7 +26,7 @@ export default function ApplicantDetailPage({
   useEffect(() => {
     const fetchApplicantDetail = async () => {
       try {
-        const response = await axios.get(
+        const response = await apiClient.get(
           `/api/applications/resume/detail/${applicantId}`
         );
         const data = response.data.data;

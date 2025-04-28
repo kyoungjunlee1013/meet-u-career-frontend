@@ -18,7 +18,7 @@ const LoginLeftPanel = memo(({ buttonLabel }: { buttonLabel: string }) => (
     {/* 로고 */}
     <div className="flex flex-col items-center justify-center">
       <Image
-        src="/images/login/login_03.png"
+        src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/login/login_03.png"
         alt="Login Logo"
         width={360}
         height={280}
@@ -66,19 +66,21 @@ export const LoginTabs = ({ onTabChange }: LoginTabsProps) => {
           {/* 탭 버튼 */}
           <div className="flex mb-8">
             <button
-              className={`flex-1 py-2 text-center font-semibold text-2xl ${activeTab === "personal"
-                ? "text-[#1D3557] border-b-4 border-blue-600"
-                : "text-gray-400"
-                }`}
+              className={`flex-1 py-2 text-center font-semibold text-2xl ${
+                activeTab === "personal"
+                  ? "text-[#1D3557] border-b-4 border-blue-600"
+                  : "text-gray-400"
+              }`}
               onClick={() => setActiveTab("personal")}
             >
               개인회원
             </button>
             <button
-              className={`flex-1 py-2 text-center font-semibold text-2xl ${activeTab === "business"
-                ? "text-[#1D3557] border-b-4 border-blue-600"
-                : "text-gray-400"
-                }`}
+              className={`flex-1 py-2 text-center font-semibold text-2xl ${
+                activeTab === "business"
+                  ? "text-[#1D3557] border-b-4 border-blue-600"
+                  : "text-gray-400"
+              }`}
               onClick={() => setActiveTab("business")}
             >
               기업회원

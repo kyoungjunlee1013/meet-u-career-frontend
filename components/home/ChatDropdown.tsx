@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useChatSocket } from "@/hooks/useChatSocket";
 import { useUserStore } from "@/store/useUserStore";
+import { apiClient } from "@/api/apiClient";
 interface Room {
   roomId: string;
   name: string;
@@ -12,23 +13,16 @@ interface ChatDropdownProps {
   onSelectRoom: (roomId: string) => void;
 }
 export default function ChatDropdown({ onSelectRoom }: ChatDropdownProps) {
-  const { userInfo } = useUserStore(); // userInfo에서 accessToken을 가져옴
+  const { userInfo } = useUserStore();
   const [rooms, setRooms] = useState<Room[]>([]);
   const { connected } = useChatSocket(null);
   useEffect(() => {
-    if (!userInfo || !userInfo.accessToken) return; // userInfo나 accessToken이 없으면 채팅방 목록을 가져오지 않음
+    if (!userInfo) return; // userInfo이 없으면 채팅방 목록을 가져오지 않음
     const fetchRooms = async () => {
       try {
-        const response = await fetch("/api/chat/rooms", {
-          method: "GET",
-          credentials: "include", // 쿠키를 포함한 요청
-          headers: {
-            "Authorization": `Bearer ${userInfo.accessToken}`, // accessToken을 Authorization 헤더에 추가
-          },
-        });
-        const json = await response.json();
-        if (json.data) {
-          setRooms(json.data); // 받은 채팅방 목록을 state에 저장
+        const response = await apiClient.get("/api/chat/rooms");
+        if (response.data) {
+          setRooms(response.data); // 받은 채팅방 목록을 state에 저장
         }
       } catch (error) {
         console.error("채팅방 목록을 불러오는데 실패했습니다.", error);
@@ -40,7 +34,9 @@ export default function ChatDropdown({ onSelectRoom }: ChatDropdownProps) {
     <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg overflow-hidden z-50 border">
       <div className="px-4 py-2 border-b">
         <h2 className="font-bold text-lg">채팅</h2>
-        <p className="text-xs text-gray-500">{connected ? "온라인" : "오프라인"}</p>
+        <p className="text-xs text-gray-500">
+          {connected ? "온라인" : "오프라인"}
+        </p>
       </div>
       <ul className="divide-y divide-gray-200 max-h-[400px] overflow-y-auto">
         {rooms.length > 0 ? (
@@ -51,8 +47,12 @@ export default function ChatDropdown({ onSelectRoom }: ChatDropdownProps) {
               className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
             >
               <div className="font-medium">{room.name}</div>
-              <div className="text-xs text-gray-500 truncate">{room.lastMessage}</div>
-              <div className="text-xs text-right text-gray-400">{room.lastMessageTime}</div>
+              <div className="text-xs text-gray-500 truncate">
+                {room.lastMessage}
+              </div>
+              <div className="text-xs text-right text-gray-400">
+                {room.lastMessageTime}
+              </div>
             </li>
           ))
         ) : (

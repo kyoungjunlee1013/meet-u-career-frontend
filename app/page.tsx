@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Header } from "@/components/home/Header";
 import { LoginHeader } from "@/components/home/LoginHeader";
 import { MainNavigation } from "@/components/home/MainNavigation";
@@ -12,6 +11,7 @@ import { LatestJobs } from "@/components/home/LatestJobs";
 import { Footer } from "@/components/home/Footer";
 import { useUserStore } from "@/store/useUserStore";
 import type { JobProps } from "@/types/job";
+import { apiClient } from "@/api/apiClient";
 
 interface ResponseProps {
   data: {
@@ -29,17 +29,22 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    axios
-      .get<ResponseProps>("/api/main/default")
-      .then((response) => {
+    const fetchData = async () => {
+      try {
+        const response = await apiClient.get<ResponseProps>(
+          "/api/main/default"
+        );
         setPopular(response.data.data.popular || []);
         setLatest(response.data.data.latest || []);
         setMostApplied(response.data.data.mostApplied || []);
-        setIsLoading(false);
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("error", error);
-      });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   if (!isUserInfoHydrated) {
@@ -51,7 +56,7 @@ export default function HomePage() {
       {userInfo ? <LoginHeader /> : <Header />}
       <MainNavigation />
       <main className="flex-1 max-w-[1200px] mx-auto px-4 py-6 w-full">
-        <SearchBar />
+        {userInfo && <SearchBar />}
         <PopularJobs popular={popular} isLoading={isLoading} />
         <LatestJobs latest={latest} isLoading={isLoading} />
         <MostAppliedJobs mostApplied={mostApplied} isLoading={isLoading} />

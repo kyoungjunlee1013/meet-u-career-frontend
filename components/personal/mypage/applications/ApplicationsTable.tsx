@@ -1,7 +1,23 @@
-import { Eye, Trash2 } from "lucide-react"
-import { ApplicationStatusBadge } from "./ApplicationStatusBadge"
+import { Trash2 } from "lucide-react";
+import { ApplicationStatusBadge } from "./ApplicationStatusBadge";
+import { apiClient } from "@/api/apiClient";
 
-export const ApplicationsTable = ({ data }) => {
+// 데이터 타입 정의
+interface Application {
+  id: number;
+  company: string;
+  position: string;
+  appliedAt: string;
+  deadline: string;
+  status: "서류통과" | "완수완료" | "불합격" | "면접예정"; // status 타입을 명확히 지정
+  resume: string;
+}
+
+interface ApplicationsTableProps {
+  data: Application[]; // data는 Application 타입 배열
+}
+
+export const ApplicationsTable = ({ data }: ApplicationsTableProps) => {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left text-gray-700">
@@ -30,10 +46,12 @@ export const ApplicationsTable = ({ data }) => {
         <tbody>
           {data.length === 0 ? (
             <tr>
-              <td colSpan={6} className="text-center py-8 text-gray-400">해당 상태의 지원 내역이 없습니다.</td>
+              <td colSpan={6} className="text-center py-8 text-gray-400">
+                해당 상태의 지원 내역이 없습니다.
+              </td>
             </tr>
           ) : (
-            data.map(app => (
+            data.map((app) => (
               <tr key={app.id} className="bg-white border-b hover:bg-gray-50">
                 <td className="px-6 py-4">
                   <div className="font-medium text-gray-900">{app.company}</div>
@@ -54,11 +72,14 @@ export const ApplicationsTable = ({ data }) => {
                       aria-label="삭제"
                       onClick={async () => {
                         // 한글 확인창
-                        if (!window.confirm("정말로 이 지원을 취소하시겠습니까?")) return;
+                        if (
+                          !window.confirm("정말로 이 지원을 취소하시겠습니까?")
+                        )
+                          return;
                         try {
                           // profileId는 테스트용으로 2로 하드코딩
                           await import("axios").then(({ default: axios }) =>
-                            axios.put(
+                            apiClient.put(
                               `/api/personal/mypage/applications/delete/${app.id}?profileId=2`,
                               {},
                               { withCredentials: true }
@@ -68,7 +89,9 @@ export const ApplicationsTable = ({ data }) => {
                           // 새로고침으로 목록 갱신
                           window.location.reload();
                         } catch (e: any) {
-                          alert("지원 취소 중 오류가 발생했습니다. 다시 시도해 주세요.");
+                          alert(
+                            "지원 취소 중 오류가 발생했습니다. 다시 시도해 주세요."
+                          );
                         }
                       }}
                     >
@@ -82,5 +105,5 @@ export const ApplicationsTable = ({ data }) => {
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};

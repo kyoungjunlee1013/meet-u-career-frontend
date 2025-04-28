@@ -1,53 +1,69 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Menu, Bell, MessageSquare } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { NotificationDropdown } from "./NotificationDropdown"
-import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown"
-import { ProfileDropdown } from "./ProfileDropdown"
-import { useState, useRef, useEffect } from "react"
-
-import { useSidebar } from "./SidebarProvider"
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { Menu, Bell, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { NotificationDropdown } from "./NotificationDropdown";
+import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown";
+import { ProfileDropdown } from "./ProfileDropdown";
+import { useSidebar } from "./SidebarProvider";
+import { useNotificationStore } from "@/store/useNotificationStore";
 
 export function PersonalHeader() {
-  const { toggleSidebar } = useSidebar()
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false)
-  const [isChatOpen, setIsChatOpen] = useState(false)
-  const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const { toggleSidebar } = useSidebar();
+  const [isNotificationOpen, setIsNotificationOpen] = useState<boolean>(false);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
 
-  const notificationRef = useRef<HTMLDivElement>(null)
-  const chatRef = useRef<HTMLDivElement>(null)
-  const profileRef = useRef<HTMLDivElement>(null)
+  const { notifications, isLoaded } = useNotificationStore();
+  const hasUnreadNotification =
+    isLoaded && notifications.some((n) => n.isRead === 0);
+
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       // Check if notification dropdown is open and clicked outside
-      if (isNotificationOpen && notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
-        setIsNotificationOpen(false)
+      if (
+        isNotificationOpen &&
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
+        setIsNotificationOpen(false);
       }
 
       // Check if chat dropdown is open and clicked outside
-      if (isChatOpen && chatRef.current && !chatRef.current.contains(event.target as Node)) {
-        setIsChatOpen(false)
+      if (
+        isChatOpen &&
+        chatRef.current &&
+        !chatRef.current.contains(event.target as Node)
+      ) {
+        setIsChatOpen(false);
       }
 
       // Check if profile dropdown is open and clicked outside
-      if (isProfileOpen && profileRef.current && !profileRef.current.contains(event.target as Node)) {
-        setIsProfileOpen(false)
+      if (
+        isProfileOpen &&
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileOpen(false);
       }
-    }
+    };
 
     // Add event listener when any dropdown is open
     if (isNotificationOpen || isChatOpen || isProfileOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     // Cleanup event listener
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [isNotificationOpen, isChatOpen, isProfileOpen])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isNotificationOpen, isChatOpen, isProfileOpen]);
 
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-100 z-30">
@@ -78,9 +94,9 @@ export function PersonalHeader() {
               aria-label="Notifications"
             >
               <Bell className="h-[18px] w-[18px] text-gray-700" />
-              <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-medium">
-                1
-              </span>
+              {hasUnreadNotification && (
+                <span className="absolute -top-0.5 -right-0.5 block h-2 w-2 rounded-full bg-red-500" />
+              )}
             </Button>
             {isNotificationOpen && <NotificationDropdown />}
           </div>
@@ -108,12 +124,14 @@ export function PersonalHeader() {
               className="p-0 rounded-full w-9 h-9 hover:bg-transparent"
               onClick={() => setIsProfileOpen(!isProfileOpen)}
             >
-              <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden">{/* Profile image placeholder */}</div>
+              <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden">
+                {/* Profile image placeholder */}
+              </div>
             </Button>
             {isProfileOpen && <ProfileDropdown />}
           </div>
         </div>
       </div>
     </header>
-  )
+  );
 }

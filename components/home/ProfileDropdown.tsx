@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { User, Building2, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useUserStore } from "@/store/useUserStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
+import { apiClient } from "@/api/apiClient";
 
 const ProfileDropdown = () => {
   const router = useRouter();
+
   const { clearTokens } = useAuthStore();
   const { userInfo, clearUserInfo } = useUserStore();
   const { clearNotifications } = useNotificationStore(); // 알림 초기화 추가
@@ -17,7 +18,11 @@ const ProfileDropdown = () => {
   const handleLogout = async () => {
     try {
       // 서버에 로그아웃 요청 (refreshToken 삭제)
-      await axios.post("/api/personal/auth/logout", {}, { withCredentials: true });
+      await apiClient.post(
+        "/api/personal/auth/logout",
+        {},
+        { withCredentials: true }
+      );
 
       // 클라이언트에 저장된 토큰, 유저정보, 알림 초기화
       clearTokens();
@@ -61,11 +66,10 @@ const ProfileDropdown = () => {
         </li>
         <li className="border-t">
           <button
-            type="button"
-            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 text-left"
+            className="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-left"
             onClick={handleLogout}
           >
-            <LogOut className="h-4 w-4 text-gray-500" />
+            <LogOut size={16} className="mr-2" />
             <span>로그아웃</span>
           </button>
         </li>

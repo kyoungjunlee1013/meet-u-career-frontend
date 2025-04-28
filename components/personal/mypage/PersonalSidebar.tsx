@@ -22,14 +22,16 @@ interface PersonalSidebarProps {
   activeItem?: string;
 }
 
-export const PersonalSidebar = ({ activeItem = "MY홈" }: PersonalSidebarProps) => {
+export const PersonalSidebar = ({
+  activeItem = "MY홈",
+}: PersonalSidebarProps) => {
   const { userInfo } = useUserStore();
   const { myData } = useMyPageStore();
 
   // 필요한 통계 데이터 계산
   const stats = {
-    applications: myData?.recentApplications?.length || 0,  // myData가 null일 경우 기본값 0 사용
-    offers: myData?.offerCount || 0,  // myData가 null일 경우 기본값 0 사용
+    applications: myData?.recentApplications?.length || 0, // myData가 null일 경우 기본값 0 사용
+    offers: myData?.offerCount || 0, // myData가 null일 경우 기본값 0 사용
     interviews:
       (myData?.summary?.passedDocument || 0) +
       (myData?.summary?.interview1st || 0) +
@@ -68,19 +70,16 @@ export const PersonalSidebar = ({ activeItem = "MY홈" }: PersonalSidebarProps) 
       )}
 
       <aside
-        className={`fixed top-16 bottom-0 left-0 w-64 bg-white shadow-sm z-20 transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`fixed top-16 bottom-0 left-0 w-64 bg-white shadow-sm z-20 transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         <div className="flex flex-col h-full overflow-y-auto">
           <div className="p-4 border-b border-gray-100">
             <div className="flex flex-col items-center">
               <div className="h-16 w-16 rounded-full bg-gray-200 overflow-hidden mb-2">
                 <Image
-<<<<<<< Updated upstream
-                  src="/images/etc/vibrant-street-market.png"
-=======
                   src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
->>>>>>> Stashed changes
                   alt="User profile"
                   width={64}
                   height={64}
@@ -122,10 +121,11 @@ export const PersonalSidebar = ({ activeItem = "MY홈" }: PersonalSidebarProps) 
                 <li key={index}>
                   <Link
                     href={item.href}
-                    className={`flex items-center py-3.5 px-4 ${item.label === activeItem
-                      ? "text-blue-600 bg-blue-50"
-                      : "text-gray-700 hover:bg-gray-100"
-                      } rounded-md`}
+                    className={`flex items-center py-3.5 px-4 ${
+                      item.label === activeItem
+                        ? "text-blue-600 bg-blue-50"
+                        : "text-gray-700 hover:bg-gray-100"
+                    } rounded-md`}
                   >
                     <item.icon className="h-5 w-5 mr-3" />
                     <span>{item.label}</span>

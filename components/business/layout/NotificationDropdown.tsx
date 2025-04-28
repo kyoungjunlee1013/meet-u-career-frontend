@@ -1,25 +1,24 @@
-"use client"
+"use client";
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { apiClient } from "@/api/apiClient"
-import { useNotificationStore } from "@/store/useNotificationStore"
+import { apiClient } from "@/api/apiClient";
+import { useNotificationStore } from "@/store/useNotificationStore";
 
 interface NotificationDropdownProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export const NotificationDropdown = ({ isOpen, onClose }: NotificationDropdownProps) => {
-  const dropdownRef = useRef<HTMLDivElement>(null)
+export const NotificationDropdown = ({
+  isOpen,
+  onClose,
+}: NotificationDropdownProps) => {
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const {
-    notifications,
-    markAsRead,
-    markAllAsRead,
-    setNotifications,
-  } = useNotificationStore();
+  const { notifications, markAsRead, markAllAsRead, setNotifications } =
+    useNotificationStore();
 
   // 최초 알림 목록 불러오기
   useEffect(() => {
@@ -39,7 +38,7 @@ export const NotificationDropdown = ({ isOpen, onClose }: NotificationDropdownPr
   // 개별 알림 읽음 처리
   const handleRead = async (id: number) => {
     try {
-      await apiClient.post(`/api/notification/read/${id}`);
+      await apiClient.post(`/api/notification/read`, { id });
       markAsRead(id);
     } catch (error) {
       console.error("알림 읽음 처리 실패:", error);
@@ -59,24 +58,30 @@ export const NotificationDropdown = ({ isOpen, onClose }: NotificationDropdownPr
   // 드롭다운 외부 클릭시 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        onClose()
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        onClose();
       }
-    }
+    };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [isOpen, onClose])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
-    <div ref={dropdownRef} className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-10 overflow-hidden">
+    <div
+      ref={dropdownRef}
+      className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-10 overflow-hidden"
+    >
       <div className="p-3 border-b flex justify-between items-center">
         <h3 className="font-medium text-sm">알림</h3>
         <button
@@ -98,12 +103,15 @@ export const NotificationDropdown = ({ isOpen, onClose }: NotificationDropdownPr
               <li
                 key={notification.id}
                 onClick={() => handleRead(notification.id)}
-                className={`p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer ${notification.isRead === 0 ? "bg-white" : "bg-gray-50"
-                  }`}
+                className={`p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer ${
+                  notification.isRead === 0 ? "bg-white" : "bg-gray-50"
+                }`}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-sm font-medium">{notification.message}</p>
+                    <p className="text-sm font-medium">
+                      {notification.message}
+                    </p>
                     <p className="text-xs text-gray-500 mt-1">
                       {formatDistanceToNow(new Date(notification.createdAt), {
                         addSuffix: true,
@@ -121,5 +129,5 @@ export const NotificationDropdown = ({ isOpen, onClose }: NotificationDropdownPr
         )}
       </div>
     </div>
-  )
-}
+  );
+};
