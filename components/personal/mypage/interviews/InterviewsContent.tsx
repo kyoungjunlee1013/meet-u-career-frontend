@@ -151,6 +151,8 @@ export function InterviewsContent() {
           <InterviewStatusTab
             interviews={interviews}
             onEditReview={handleEditReviewFromInterview}
+            loading={false}
+            error={null}
           />
         )}
       </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { ReviewCard } from "./ReviewCard"
+import { apiClient } from "@/api/apiClient"
 
 interface Review {
   id: number
@@ -20,9 +21,8 @@ export const FeaturedReviews = () => {
   useEffect(() => {
     const fetchLatestReviews = async () => {
       try {
-        const res = await fetch("/api/personal/interview-reviews/reviews/recently")
-        const json = await res.json()
-        setReviews(json.data || [])
+        const res = await apiClient.get("/api/personal/interview-reviews/reviews/recently")
+        setReviews(res.data.data || [])
       } catch (error) {
         console.error("최신 리뷰 불러오기 실패", error)
         setError(true)

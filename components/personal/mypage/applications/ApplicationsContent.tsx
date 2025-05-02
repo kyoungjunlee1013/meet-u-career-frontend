@@ -25,17 +25,10 @@ export const ApplicationsContent = () => {
 
   useEffect(() => {
     setLoading(true);
-    /*
-    //
-    // 테스트 profileId 수정필수!!
-    //
-    */
-    const profileId = 2;
-    apiClient
-      .get(`/api/personal/mypage/applications?profileId=${profileId}`, {
-        withCredentials: true,
-      })
-      .then((res) => {
+    
+    apiClient.get(`/api/personal/mypage/applications`, {
+      withCredentials: true, // 쿠키 기반 인증 유지
+    }).then((res) => {
         // If backend wraps in ResultData, use res.data.data
         const list = Array.isArray(res.data) ? res.data : res.data.data;
         // Status code to label mapping

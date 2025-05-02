@@ -5,6 +5,7 @@ import { CompanyHeader } from "./CompanyHeader"
 import { ActionButtons } from "./ActionButtons"
 import { InterviewExperience } from "./InterviewExperience"
 import { PromotionalBanner } from "./PromotionalBanner"
+import { apiClient } from "@/api/apiClient"
 
 interface CompanyInfo {
   companyId: number
@@ -39,10 +40,9 @@ export const CompanyReviewDetail = ({ companyId }: Props) => {
   useEffect(() => {
     const fetchCompany = async () => {
       try {
-        const res = await fetch(`/api/personal/interview-reviews/company/info/${companyId}`)
-        const json = await res.json()
-        console.log("🏢 회사 정보:", json)
-        setCompany(json.data)
+        const res = await apiClient.get(`/api/personal/interview-reviews/company/info/${companyId}`)
+        console.log("🏢 회사 정보:", res.data)
+        setCompany(res.data.data)
       } catch (e) {
         console.error("❌ 회사 정보 fetch 실패", e)
         setError(true)
@@ -51,10 +51,9 @@ export const CompanyReviewDetail = ({ companyId }: Props) => {
 
     const fetchReviews = async () => {
       try {
-        const res = await fetch(`/api/personal/interview-reviews/company/${companyId}`)
-        const json = await res.json()
-        console.log("💬 면접 후기:", json)
-        setReviews(Array.isArray(json.data) ? json.data : [])
+        const res = await apiClient.get(`/api/personal/interview-reviews/company/${companyId}`)
+        console.log("💬 면접 후기:", res.data)
+        setReviews(Array.isArray(res.data.data) ? res.data.data : [])
       } catch (e) {
         console.error("❌ 후기 fetch 실패", e)
         setError(true)

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import { Eye, Bookmark } from "lucide-react"
 import Link from "next/link"
+import { apiClient } from "@/api/apiClient"
 interface Company {
   companyId: number
   companyName: string
@@ -25,9 +26,8 @@ export const CompanyReviewList = ({ searchKeyword }: Props) => {
             searchKeyword,
           )}`
           : `/api/personal/interview-reviews/companies`
-        const res = await fetch(url)
-        const json = await res.json()
-        setCompanies(json.data)
+        const res = await apiClient.get(url)
+        setCompanies(res.data.data)
       } catch (error) {
         console.error("기업 리뷰 데이터 불러오기 실패", error)
         setCompanies([])
