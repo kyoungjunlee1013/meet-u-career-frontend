@@ -36,9 +36,8 @@ const StatCard = ({
 
   return (
     <div
-      className={`bg-white border border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer transition-all hover:shadow-md ${
-        isSelected ? "ring-2 ring-blue-500 shadow-md" : ""
-      }`}
+      className={`bg-white border border-gray-200 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer transition-all hover:shadow-md ${isSelected ? "ring-2 ring-blue-500 shadow-md" : ""
+        }`}
       onClick={handleClick}
     >
       <div className={`mb-1 ${color}`}>{icon}</div>
@@ -72,14 +71,7 @@ export const ApplicantsStatistics = ({
 
     const fetchStats = async () => {
       try {
-        const token = sessionStorage.getItem("accessToken");
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const response = await apiClient.get(
-          `/api/business/applicants/${jobPostingId}/stats`,
-          {
-            headers,
-          }
-        );
+        const response = await apiClient.get(`/api/business/applicants/${jobPostingId}/stats`);
         setStats(response.data.data);
       } catch (error) {
         console.error("통계 정보 불러오기 실패:", error);
