@@ -158,7 +158,7 @@ export function RichTemplate({ data, desc }: { data?: any; desc?: any }) {
           </div>
           <div className="bg-blue-50 rounded p-4">
             <div className="font-bold text-blue-700">지원 방법</div>
-            <div>{data.applyMethod || '사람인 온라인 입사지원'}</div>
+            <div>{data.applyMethod || 'MeetU 온라인 입사지원'}</div>
           </div>
           <div className="bg-blue-50 rounded p-4">
             <div className="font-bold text-blue-700">지원 이메일</div>

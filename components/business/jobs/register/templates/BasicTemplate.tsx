@@ -175,7 +175,7 @@ export function BasicTemplate({ data }: BasicTemplateProps) {
   const closeType = (typeof data.closeType === 'number' && !isNaN(data.closeType)) ? data.closeType : Number(data.closeType);
   return map[closeType] || '-';
 })()}</td>
-              <td className="border px-3 py-2">{data?.applyMethod || '사람인 온라인 입사지원'}</td>
+              <td className="border px-3 py-2">{data?.applyMethod || 'MeetU 온라인 입사지원'}</td>
               <td className="border px-3 py-2">{data?.applyEmail || '-'}</td>
             </tr>
           </tbody>

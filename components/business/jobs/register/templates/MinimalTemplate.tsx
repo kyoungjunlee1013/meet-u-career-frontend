@@ -28,7 +28,7 @@ export function MinimalTemplate({ data }: { data?: any }) {
     openingDate: "2025-04-21",
     expirationDate: "2025-05-10",
     closeType: 0, // 마감일까지
-    applyMethod: "사람인 온라인 입사지원",
+    applyMethod: "MeetU 온라인 입사지원",
     applyEmail: "hr@sga.co.kr",
     steps: [
       { step: "STEP1", desc: "서류전형" },

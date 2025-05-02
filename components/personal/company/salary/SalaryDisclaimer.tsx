@@ -4,7 +4,7 @@ export const SalaryDisclaimer = () => {
       <ul className="space-y-2">
         <li className="flex items-start">
           <span className="mr-2">•</span>
-          <p>본 자료는 사람인 내부 자체 데이터, 기업정보공시, 국민연금공단을 통해 수집하여 추정하였습니다.</p>
+          <p>본 자료는 MeetU 내부 자체 데이터, 기업정보공시, 국민연금공단을 통해 수집하여 추정하였습니다.</p>
         </li>
         <li className="flex items-start">
           <span className="mr-2">•</span>
@@ -19,7 +19,7 @@ export const SalaryDisclaimer = () => {
         </li>
         <li className="flex items-start">
           <span className="mr-2">•</span>
-          <p>본 자료의 저작권은 (주)사람인에게 있으며 자료의 무단 재배포 및 상업적 이용을 금합니다.</p>
+          <p>본 자료의 저작권은 (주)MeetU에게 있으며 자료의 무단 재배포 및 상업적 이용을 금합니다.</p>
         </li>
       </ul>
     </div>

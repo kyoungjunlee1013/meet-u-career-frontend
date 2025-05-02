@@ -24,7 +24,7 @@ export const LoginHeader = () => {
             className="flex items-center gap-1 hover:text-gray-900"
           >
             <Home className="h-4 w-4" />
-            <span>사람인 홈</span>
+            <span>MeetU 홈</span>
           </Link>
           <Link href="/register" className="hover:text-gray-900">
             <span>회원가입</span>

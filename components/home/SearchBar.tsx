@@ -5,6 +5,8 @@ import Link from "next/link";
 import { apiClient } from "@/api/apiClient";
 import { Search } from "lucide-react";
 import Image from "next/image";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useUserStore } from "@/store/useUserStore";
 
 interface RecommendedJob {
   id: number;
@@ -16,6 +18,13 @@ interface RecommendedJob {
 
 export const SearchBar = () => {
   const [featuredJobs, setFeaturedJobs] = useState<RecommendedJob[]>([]);
+  const { accessToken } = useAuthStore();
+  const { userInfo } = useUserStore();
+
+  // 로그인하지 않았거나, 개인회원이 아닌 경우 렌더링하지 않음
+  if (!accessToken || !userInfo || userInfo.role !== "PERSONAL") {
+    return null;
+  }
 
   useEffect(() => {
     const fetchRecommendedJobs = async () => {

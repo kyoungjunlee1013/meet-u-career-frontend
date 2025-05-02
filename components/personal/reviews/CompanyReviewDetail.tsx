@@ -255,7 +255,7 @@ export const CompanyReviewDetail = ({
                 <div>
                   <h2 className="text-lg font-bold">
                     현재 {company.reviewCount.toLocaleString()}명의 기업리뷰가
-                    사람인에 등록됐어요!
+                    MeetU에 등록됐어요!
                   </h2>
                   <p className="text-sm mt-1">
                     당신 또한 회사 경험을 나눠 다른 구직자들을 도와주세요.

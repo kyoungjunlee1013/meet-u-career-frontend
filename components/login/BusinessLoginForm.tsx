@@ -62,8 +62,8 @@ export const BusinessLoginForm = () => {
 
           await fetchMyInfo();
 
-          // 메인 페이지로 이동.
-          router.push("/");
+          // 기업 대시보드로 이동.
+          router.push("/business/dashboard");
         } else {
           setErrorMessages({
             message: response.data.msg,
