@@ -5,8 +5,8 @@ import { apiClient } from "@/api/apiClient";
 
 interface Interview {
   id: number;
-  company: string;
-  position: string;
+  companyName: string;
+  jobTitle: string;
   date?: string;
   location?: string;
   time?: string;
@@ -63,13 +63,13 @@ export function ReviewModal({
     }
   }, [interview]);
 
-  // ✅ 저장 처리
+  // 저장 처리
   const handleSubmit = async () => {
     try {
       const payload = {
-        applicationId: interview.applicationId,
-        companyId: interview.companyId,
-        jobCategoryId: interview.jobCategoryId,
+        companyId: interview.companyId ?? 0, // 0으로 초기화 ❌
+        jobCategoryId: interview.jobCategoryId ?? 0,
+        applicationId: interview.applicationId ?? 0,
         rating,
         difficulty,
         careerLevel: 0,
@@ -88,7 +88,6 @@ export function ReviewModal({
       onClose();
     } catch (err) {
       alert("후기 저장 중 문제가 발생했습니다.");
-      alert("후기 저장 중 문제가 발생했습니다.");
       console.error("❌ 후기 저장 실패", err);
     }
   };
@@ -100,9 +99,9 @@ export function ReviewModal({
 
         {/* 회사 / 직무 */}
         <div className="mb-2">
-          <p className="text-sm text-gray-500">{interview.company}</p>
-          <p className="font-medium">{interview.position}</p>
-        </div>
+  <p className="text-sm text-gray-500">{interview.companyName}</p>
+  <p className="font-medium">{interview.jobTitle}</p>
+</div>
 
         {/* 평가 */}
         <div className="mt-4">

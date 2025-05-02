@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { apiClient } from "@/api/apiClient"; // 🔄 apiClient 사용
+import { apiClient } from "@/api/apiClient";
 import { InterviewTabs } from "./InterviewTabs";
 import { InterviewStatusTab } from "./InterviewStatusTab";
 import InterviewReviewTab from "./InterviewReviewTab";
@@ -11,25 +11,12 @@ import { ReviewDetailModal } from "./ReviewDetailModal";
 import { Interview } from "@/types/interview";
 
 // ✅ 리뷰 타입
-interface Review {
-  id: number;
-  company: string;
-  position: string;
-  date: string;
-  logo: string;
-  jobCategory: string;
-  careerLevel: number;
-  interviewYearMonth: string;
-  rating: number;
-  difficulty: number;
-  interviewType: number;
-  interviewParticipants: number;
-  questionsAsked: string;
-  interviewTip: string;
-  result: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Review } from "@/components/types/review";
+
+
+
+
+
 
 export function InterviewsContent() {
   const [activeTab, setActiveTab] = useState("status");
@@ -42,22 +29,19 @@ export function InterviewsContent() {
 
   const fetchInterviews = async () => {
     try {
-      const res = await apiClient.get("/api/personal/interviews");
-      console.log("✅ 인터뷰 목록 확인:", res.data);
-
-      const reviewableRes = await apiClient.post(
-        "/api/personal/interview-reviews/reviewable-list",
-        res.data.data
-      );
-
-      const reviewableMap = new Map<number, boolean>();
-      reviewableRes.data.data.forEach((dto: any) => {
-        reviewableMap.set(dto.applicationId, dto.canWriteReview);
+      const res = await apiClient.get("/api/personal/mypage/applications"); // 올바른 GET 요청
+      console.log("지원 내역 + 리뷰 가능 여부 확인 (raw):", JSON.stringify(res.data, null, 2));
+      res.data.data.forEach((item: any, idx: number) => {
+        console.log(`[${idx}] companyId:`, item.companyId, "company?.id:", item.company?.id, "jobCategoryId:", item.jobCategoryId, "jobCategory?.id:", item.jobCategory?.id, "applicationId:", item.applicationId);
       });
-
+  
       const transformed: Interview[] = res.data.data.map((item: any) => ({
         ...item,
-        canWriteReview: reviewableMap.get(item.applicationId) ?? false,
+        companyId: item.companyId ?? (item.company?.id ?? 0),
+        jobCategoryId: item.jobCategoryId ?? (item.jobCategory?.id ?? 0),
+        applicationId: item.applicationId ?? 0,
+        canWriteReview: item.canWriteReview ?? false, // 백엔드에서 직접 내려옴
+        expirationDate: item.expirationDate, // 만료일 포함
         status:
           typeof item.status === "string"
             ? item.status === "completed"
@@ -67,12 +51,13 @@ export function InterviewsContent() {
               : 1
             : item.status,
       }));
-
+  
       setInterviews(transformed);
     } catch (err) {
       console.error("❌ 인터뷰 데이터 불러오기 실패", err);
     }
   };
+  
 
   const fetchReviews = async () => {
     try {
@@ -89,6 +74,7 @@ export function InterviewsContent() {
   }, []);
 
   const handleEditReviewFromInterview = (interview: Interview) => {
+    console.log('[handleEditReviewFromInterview] 리뷰 모달로 넘기는 interview:', interview);
     setEditingReview(interview);
     setReviewModalOpen(true);
   };
@@ -96,14 +82,18 @@ export function InterviewsContent() {
   const handleEditReviewFromReview = (review: Review) => {
     const converted: Interview = {
       ...review,
+      companyName: review.company ?? "",
+      jobTitle: review.position ?? "",
       status: 3,
-      companyId: 0,
-      jobCategoryId: 0,
-      applicationId: 0,
+      companyId: review.companyId,
+      jobCategoryId: review.jobCategoryId,
+      applicationId: review.applicationId,
     };
+    console.log('[handleEditReviewFromReview] 리뷰 모달로 넘기는 converted:', converted);
     setEditingReview(converted);
     setReviewModalOpen(true);
   };
+
 
   const handleViewReview = (review: Review) => {
     setViewingReview(review);

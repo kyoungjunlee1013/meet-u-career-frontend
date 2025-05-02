@@ -6,8 +6,8 @@ import { ReviewModal } from "./review/ReviewModal";
 
 interface Interview {
   id: number;
-  company: string;
-  position: string;
+  companyName: string;       // 수정
+  jobTitle: string;          // 수정
   date: string;
   status: "scheduled" | "completed" | "canceled";
   logo: string;
@@ -21,6 +21,7 @@ interface Interview {
   jobCategoryId: number;
   applicationId: number;
   createdAt?: string;
+  expirationDate?: string;
 }
 
 interface InterviewCardProps {
@@ -31,27 +32,35 @@ interface InterviewCardProps {
 export function InterviewCard({ interview }: InterviewCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ✅ 작성 여부는 canWriteReview 우선 → false 또는 hasReview === true일 때 true로 간주
+  // 작성 여부는 canWriteReview 우선 → false 또는 hasReview === true일 때 true로 간주
   const [hasReview, setHasReview] = useState(
     interview.canWriteReview === false || interview.hasReview === true
   );
 
-  const formattedDate = new Date(interview.date).toLocaleString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  let formattedDate = "-";
+if (interview.expirationDate) {
+  const expDate = new Date(interview.expirationDate);
+  if (!isNaN(expDate.getTime())) {
+    // Add 7 days
+    expDate.setDate(expDate.getDate() + 7);
+    formattedDate = expDate.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+}
 
-  // ✅ 리뷰 작성 완료 시 호출됨
+  // 리뷰 작성 완료 시 호출됨
   const handleReviewComplete = (id: number) => {
     if (id === interview.id) {
       setHasReview(true); // 상태 업데이트
     }
   };
 
-  // ✅ 버튼 조건 설정
+  // 버튼 조건 설정
   let buttonText = "";
   let buttonDisabled = true;
   let buttonStyle =
@@ -99,7 +108,7 @@ export function InterviewCard({ interview }: InterviewCardProps) {
               interview.logo ||
               "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"
             }
-            alt={interview.company}
+            alt={interview.companyName || "회사 로고"}
             width={40}
             height={40}
             className="h-full w-full object-cover"
@@ -107,9 +116,9 @@ export function InterviewCard({ interview }: InterviewCardProps) {
         </div>
         <div>
           <h4 className="font-bold text-gray-900 text-base leading-tight">
-            {interview.company}
+          {interview.companyName}
           </h4>
-          <p className="text-sm text-gray-600 mt-0.5">{interview.position}</p>
+          <p className="text-sm text-gray-600 mt-0.5">{interview.jobTitle}</p>
         </div>
       </div>
 

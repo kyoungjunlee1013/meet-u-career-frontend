@@ -2,8 +2,8 @@
 
 export interface Interview {
     id: number;
-    company: string;
-    position: string;
+    companyName: string;
+    jobTitle: string;
     date: string;
     status: number;
     logo: string;
@@ -20,5 +20,5 @@ export interface Interview {
     questionsAsked?: string;
     interviewTip?: string;
     hasReview?: boolean;
+    expirationDate?: string;
   }
-  

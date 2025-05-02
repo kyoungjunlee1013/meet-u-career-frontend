@@ -1,6 +1,6 @@
 "use client";
 
-import { Review } from "@/types/review";
+import { Review } from "@/components/types/review";
 import { InterviewReviewList } from "./InterviewReviewList";
 
 // ✅ props 타입 정의
