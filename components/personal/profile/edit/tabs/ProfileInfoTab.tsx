@@ -21,22 +21,32 @@ export const ProfileInfoTab = () => {
   const {userInfo} = useUserStore();
   useEffect(() => {
     const fetchData = async () => {
-      const res = await apiClient.get<{ data: ProfileInfo }>("/api/personal/profile/me?profileId=2")
-      setForm(res.data.data)
-      setProfileImage(`/${res.data.data.profileImageUrl}`)
-    }
-    fetchData()
-  }, [])
+      try {
+        const res = await apiClient.get<{ data: ProfileInfo }>("/api/personal/profile/me");
+        setForm(res.data.data);
+        setProfileImage(`/${res.data.data.profileImageUrl}`);
+      } catch (error) {
+        console.error("프로필 정보를 불러오는 데 실패했습니다:", error);
+      }
+    };
+    fetchData();
+  }, []);
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target
     if (!form) return
     setForm({ ...form, [id]: value })
   }
   const handleSave = async () => {
-    if (!form) return
-    await apiClient.put("/api/personal/profile/me?profileId=" + form.accountId, form)
-    alert("저장 완료")
-  }
+    if (!form) return;
+    try {
+      await apiClient.post("/api/personal/profile/me", form);
+      alert("저장 완료");
+    } catch (error) {
+      console.error("프로필 저장 실패", error);
+      alert("저장 중 오류가 발생했습니다.");
+    }
+  };
   return (
     <div>
       <h2 className="text-lg font-medium text-gray-900 mb-4">프로필 이미지</h2>

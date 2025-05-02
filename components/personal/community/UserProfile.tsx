@@ -27,12 +27,9 @@ export const UserProfile = () => {
         const isLocalhost =
           typeof window !== "undefined" &&
           window.location.hostname === "localhost";
-        const response = await apiClient.get(
-          `/api/personal/profile/me?profileId=${userInfo.profileId}`,
-          {
-            withCredentials: !isLocalhost,
-          }
-        );
+        const response = await apiClient.get("/api/personal/profile/me", {
+          withCredentials: !isLocalhost,
+        });
         setProfile(response.data.data); // ✅ API 결과 저장
       } catch (error) {
         console.error("프로필 조회 실패", error);

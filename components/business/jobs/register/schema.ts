@@ -22,8 +22,8 @@ export const jobPostingSchema = z.object({
     preferences: z.string(),
     benefits: z.string(),
   }),
-  // applyMethod: z.string().optional(),
-  // applyEmail: z.string().optional(),
+  applyMethod: z.string().optional(),
+  applyEmail: z.string().optional(),
 });
 
 export type JobPostingFormData = z.infer<typeof jobPostingSchema>;
