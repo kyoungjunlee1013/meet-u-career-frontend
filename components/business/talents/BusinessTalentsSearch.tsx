@@ -83,7 +83,7 @@ export const BusinessTalentsSearch = () => {
         const response = await apiClient.get<ApiResult<TalentDto[]>>(
           "/business/talents"
         );
-        const dtos = response.data.data;
+        const dtos = response.data.data || []; // 데이터가 없을 경우 빈 배열로 설정
         const enriched = dtos.map((d) => ({
           id: d.id,
           name: d.name,
@@ -104,6 +104,7 @@ export const BusinessTalentsSearch = () => {
       } catch (err) {
         console.error(err);
         setError("인재 목록을 불러오는데 실패했습니다.");
+        setTalents([]); // 오류 발생 시 빈 배열로 설정
       } finally {
         setLoading(false); // End loading
       }

@@ -122,13 +122,13 @@ export const ChatDropdown = ({
     >
       <div className="p-3 border-b border-gray-100 flex justify-between items-center">
         <h3 className="font-medium text-gray-800">메시지</h3>
-        <button
+        <div
           onClick={handleMarkAllAsRead}
-          className="text-xs text-blue-600 hover:text-blue-800 flex items-center"
+          className="text-xs text-blue-600 hover:text-blue-800 flex items-center cursor-pointer"
         >
           <Check className="h-3 w-3 mr-1" />
           모두 읽기
-        </button>
+        </div>
       </div>
       <div className="max-h-96 overflow-y-auto">
         {chatMessages.length > 0 ? (
@@ -180,15 +180,13 @@ export const ChatDropdown = ({
         )}
       </div>
       <div className="p-2 border-t border-gray-100">
-        <button className="w-full p-2 text-sm text-blue-600 hover:bg-gray-50 rounded flex items-center justify-center">
-          <button
-            onClick={() => openChatWindow()}
-            className="text-sm font-medium text-blue-600 hover:text-blue-800"
-          >
-            채팅 더보기
-          </button>
+        <div
+          onClick={() => openChatWindow()}
+          className="text-sm font-medium text-blue-600 hover:text-blue-800 cursor-pointer flex items-center justify-center"
+        >
+          채팅 더보기
           <ChevronRight className="h-4 w-4 ml-1" />
-        </button>
+        </div>
       </div>
     </div>
   );
