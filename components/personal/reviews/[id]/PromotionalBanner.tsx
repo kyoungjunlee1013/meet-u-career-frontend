@@ -16,7 +16,6 @@ export const PromotionalBanner = ({ reviewCount }: Props) => {
           </h3>
           <p className="text-white text-sm">
             당신의 회사 경험이 다른 구직자들에게 도움이 될 거예요.{" "}
-            <span className="underline">지금 참여하기</span>
           </p>
         </div>
         <div className="absolute right-0 bottom-0">

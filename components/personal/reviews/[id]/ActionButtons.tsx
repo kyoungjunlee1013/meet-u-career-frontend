@@ -26,7 +26,7 @@ export function ActionButtons({ reviews }: Props) {
         </div>
         <div className="text-sm">
           <div className="font-medium">
-            리뷰 {reviewCount.toLocaleString()}건 / 평균 평점 {average}점
+            리뷰 {reviewCount.toLocaleString()}건 &nbsp;|&nbsp;  평균 평점 {average}점
           </div>
         </div>
       </div>

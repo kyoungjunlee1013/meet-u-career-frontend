@@ -25,6 +25,10 @@ interface InterviewReview {
   createdAt: string
   questionsAsked: string
   result: number
+  difficulty: number
+  interviewType: number
+  interviewParticipants: number
+  interviewTip: string
 }
 
 interface Props {
@@ -41,10 +45,8 @@ export const CompanyReviewDetail = ({ companyId }: Props) => {
     const fetchCompany = async () => {
       try {
         const res = await apiClient.get(`/api/personal/interview-reviews/company/info/${companyId}`)
-        console.log("🏢 회사 정보:", res.data)
         setCompany(res.data.data)
       } catch (e) {
-        console.error("❌ 회사 정보 fetch 실패", e)
         setError(true)
       }
     }
@@ -52,10 +54,8 @@ export const CompanyReviewDetail = ({ companyId }: Props) => {
     const fetchReviews = async () => {
       try {
         const res = await apiClient.get(`/api/personal/interview-reviews/company/${companyId}`)
-        console.log("💬 면접 후기:", res.data)
         setReviews(Array.isArray(res.data.data) ? res.data.data : [])
       } catch (e) {
-        console.error("❌ 후기 fetch 실패", e)
         setError(true)
       } finally {
         setLoading(false)

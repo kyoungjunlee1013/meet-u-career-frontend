@@ -45,10 +45,10 @@ export function PersonalMyPageContent() {
         completeness={data.profileCompleteness}
       />
 
-      {/* <RecentApplications
+      { <RecentApplications
         applications={data.recentApplications}
         summary={data.summary}
-      /> */}
+      /> }
 
       <RecommendedJobs
         jobs={data.recommendedJobs.map((job) => ({

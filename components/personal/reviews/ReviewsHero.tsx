@@ -17,7 +17,7 @@ export const ReviewsHero = ({ onSearch }: Props) => {
   }, [debouncedInput, onSearch]);
 
   return (
-    <div className="bg-white py-12">
+    <div className="bg-white">
       <div className="max-w-[1200px] mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="mb-8 md:mb-0 md:mr-8 md:w-1/2">

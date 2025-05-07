@@ -38,7 +38,7 @@ export const CompanyReviewList = ({ searchKeyword }: Props) => {
     fetchCompanies()
   }, [searchKeyword])
   return (
-    <div className="py-10">
+    <div className="py-5">
       <div className="max-w-[1200px] mx-auto px-4">
         <h2 className="text-2xl font-bold mb-6">
           {searchKeyword ? `"${searchKeyword}" 검색 결과` : "전체 기업리뷰"}
@@ -65,21 +65,22 @@ export const CompanyReviewList = ({ searchKeyword }: Props) => {
                       >
                         {company.companyName}
                       </Link>
-                      <p className="text-xs text-gray-500">리뷰 개수: {company.reviewCount}건</p>
+                      <p className="text-xs text-gray-500">총 리뷰 수: {company.reviewCount}건</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <div className="flex items-center text-gray-500 text-sm">
-                      <Eye className="h-4 w-4 mr-1" />
-                      <span>{(Math.random() * 100000 + 10000).toFixed(0)}</span>
+                    <div className="flex items-center text-gray-500 text-sm">                                          
                     </div>
                     <button className="text-gray-400 hover:text-yellow-500">
-                      <Bookmark className="h-5 w-5" />
+                      <Bookmark className="h-5 w-5" />                      
                     </button>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
-                  #{company.industry} 분야 기업, 주소: {company.address}
+                  #{company.industry} 분야
+                </p>
+                <p>
+                주소: {company.address}
                 </p>
               </div>
             ))}

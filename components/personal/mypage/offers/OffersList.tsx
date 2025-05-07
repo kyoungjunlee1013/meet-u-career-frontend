@@ -3,10 +3,11 @@ import { OfferCard } from "./OfferCard";
 interface Offer {
   id: number;
   company: string;
-  position: string;
+  industry: string;
   location: string;
   deadline: string;
   description: string;
+  businessId: string;
   status: "검토중" | "수락함" | "거절함";
 }
 

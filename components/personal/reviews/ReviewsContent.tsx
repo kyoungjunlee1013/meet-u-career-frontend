@@ -12,9 +12,19 @@ export const ReviewsContent = () => {
   return (
     <div className="min-h-screen bg-white">
       <ReviewsHero onSearch={(keyword) => setSearchKeyword(keyword)} />
-      <FeaturedReviews />
-      <CompanyReviewList searchKeyword={searchKeyword} />
-      <ReviewPolicy />
+
+      <div className="max-w-[1200px] mx-auto px-4 flex gap-8">
+        {/* 왼쪽 기업 리뷰 */}
+        <div className="flex-1">
+          <CompanyReviewList searchKeyword={searchKeyword} />
+          <ReviewPolicy />
+        </div>
+
+        {/* 오른쪽 최신 면접 리뷰 */}
+        <aside className="w-[280px]">
+          <FeaturedReviews layout="vertical" />
+        </aside>
+      </div>
     </div>
   )
 }

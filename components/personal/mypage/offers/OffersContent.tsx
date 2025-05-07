@@ -12,10 +12,12 @@ import { apiClient } from "@/api/apiClient";
 interface Offer {
   id: number;
   company: string;
-  position: string;
+  industry: string;
   location: string;
   deadline: string;
   description: string;
+  businessId: string;
+
   status: "검토중" | "수락함" | "거절함";
 }
 
@@ -24,12 +26,12 @@ export default function OffersContent() {
   const [offers, setOffers] = useState<Offer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const accountId = 1;
+
 
   const mapStatus = (statusCode: number): "검토중" | "수락함" | "거절함" => {
     switch (statusCode) {
       case 1:
-        return "수락함";
+        return "수락함"; 
       case 2:
         return "거절함";
       default:
@@ -39,16 +41,17 @@ export default function OffersContent() {
 
   useEffect(() => {
     apiClient
-      .get(`/api/personal/mypage/offers/list/all/${accountId}`)
+      .get(`/api/personal/mypage/offers/list/all`)
       .then((res) => {
         const rawList = res.data?.data?.offerList ?? [];
         const mapped: Offer[] = rawList.map((o: any) => ({
           id: o.id,
           company: o.companyName,
-          position: "직무 미정",
+          industry: o.industry,
           location: o.location,
           deadline: o.offerDate?.split("T")[0] ?? "날짜 미정",
-          description: o.message,
+          description: o.message,        
+          businessId: o.businessId,  
           status: mapStatus(o.status),
         }));
         setOffers(mapped);
