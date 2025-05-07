@@ -97,11 +97,20 @@ export const JobDetailContent = ({
       await apiClient.post(endpoint, {
         companyId: jobPosting?.company.companyId,
       });
+
       alert(
         jobPosting?.companyFollowed
           ? "관심기업 설정이 취소되었습니다."
           : "관심기업으로 설정되었습니다!"
       );
+
+      // 상태 갱신
+      if (jobPosting) {
+        setJobPosting({
+          ...jobPosting,
+          companyFollowed: !jobPosting.companyFollowed,
+        });
+      }
     } catch (error) {
       console.error("관심기업 설정 실패:", error);
       alert("관심기업 설정에 실패했습니다.");
@@ -123,12 +132,23 @@ export const JobDetailContent = ({
       await apiClient.post(endpoint, {
         jobPostingId: jobPosting?.id,
       });
+
       alert(
         jobPosting?.bookmarked
           ? "스크랩이 취소되었습니다."
           : "스크랩이 완료되었습니다!"
       );
-      setIsBookmarked(!jobPosting?.bookmarked);
+
+      // 상태 갱신
+      if (jobPosting) {
+        setJobPosting({
+          ...jobPosting,
+          bookmarked: !jobPosting.bookmarked,
+          bookmarkCount: jobPosting.bookmarked
+            ? jobPosting.bookmarkCount - 1
+            : jobPosting.bookmarkCount + 1,
+        });
+      }
     } catch (error) {
       console.error("스크랩 실패:", error);
       alert("스크랩에 실패했습니다.");
@@ -197,13 +217,12 @@ export const JobDetailContent = ({
               className="flex flex-col justify-center items-center w-14 h-12 border border-gray-300 rounded-md text-sm text-gray-600 hover:text-gray-800"
             >
               <Star
-                className={`h-4 w-4 mb-0.5 ${
-                  jobPosting.bookmarked
-                    ? "text-yellow-400 fill-yellow-400"
-                    : "text-gray-600"
-                }`}
+                className={`h-4 w-4 mb-0.5 ${jobPosting.bookmarked
+                  ? "text-yellow-400 fill-yellow-400"
+                  : "text-gray-600"
+                  }`}
               />
-              {/* <span className="text-xs">{jobPosting.bookmarkCount}</span> */}
+              <span className="text-xs">{jobPosting.bookmarkCount}</span>
             </button>
 
             {/* 지원하기 */}
@@ -225,6 +244,18 @@ export const JobDetailContent = ({
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
           <div>
+            <h3 className="text-xs text-gray-500 mb-1">경력</h3>
+            <p className="text-sm">{jobPosting.jobPosting.experienceLevelName}</p>
+          </div>
+          <div>
+            <h3 className="text-xs text-gray-500 mb-1">급여</h3>
+            <p className="text-sm">{jobPosting.jobPosting.salaryRange}</p>
+          </div>
+          <div>
+            <h3 className="text-xs text-gray-500 mb-1">학력</h3>
+            <p className="text-sm">{jobPosting.jobPosting.educationLevelName}</p>
+          </div>
+          <div>
             <h3 className="text-xs text-gray-500 mb-1">직무</h3>
             <p className="text-sm">{jobPosting.jobPosting.industry}</p>
           </div>
@@ -235,10 +266,6 @@ export const JobDetailContent = ({
           <div>
             <h3 className="text-xs text-gray-500 mb-1">근무지역</h3>
             <p className="text-sm">{jobPosting.jobPosting.locationCode}</p>
-          </div>
-          <div>
-            <h3 className="text-xs text-gray-500 mb-1">경력</h3>
-            <p className="text-sm">{jobPosting.jobPosting.experienceLevel}년</p>
           </div>
         </div>
 
