@@ -23,6 +23,7 @@ export interface JobCardProps {
 
 export interface JobPostingType {
     id: number;
+    jobId: string;
     jobPosting: {
         title: string;
         industry: string;
@@ -30,7 +31,9 @@ export interface JobPostingType {
         jobUrl: string;
         locationCode: string;
         experienceLevel: number;
+        experienceLevelName: string;
         educationLevel: number;
+        educationLevelName: string;
         salaryRange: string;
         postingDate: string;
         expirationDate: string;
