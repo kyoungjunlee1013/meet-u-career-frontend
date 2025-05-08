@@ -1,4 +1,4 @@
-import { ProfileForm } from "./ProfileForm"
+import { ProfileForm } from "@/components/business/profile/ProfileForm"
 
 export const ProfileContent = () => {
   return (
