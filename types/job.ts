@@ -23,6 +23,7 @@ export interface JobCardProps {
 
 export interface JobPostingType {
     id: number;
+    jobId: string;
     jobPosting: {
         title: string;
         industry: string;

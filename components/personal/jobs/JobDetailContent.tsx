@@ -316,55 +316,64 @@ export const JobDetailContent = ({
           </div>
 
           <div className="space-y-6">
-            <section>
-              <h3 className="text-base font-bold text-blue-600 mb-3">
-                주요업무
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li>- Python 기반 백엔드 서비스 개발 및 운영</li>
-                <li>- RESTful API 설계 및 구현</li>
-                <li>- 데이터베이스 설계 및 최적화</li>
-                <li>- AWS, GCP 등의 인프라 구축</li>
-              </ul>
-            </section>
+            {
+              jobPosting.jobId ?
+                <>
+                  <section>
+                    <h3 className="text-base font-bold text-blue-600 mb-3">
+                      주요업무
+                    </h3>
+                    <ul className="space-y-2 text-sm">
+                      <li>- Python 기반 백엔드 서비스 개발 및 운영</li>
+                      <li>- RESTful API 설계 및 구현</li>
+                      <li>- 데이터베이스 설계 및 최적화</li>
+                      <li>- AWS, GCP 등의 인프라 구축</li>
+                    </ul>
+                  </section>
 
-            <section>
-              <h3 className="text-base font-bold text-blue-600 mb-3">
-                자격요건
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li>- Python 개발 경력 2년 이상</li>
-                <li>- Django, Flask 등 웹 프레임워크 사용 경험</li>
-                <li>- SQL, NoSQL 데이터베이스 경험</li>
-                <li>- Git 등 형상관리 도구 사용 경험</li>
-              </ul>
-            </section>
+                  <section>
+                    <h3 className="text-base font-bold text-blue-600 mb-3">
+                      자격요건
+                    </h3>
+                    <ul className="space-y-2 text-sm">
+                      <li>- Python 개발 경력 2년 이상</li>
+                      <li>- Django, Flask 등 웹 프레임워크 사용 경험</li>
+                      <li>- SQL, NoSQL 데이터베이스 경험</li>
+                      <li>- Git 등 형상관리 도구 사용 경험</li>
+                    </ul>
+                  </section>
 
-            <section>
-              <h3 className="text-base font-bold text-blue-600 mb-3">
-                우대사항
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li>- AWS, GCP 등 클라우드 환경 경험</li>
-                <li>- Docker, Kubernetes 등 컨테이너 기술 경험</li>
-                <li>- CI/CD 파이프라인 구축 경험</li>
-                <li>- 대용량 트래픽 처리 경험</li>
-              </ul>
-            </section>
+                  <section>
+                    <h3 className="text-base font-bold text-blue-600 mb-3">
+                      우대사항
+                    </h3>
+                    <ul className="space-y-2 text-sm">
+                      <li>- AWS, GCP 등 클라우드 환경 경험</li>
+                      <li>- Docker, Kubernetes 등 컨테이너 기술 경험</li>
+                      <li>- CI/CD 파이프라인 구축 경험</li>
+                      <li>- 대용량 트래픽 처리 경험</li>
+                    </ul>
+                  </section>
 
-            <section>
-              <h3 className="text-base font-bold text-blue-600 mb-3">
-                복지혜택
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li>- 유연근무제 운영</li>
-                <li>- 건강검진 지원</li>
-                <li>- 자기계발비 지원</li>
-                <li>- 경조사 지원</li>
-                <li>- 점심 식대비 지원</li>
-                <li>- 명절 선물 지급</li>
-              </ul>
-            </section>
+                  <section>
+                    <h3 className="text-base font-bold text-blue-600 mb-3">
+                      복지혜택
+                    </h3>
+                    <ul className="space-y-2 text-sm">
+                      <li>- 유연근무제 운영</li>
+                      <li>- 건강검진 지원</li>
+                      <li>- 자기계발비 지원</li>
+                      <li>- 경조사 지원</li>
+                      <li>- 점심 식대비 지원</li>
+                      <li>- 명절 선물 지급</li>
+                    </ul>
+                  </section>
+                </>
+                :
+                <section>
+                  {jobPosting.jobPosting.description}
+                </section>
+            }
           </div>
         </div>
 
