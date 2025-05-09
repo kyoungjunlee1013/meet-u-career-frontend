@@ -82,7 +82,7 @@ export const ProfileForm = () => {
   };
 
   const onSubmit = async (data: CompanyProfileFormData) => {
-    setIsSubmitting(true);
+    setIsSubmitting(true); 
     setSubmitStatus({ type: null, message: null });
 
     try {
@@ -204,7 +204,7 @@ export const ProfileForm = () => {
         </div>
       </FormSection>
       <div className="flex justify-end">
-        <button
+        <button 
           type="submit"
           disabled={isSubmitting}
           className="mt-8 px-6 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
