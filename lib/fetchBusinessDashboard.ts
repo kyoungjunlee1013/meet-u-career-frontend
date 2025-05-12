@@ -17,7 +17,7 @@ export interface BusinessDashboardData {
   totalApplications: number;
   jobCategoryViewCount: Record<string, number>;
   jobCategoryApplicationCount: Record<string, number>;
-  jobPostings: {
+  jobPostings: { 
     jobPostingId: number;
     title: string;
     location: string;

@@ -47,7 +47,6 @@ export const BusinessDashboard = () => {
     );
   }
 
-  // 기본값 설정 (null일 경우)
   const defaultData: BusinessDashboardData = {
     companyName: "",
     industry: "",
@@ -72,7 +71,7 @@ export const BusinessDashboard = () => {
         <CompanyProfile data={data ?? defaultData} />
         <JobStatistics data={data ?? defaultData} />
         <ViewStatistics data={data ?? defaultData} />
-        <JobPostingsList data={data?.jobPostings || []} />
+        <JobPostingsList data={data ?? defaultData} /> {/* ✅ 수정됨: 전체 데이터 전달 */}
       </main>
     </div>
   );
