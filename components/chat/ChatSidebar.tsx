@@ -1,17 +1,26 @@
-"use client"
-import { useChatRooms } from "@/hooks/useChatRooms"
-import { Search } from "lucide-react"
-import Image from "next/image"
+"use client";
+
+import { useChatRooms } from "@/hooks/useChatRooms";
+import { Search } from "lucide-react";
+import Image from "next/image";
+
 interface ChatSidebarProps {
-  selectedChatId: string | null
-  onSelectChat: (id: string) => void
+  selectedChatId: string | null;
+  onSelectChat: (chat: { roomId: string; name: string; avatar: string }) => void;
 }
+
 export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) {
-  const { chatRooms, loading, error, markRoomAsRead } = useChatRooms()
-  const handleSelectChat = (id: string) => {
-    onSelectChat(id)
-    markRoomAsRead(Number(id))  // 클릭 시 읽음 처리 API 호출
-  }
+  const { chatRooms, loading, error, markRoomAsRead } = useChatRooms();
+
+  const handleSelectChat = (chat: any) => {
+    onSelectChat({
+      roomId: chat.roomId.toString(),
+      name: chat.name,
+      avatar: chat.avatar,
+    });
+    markRoomAsRead(chat.roomId);
+  };
+
   return (
     <div className="w-[365px] border-r border-gray-200 flex flex-col h-full">
       <div className="p-4 border-b border-gray-200">
@@ -28,41 +37,37 @@ export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) 
         </div>
       </div>
       <div className="flex-1 overflow-y-auto bg-gray-50">
-        {/* 로딩 중 */}
         {loading && (
           <div className="flex items-center justify-center h-full text-gray-500">
             채팅방 불러오는 중...
           </div>
         )}
-        {/* 에러 발생 */}
         {error && (
           <div className="flex items-center justify-center h-full text-red-500">
             {error}
           </div>
         )}
-        {/* 데이터 있을 때 */}
         {!loading && !error && chatRooms.length === 0 && (
           <div className="flex items-center justify-center h-full text-gray-500">
             채팅방이 없습니다.
           </div>
         )}
-        {/* 채팅방 리스트 */}
         {!loading && !error && chatRooms.map((chat) => (
           <div
             key={chat.roomId}
-            onClick={() => handleSelectChat(chat.roomId.toString())}
-            className={`p-4 flex items-start cursor-pointer hover:bg-gray-100 ${selectedChatId === chat.roomId.toString() ? "bg-gray-100" : ""
-              }`}
+            onClick={() => handleSelectChat(chat)}
+            className={`p-4 flex items-start cursor-pointer hover:bg-gray-100 ${
+              selectedChatId === chat.roomId.toString() ? "bg-gray-100" : ""
+            }`}
           >
             <div className="flex-shrink-0 relative">
               <Image
-                src="https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/profile.png"
-                alt="Company Logo"
+                src={chat.avatar || "/placeholder.svg"}
+                alt="프로필"
                 width={40}
                 height={40}
                 className="rounded-full"
               />
-              {/* 안읽은 메시지 수 뱃지 */}
               {chat.unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs">
                   {chat.unreadCount}
@@ -70,13 +75,13 @@ export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) 
               )}
             </div>
             <div className="ml-3 flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {chat.companyId}번 회사
-              </p>
+              <p className="text-sm font-medium text-gray-900 truncate">{chat.name}</p>
+              <p className="text-sm text-gray-500 truncate">{chat.lastMessage}</p>
+              <p className="text-xs text-gray-400">{chat.lastMessageTime}</p>
             </div>
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }

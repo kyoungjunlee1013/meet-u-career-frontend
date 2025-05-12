@@ -1,47 +1,29 @@
-import { useState } from "react";
-import { Paperclip, Send, Smile } from "lucide-react";
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
 import { useChatSocket } from "@/hooks/useChatSocket";
 import { useUserStore } from "@/store/useUserStore";
+import Image from "next/image";
+import { Paperclip, Send, Smile } from "lucide-react";
 
 interface ChatMainProps {
   chatId: string | null;
+  opponentName: string;
+  opponentAvatar: string;
 }
 
-export function ChatMain({ chatId }: ChatMainProps) {
-  const { userInfo } = useUserStore(); // userInfo는 PersonalMyPageInfo | null
-  const { messages, connected, sendMessage } = useChatSocket(chatId); // sendMessage 반환 받음
+export function ChatMain({ chatId, opponentName, opponentAvatar }: ChatMainProps) {
+  const { userInfo } = useUserStore();
+  const { messages, connected, sendMessage } = useChatSocket(chatId);
   const [newMessage, setNewMessage] = useState("");
 
   if (!userInfo) {
-    // userInfo가 없으면 화면에 사용자 정보 없음 표시
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50">
         <p className="text-gray-500">사용자 정보가 없습니다.</p>
       </div>
     );
   }
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || !chatId) return;
-
-    // 메시지 데이터 객체 생성 (isRead를 0으로 설정)
-    const messageData = {
-      roomId: chatId,
-      senderId: userInfo.accountId, // userInfo에서 accountId 사용
-      senderName: userInfo.name, // userInfo에서 name 사용
-      senderType: 0, // accountType 사용 (0: 개인, 1: 기업)
-      message: newMessage, // 전송할 메시지
-      type: "TALK", // 메시지 타입
-      isRead: 0, // 메시지 전송 시 기본적으로 '읽지 않음' 상태로 설정
-    };
-
-    // WebSocket을 통해 메시지 전송
-    sendMessage(messageData);
-
-    setNewMessage(""); // 메시지 전송 후 입력창 초기화
-  };
 
   if (!chatId) {
     return (
@@ -51,49 +33,53 @@ export function ChatMain({ chatId }: ChatMainProps) {
     );
   }
 
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+
+    sendMessage({
+      chatRoomId: chatId,
+      senderId: userInfo.accountId,
+      senderName: userInfo.name,
+      senderType: 0,
+      message: newMessage,
+      type: "TALK",
+      isRead: 0,
+    });
+    setNewMessage("");
+  };
+
   return (
-    <div className="flex-1 flex flex-col h-full">
-      {/* 채팅방 헤더 */}
+    <div className="flex flex-col h-full flex-1">
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center">
           <Image
-            src={
-              userInfo.profileImage ||
-              "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"
-            }
-            alt="프로필"
+            src={opponentAvatar || "/placeholder.svg"}
+            alt="상대 프로필"
             width={48}
             height={48}
             className="rounded-full"
           />
           <div className="ml-3">
-            <h2 className="text-lg font-medium">채팅방 {chatId}</h2>
-            <p className="text-sm text-gray-500">
-              {connected ? "온라인" : "오프라인"}
-            </p>
+            <h2 className="text-lg font-medium">{opponentName}</h2>
+            <p className="text-sm text-gray-500">{connected ? "온라인" : "오프라인"}</p>
           </div>
         </div>
       </div>
 
-      {/* 메시지 목록 */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
         {messages.map((message, index) => (
           <div
             key={index}
             className={`mb-4 flex ${
-              message.senderId === userInfo.accountId
-                ? "justify-end"
-                : "justify-start"
+              message.senderId === userInfo.accountId ? "justify-end" : "justify-start"
             }`}
           >
             {message.senderId !== userInfo.accountId && (
               <div className="flex-shrink-0 mr-3">
                 <Image
-                  src={
-                    userInfo.profileImage ||
-                    "https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/static/etc/placeholder.svg"
-                  }
-                  alt="프로필"
+                  src={opponentAvatar || "/placeholder.svg"}
+                  alt="상대 프로필"
                   width={40}
                   height={40}
                   className="rounded-full"
@@ -108,7 +94,6 @@ export function ChatMain({ chatId }: ChatMainProps) {
               }`}
             >
               <p className="text-sm">{message.message}</p>
-              {/* 읽음 여부 표시 */}
               {message.senderId === userInfo.accountId && (
                 <p className="text-xs mt-1 text-right">
                   {message.isRead === 1 ? "읽음" : "전송됨"}
@@ -119,16 +104,11 @@ export function ChatMain({ chatId }: ChatMainProps) {
         ))}
       </div>
 
-      {/* 메시지 입력창 */}
       <form
         onSubmit={handleSendMessage}
         className="p-4 border-t border-gray-200 flex items-center"
       >
-        <button
-          type="button"
-          className="p-2 text-gray-500 hover:text-gray-700"
-          aria-label="파일 첨부"
-        >
+        <button type="button" className="p-2 text-gray-500 hover:text-gray-700">
           <Paperclip className="h-5 w-5" />
         </button>
         <input
@@ -138,17 +118,12 @@ export function ChatMain({ chatId }: ChatMainProps) {
           placeholder="메시지를 입력하세요..."
           className="flex-1 mx-2 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
-        <button
-          type="button"
-          className="p-2 text-gray-500 hover:text-gray-700"
-          aria-label="이모지 추가"
-        >
+        <button type="button" className="p-2 text-gray-500 hover:text-gray-700">
           <Smile className="h-5 w-5" />
         </button>
         <button
           type="submit"
-          className="ml-2 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          aria-label="메시지 전송"
+          className="ml-2 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
         >
           <Send className="h-5 w-5" />
         </button>
