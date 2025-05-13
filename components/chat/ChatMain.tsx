@@ -5,17 +5,34 @@ import { useChatSocket } from "@/hooks/useChatSocket";
 import { useUserStore } from "@/store/useUserStore";
 import Image from "next/image";
 import { Paperclip, Send, Smile } from "lucide-react";
+import { apiClient } from "@/api/apiClient";
 
 interface ChatMainProps {
   chatId: string | null;
   opponentName: string;
   opponentAvatar: string;
+  opponentId: number;
 }
 
-export function ChatMain({ chatId, opponentName, opponentAvatar }: ChatMainProps) {
+export function ChatMain({ chatId, opponentName, opponentAvatar, opponentId }: ChatMainProps) {
   const { userInfo } = useUserStore();
-  const { messages, connected, sendMessage } = useChatSocket(chatId);
+  const { messages, sendMessage } = useChatSocket(chatId);
   const [newMessage, setNewMessage] = useState("");
+  const [isOnline, setIsOnline] = useState(false);
+
+  useEffect(() => {
+    if (!opponentId) return;
+    const fetchStatus = async () => {
+      try {
+        const res = await apiClient.get(`/api/chat/online-status?accountId=${opponentId}`);
+        setIsOnline(res.data.data);
+      } catch (error) {
+        console.error("상대방 온라인 상태 조회 실패", error);
+        console.log(opponentId);
+      }
+    };
+    fetchStatus();
+  }, [opponentId]);
 
   if (!userInfo) {
     return (
@@ -51,22 +68,32 @@ export function ChatMain({ chatId, opponentName, opponentAvatar }: ChatMainProps
 
   return (
     <div className="flex flex-col h-full flex-1">
+      {/* 상단 헤더 */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         <div className="flex items-center">
-          <Image
-            src={opponentAvatar || "/placeholder.svg"}
-            alt="상대 프로필"
-            width={48}
-            height={48}
-            className="rounded-full"
-          />
+          <div className="relative">
+            <Image
+              src={opponentAvatar || "/placeholder.svg"}
+              alt="상대 프로필"
+              width={48}
+              height={48}
+              className="rounded-full"
+            />
+            <span
+              className={`absolute bottom-0 right-0 block w-3 h-3 rounded-full border-2 border-white ${
+                isOnline ? "bg-green-500" : "bg-gray-400"
+              }`}
+            />
+          </div>
+
           <div className="ml-3">
             <h2 className="text-lg font-medium">{opponentName}</h2>
-            <p className="text-sm text-gray-500">{connected ? "온라인" : "오프라인"}</p>
+            <p className="text-sm text-gray-500">{isOnline ? "온라인" : "오프라인"}</p>
           </div>
         </div>
       </div>
 
+      {/* 메시지 리스트 */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
         {messages.map((message, index) => (
           <div
@@ -104,6 +131,7 @@ export function ChatMain({ chatId, opponentName, opponentAvatar }: ChatMainProps
         ))}
       </div>
 
+      {/* 입력창 */}
       <form
         onSubmit={handleSendMessage}
         className="p-4 border-t border-gray-200 flex items-center"

@@ -6,7 +6,12 @@ import Image from "next/image";
 
 interface ChatSidebarProps {
   selectedChatId: string | null;
-  onSelectChat: (chat: { roomId: string; name: string; avatar: string }) => void;
+  onSelectChat: (chat: {
+    roomId: string;
+    name: string;
+    avatar: string;
+    opponentId: number;
+  }) => void;
 }
 
 export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) {
@@ -17,6 +22,7 @@ export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) 
       roomId: chat.roomId.toString(),
       name: chat.name,
       avatar: chat.avatar,
+      opponentId: chat.opponentId ?? 0, // ✅ 추가: 전달
     });
     markRoomAsRead(chat.roomId);
   };
@@ -52,35 +58,41 @@ export function ChatSidebar({ selectedChatId, onSelectChat }: ChatSidebarProps) 
             채팅방이 없습니다.
           </div>
         )}
-        {!loading && !error && chatRooms.map((chat) => (
-          <div
-            key={chat.roomId}
-            onClick={() => handleSelectChat(chat)}
-            className={`p-4 flex items-start cursor-pointer hover:bg-gray-100 ${
-              selectedChatId === chat.roomId.toString() ? "bg-gray-100" : ""
-            }`}
-          >
-            <div className="flex-shrink-0 relative">
-              <Image
-                src={chat.avatar || "/placeholder.svg"}
-                alt="프로필"
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              {chat.unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs">
-                  {chat.unreadCount}
-                </span>
-              )}
+        {!loading &&
+          !error &&
+          chatRooms.map((chat) => (
+            <div
+              key={chat.roomId}
+              onClick={() => handleSelectChat(chat)}
+              className={`p-4 flex items-start cursor-pointer hover:bg-gray-100 ${
+                selectedChatId === chat.roomId.toString() ? "bg-gray-100" : ""
+              }`}
+            >
+              <div className="flex-shrink-0 relative">
+                <Image
+                  src={chat.avatar || "/placeholder.svg"}
+                  alt="프로필"
+                  width={40}
+                  height={40}
+                  className="rounded-full"
+                />
+                {chat.unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs">
+                    {chat.unreadCount}
+                  </span>
+                )}
+              </div>
+              <div className="ml-3 flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {chat.name}
+                </p>
+                <p className="text-sm text-gray-500 truncate">
+                  {chat.lastMessage}
+                </p>
+                <p className="text-xs text-gray-400">{chat.lastMessageTime}</p>
+              </div>
             </div>
-            <div className="ml-3 flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{chat.name}</p>
-              <p className="text-sm text-gray-500 truncate">{chat.lastMessage}</p>
-              <p className="text-xs text-gray-400">{chat.lastMessageTime}</p>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   );

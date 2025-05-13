@@ -8,6 +8,7 @@ interface SelectedChat {
   roomId: string;
   name: string;
   avatar: string;
+  opponentId: number;
 }
 
 export function ChatLayout() {
@@ -23,6 +24,7 @@ export function ChatLayout() {
         chatId={selectedChat?.roomId || null}
         opponentName={selectedChat?.name || ""}
         opponentAvatar={selectedChat?.avatar || ""}
+        opponentId={selectedChat?.opponentId ?? 0}  // ✅ undefined 방지
       />
     </div>
   );

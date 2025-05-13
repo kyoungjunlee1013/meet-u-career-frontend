@@ -1,4 +1,5 @@
 import { Client, IMessage } from "@stomp/stompjs";
+import { useUserStore } from "@/store/useUserStore";
 
 let stompClient: Client | null = null;
 
@@ -9,8 +10,17 @@ export async function connectSocket(): Promise<void> {
       return resolve();
     }
 
+    const accountId = useUserStore.getState().userInfo?.accountId;
+    if (!accountId) {
+      console.error("❌ 사용자 정보 없음 - 소켓 연결 중단");
+      return reject("사용자 정보 없음");
+    }
+
     stompClient = new Client({
       brokerURL: "ws://localhost:8080/ws-stomp",
+      connectHeaders: {
+        accountId: String(accountId), // ✅ accountId를 헤더에 포함
+      },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
