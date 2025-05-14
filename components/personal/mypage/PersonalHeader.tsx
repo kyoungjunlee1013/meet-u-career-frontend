@@ -9,6 +9,7 @@ import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { useSidebar } from "./SidebarProvider";
 import { useNotificationStore } from "@/store/useNotificationStore";
+import { useChatRooms } from "@/hooks/useChatRooms"; // ✅ 추가
 
 export function PersonalHeader() {
   const { toggleSidebar } = useSidebar();
@@ -20,13 +21,18 @@ export function PersonalHeader() {
   const hasUnreadNotification =
     isLoaded && notifications.some((n) => n.isRead === 0);
 
+  const { chatRooms } = useChatRooms(); // ✅ 채팅방 데이터
+  const unreadChatCount = chatRooms.reduce(
+    (acc, room) => acc + room.unreadCount,
+    0
+  ); // ✅ 안 읽은 메시지 수 총합
+
   const notificationRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Check if notification dropdown is open and clicked outside
       if (
         isNotificationOpen &&
         notificationRef.current &&
@@ -35,7 +41,6 @@ export function PersonalHeader() {
         setIsNotificationOpen(false);
       }
 
-      // Check if chat dropdown is open and clicked outside
       if (
         isChatOpen &&
         chatRef.current &&
@@ -44,7 +49,6 @@ export function PersonalHeader() {
         setIsChatOpen(false);
       }
 
-      // Check if profile dropdown is open and clicked outside
       if (
         isProfileOpen &&
         profileRef.current &&
@@ -54,12 +58,10 @@ export function PersonalHeader() {
       }
     };
 
-    // Add event listener when any dropdown is open
     if (isNotificationOpen || isChatOpen || isProfileOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
-    // Cleanup event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -110,9 +112,11 @@ export function PersonalHeader() {
               aria-label="Messages"
             >
               <MessageSquare className="h-[18px] w-[18px] text-gray-700" />
-              <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-medium">
-                2
-              </span>
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-medium">
+                  {unreadChatCount > 9 ? "9+" : unreadChatCount}
+                </span>
+              )}
             </Button>
             {isChatOpen && <ChatDropdown />}
           </div>

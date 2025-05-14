@@ -11,6 +11,7 @@ import { useUserStore } from "@/store/useUserStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
 import { useSearchStore } from "@/hooks/useSearchStore";
 import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown";
+import { useChatRooms } from "@/hooks/useChatRooms";
 
 export const LoginHeader = () => {
   const router = useRouter();
@@ -23,25 +24,29 @@ export const LoginHeader = () => {
   const hasUnreadNotification =
     isLoaded && notifications.some((n) => n.isRead === 0);
 
+  const { chatRooms } = useChatRooms();
+  const unreadChatCount = chatRooms.reduce(
+    (acc, room) => acc + room.unreadCount,
+    0
+  );
+
   const notificationRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
-  const [search, setSearch] = useState<string>(""); // 헤더에서 관리되는 검색어
-  const { setStoreKeyword } = useSearchStore(); // zustand에서의 keyword 상태 설정 함수
+  const [search, setSearch] = useState<string>("");
+  const { setStoreKeyword } = useSearchStore();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
       if (search.trim() !== "") {
-        // 상태에 검색어 반영 후, 검색 페이지로 이동
         setStoreKeyword(search);
         router.push(`/personal/jobs`);
       }
     }
   };
 
-  // 드롭다운 외부 클릭시 닫기
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -130,6 +135,11 @@ export const LoginHeader = () => {
               aria-label="채팅"
             >
               <MessageSquare className="h-5 w-5 text-gray-600" />
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                  {unreadChatCount > 9 ? "9+" : unreadChatCount}
+                </span>
+              )}
             </button>
             {chatOpen && <ChatDropdown />}
           </div>
