@@ -6,10 +6,25 @@ import { X } from "lucide-react"
 interface JobDetailModalProps {
   job: any
   onClose: () => void
+  onAction: (id: number, action: "approve" | "reject" | "block") => void
 }
 
-export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
+export default function JobDetailModal({
+  job,
+  onClose,
+  onAction,
+}: JobDetailModalProps) {
   const modalRef = useRef<HTMLDivElement>(null)
+
+  const getStatusText = (status: string | number) => {
+    const statusMap: { [key: string]: string } = {
+      "0": "반려",
+      "1": "승인",
+      "2": "대기중",
+      
+    }
+    return statusMap[String(status)] ?? "알 수 없음"
+  }
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -26,8 +41,6 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
 
     document.addEventListener("keydown", handleEscape)
     document.addEventListener("mousedown", handleClickOutside)
-
-    // Prevent scrolling of the body when modal is open
     document.body.style.overflow = "hidden"
 
     return () => {
@@ -36,6 +49,8 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
       document.body.style.overflow = "auto"
     }
   }, [onClose])
+
+  const statusText = getStatusText(job.status)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -50,7 +65,11 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
           <h2 id="modal-title" className="text-xl font-semibold">
             공고 상세 정보
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-500" aria-label="닫기">
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-500"
+            aria-label="닫기"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -66,7 +85,7 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">기업명</p>
-                  <p className="font-medium">{job.company}</p>
+                  <p className="font-medium">{job.companyName}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">등록일</p>
@@ -84,15 +103,17 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
               <div className="space-y-3">
                 <div>
                   <p className="text-sm text-gray-500">조회수</p>
-                  <p className="font-medium">{job.views.toLocaleString()}</p>
+                  <p className="font-medium">
+                    {job.viewCount?.toLocaleString?.() ?? "-"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">지원자수</p>
-                  <p className="font-medium">{job.applications}</p>
+                  <p className="font-medium">{job.applyCount ?? "-"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">승인 상태</p>
-                  <p className="font-medium">{job.status}</p>
+                  <p className="font-medium">{statusText}</p>
                 </div>
               </div>
             </div>
@@ -102,40 +123,52 @@ export default function JobDetailModal({ job, onClose }: JobDetailModalProps) {
             <h3 className="text-sm font-medium text-gray-500 mb-2">공고 내용</h3>
             <div className="bg-gray-50 p-4 rounded">
               <p className="text-sm text-gray-700">
-                이 공고는 {job.company}에서 {job.title} 포지션을 채용하기 위해 등록되었습니다. 지원자는 관련 경험과
-                기술을 갖추고 있어야 합니다. 자세한 내용은 공고를 참조하세요.
+                {job.description ||
+                  `${job.companyName}에서 ${job.title} 포지션을 채용 중입니다.`}
               </p>
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3">
-            {job.status === "대기 중" && (
+                <div className="flex justify-end space-x-3">
+            {String(job.status) === "2" && (
               <>
-                <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium">
+                <button
+                  onClick={() => onAction(job.id, "approve")}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
+                >
                   승인하기
                 </button>
-                <button className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium">
-                  거부하기
+                <button
+                  onClick={() => onAction(job.id, "reject")}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm font-medium">
+                  반려하기
                 </button>
               </>
             )}
-            {job.status === "승인됨" && (
-              <button className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm font-medium">
+
+            {String(job.status) === "1" && (
+              <button
+                onClick={() => onAction(job.id, "block")}
+                className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm font-medium">
                 차단하기
               </button>
             )}
-            {job.status === "거부됨" && (
-              <button className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium">
+
+            {String(job.status) === "0" && (
+              <button
+                onClick={() => onAction(job.id, "approve")}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium">
                 승인하기
               </button>
             )}
+
             <button
               onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium"
-            >
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 text-sm font-medium">
               닫기
             </button>
-          </div>
+      </div>
+
         </div>
       </div>
     </div>

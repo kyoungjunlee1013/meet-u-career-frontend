@@ -17,7 +17,7 @@ export const ReviewsHero = ({ onSearch }: Props) => {
   }, [debouncedInput, onSearch]);
 
   return (
-    <div className="bg-white py-12">
+    <div className="bg-white">
       <div className="max-w-[1200px] mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="mb-8 md:mb-0 md:mr-8 md:w-1/2">
@@ -34,10 +34,7 @@ export const ReviewsHero = ({ onSearch }: Props) => {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="어떤 기업의 기업리뷰가 궁금하세요?"
                 className="w-full pl-4 pr-10 py-3 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <Search className="h-5 w-5 text-gray-400" />
-              </button>
+              />           
             </div>
           </div>
           <div className="md:w-1/2 flex justify-center">

@@ -7,10 +7,11 @@ interface OfferProps {
   offer: {
     id: number;
     company: string;
-    position: string;
+    industry: string;
     location: string;
     deadline: string;
     description: string;
+    businessId: string;
     status: "검토중" | "수락함" | "거절함";
   };
   onActionComplete?: (id: number, nextTab: "수락함" | "거절함") => void;
@@ -25,6 +26,7 @@ export function OfferCard({ offer, onActionComplete }: OfferProps) {
     } catch (err) {
       alert("처리에 실패했습니다.");
       console.error(err);
+      console.log(offer.industry);
     }
   };
   const getStatusBadge = (status: string) => {
@@ -101,7 +103,7 @@ export function OfferCard({ offer, onActionComplete }: OfferProps) {
           <h4 className="font-bold text-gray-900 text-base leading-tight">
             {offer.company}
           </h4>
-          <p className="text-sm text-gray-600 mt-0.5">{offer.position}</p>
+          <p className="text-sm text-gray-600 mt-0.5">{offer.industry}</p>
         </div>
       </div>
       <div className="flex flex-col gap-1 text-sm text-gray-700 mb-6 mt-2">
@@ -127,7 +129,7 @@ export function OfferCard({ offer, onActionComplete }: OfferProps) {
               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
             />
           </svg>
-          <span>담당자 미정</span>
+          <span>제안한 사람: {offer.businessId}</span>
         </div>
       </div>
       <p className="text-sm text-gray-700 mb-4">{offer.description}</p>

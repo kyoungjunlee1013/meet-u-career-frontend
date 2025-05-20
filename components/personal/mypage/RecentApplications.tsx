@@ -29,8 +29,7 @@ export function RecentApplications({ applications, summary }: Props) {
     switch (status) {
       case 1: return { width: "25%", color: "#10B981" } // 서류 통과
       case 2: return { width: "50%", color: "#3B82F6" } // 1차 면접
-      case 3: return { width: "75%", color: "#8B5CF6" } // 최종 합격
-      case 4: return { width: "100%", color: "#EF4444" } // 불합격
+      case 3: return { width: "100%", color: "#8B5CF6" } // 최종 합격
       default: return { width: "0%", color: "#9CA3AF" } // 회색
     }
   }
