@@ -9,6 +9,7 @@ import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { useSidebar } from "./SidebarProvider";
 import { useNotificationStore } from "@/store/useNotificationStore";
+import { apiClient } from "@/api/apiClient";
 
 export function PersonalHeader() {
   const { toggleSidebar } = useSidebar();
@@ -16,7 +17,7 @@ export function PersonalHeader() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
 
-  const { notifications, isLoaded } = useNotificationStore();
+  const { notifications, isLoaded, setNotifications } = useNotificationStore();
   const hasUnreadNotification =
     isLoaded && notifications.some((n) => n.isRead === 0);
 
@@ -24,9 +25,23 @@ export function PersonalHeader() {
   const chatRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
+  // 헤더 마운트 시 알림 미리 불러오기
+  useEffect(() => {
+    if (!isLoaded) {
+      (async () => {
+        try {
+          const res = await apiClient.get("/api/notification/list");
+          setNotifications(res.data.data || []);
+        } catch (error) {
+          console.error("알림 미리 불러오기 실패:", error);
+        }
+      })();
+    }
+  }, [isLoaded, setNotifications]);
+
+  // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Check if notification dropdown is open and clicked outside
       if (
         isNotificationOpen &&
         notificationRef.current &&
@@ -34,8 +49,6 @@ export function PersonalHeader() {
       ) {
         setIsNotificationOpen(false);
       }
-
-      // Check if chat dropdown is open and clicked outside
       if (
         isChatOpen &&
         chatRef.current &&
@@ -43,8 +56,6 @@ export function PersonalHeader() {
       ) {
         setIsChatOpen(false);
       }
-
-      // Check if profile dropdown is open and clicked outside
       if (
         isProfileOpen &&
         profileRef.current &&
@@ -53,13 +64,9 @@ export function PersonalHeader() {
         setIsProfileOpen(false);
       }
     };
-
-    // Add event listener when any dropdown is open
     if (isNotificationOpen || isChatOpen || isProfileOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
-    // Cleanup event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -124,9 +131,7 @@ export function PersonalHeader() {
               className="p-0 rounded-full w-9 h-9 hover:bg-transparent"
               onClick={() => setIsProfileOpen(!isProfileOpen)}
             >
-              <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden">
-                {/* Profile image placeholder */}
-              </div>
+              <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden" />
             </Button>
             {isProfileOpen && <ProfileDropdown />}
           </div>
