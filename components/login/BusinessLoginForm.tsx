@@ -14,12 +14,9 @@ export const BusinessLoginForm = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const [errorMessages, setErrorMessages] = useState<{
-    userId?: string;
-    password?: string;
-    message?: string;
-  }>({});
-  const [successMessage, setSuccessMessage] = useState("");
+  const [userIdError, setUserIdError] = useState<string>("");
+  const [passwordError, setPasswordError] = useState<string>("");
+  const [serverError, setServerError] = useState<string>("");
   const { setTokens } = useAuthStore();
 
   // 저장된 아이디 복구
@@ -31,27 +28,47 @@ export const BusinessLoginForm = () => {
     }
   }, []);
 
-  const handleRememberMeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRememberMe(e.target.checked);
-  };
+  const handleLogin = async () => {
+    let hasError = false;
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    if (!userId) {
+      setUserIdError("아이디를 입력해주세요.");
+      hasError = true;
+    }
+    if (!password) {
+      setPasswordError("비밀번호를 입력해주세요.");
+      hasError = true;
+    }
+    if (hasError) return;
+
     setIsPending(true);
-    setErrorMessages({});
-    setSuccessMessage("");
+    setUserIdError("");
+    setPasswordError("");
+    setServerError("");
 
     try {
-      const response = await apiClient.post("/api/business/auth/login", {
-        userId,
-        password,
-      });
+      const response = await apiClient.post(
+        "/api/business/auth/login",
+        {
+          userId,
+          password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
 
       if (response.data.msg == "success") {
         const { accessToken, refreshToken } = response.data.data || {};
 
         if (accessToken && refreshToken) {
           setTokens(accessToken, refreshToken);
+
+          sessionStorage.setItem("accessToken", accessToken);
+          sessionStorage.setItem("refreshToken", refreshToken);
 
           // 로그인 성공 후 아이디 저장
           if (rememberMe) {
@@ -60,33 +77,34 @@ export const BusinessLoginForm = () => {
             localStorage.removeItem("savedBusinessId");
           }
 
+          // 사용자 정보 가져오기
           await fetchMyInfo();
 
-          // 기업 대시보드로 이동.
+          // 기업 대시보드로 이동
           router.push("/business/dashboard");
         } else {
-          setErrorMessages({
-            message: response.data.msg,
-          });
+          setServerError("로그인 중 오류가 발생했습니다. (1)");
         }
       } else {
-        setErrorMessages({
-          message: response.data.msg,
-        });
+        setServerError(response.data.msg);
       }
     } catch (error: any) {
-      if (error.response?.data?.msg) {
-        setErrorMessages({ message: error.response.data.msg });
-      } else {
-        setErrorMessages({ message: "로그인 중 오류가 발생했습니다." });
-      }
+      setServerError(error.response?.data?.msg || "로그인 중 오류가 발생했습니다. (2)");
     } finally {
       setIsPending(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-4">
+      {/* 서버 에러 메시지 (로그인 실패 시) */}
+      {serverError && (
+        <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
+          {serverError}
+        </div>
+      )}
+
+      {/* 아이디 입력 */}
       <div>
         <input
           type="text"
@@ -94,16 +112,20 @@ export const BusinessLoginForm = () => {
           placeholder="기업 아이디"
           autoComplete="off"
           value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          className={`w-full px-3 py-2.5 border ${
-            errorMessages.userId ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          onChange={(e) => {
+            setUserId(e.target.value);
+            if (userIdError) setUserIdError("");
+          }}
+          className={`w-full px-3 py-2.5 border ${userIdError ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 ${userIdError ? "focus:ring-red-500" : "focus:ring-blue-500"
+            }`}
         />
-        {errorMessages.userId && (
-          <p className="text-red-500 text-xs mt-1">{errorMessages.userId}</p>
+        {userIdError && (
+          <p className="text-red-500 text-xs mt-1">{userIdError}</p>
         )}
       </div>
 
+      {/* 비밀번호 입력 */}
       <div>
         <input
           type="password"
@@ -111,29 +133,35 @@ export const BusinessLoginForm = () => {
           placeholder="비밀번호"
           autoComplete="off"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className={`w-full px-3 py-2.5 border ${
-            errorMessages.password ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (passwordError) setPasswordError("");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleLogin();
+            }
+          }}
+          className={`w-full px-3 py-2.5 border ${passwordError ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 ${passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"
+            }`}
         />
-        {errorMessages.password && (
-          <p className="text-red-500 text-xs mt-1">{errorMessages.password}</p>
+        {passwordError && (
+          <p className="text-red-500 text-xs mt-1">{passwordError}</p>
         )}
       </div>
 
+      {/* 아이디 저장 체크박스 + 링크 */}
       <div className="flex items-center">
         <input
           type="checkbox"
-          id="businessRememberMe"
+          id="rememberMe"
           name="rememberMe"
           checked={rememberMe}
-          onChange={handleRememberMeChange}
+          onChange={(e) => setRememberMe(e.target.checked)}
           className="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
         />
-        <label
-          htmlFor="businessRememberMe"
-          className="ml-2 text-xs text-gray-600"
-        >
+        <label htmlFor="rememberMe" className="ml-2 text-xs text-gray-600">
           아이디 저장
         </label>
         <div className="ml-auto flex gap-2 text-xs text-gray-500">
@@ -147,8 +175,10 @@ export const BusinessLoginForm = () => {
         </div>
       </div>
 
+      {/* 로그인 버튼 */}
       <button
-        type="submit"
+        type="button"
+        onClick={handleLogin}
         disabled={isPending}
         className="w-full py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
       >
@@ -158,15 +188,6 @@ export const BusinessLoginForm = () => {
           "로그인"
         )}
       </button>
-
-      {successMessage && (
-        <p className="text-green-600 text-sm text-center">{successMessage}</p>
-      )}
-      {errorMessages.message && !successMessage && (
-        <p className="text-red-600 text-sm text-center">
-          {errorMessages.message}
-        </p>
-      )}
-    </form>
+    </div>
   );
 };
