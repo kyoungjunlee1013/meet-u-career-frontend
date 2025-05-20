@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react"
 
 interface Summary {
+  applicationCount: number // ✅ 수정됨: 총 지원 수를 직접 받음
   passedDocument: number
   interview1st: number
   finalAccepted: number
@@ -59,7 +60,7 @@ export function ApplicationStatusChart({ data }: Props) {
     ctx.fillStyle = "#1F2937"
     ctx.textAlign = "center"
     ctx.textBaseline = "middle"
-    ctx.fillText(total.toString(), size / 2, size / 2 - 5)
+    ctx.fillText(data.applicationCount.toString(), size / 2, size / 2 - 5) // ✅ 수정됨: 총합을 직접 출력
 
     ctx.font = "12px Arial"
     ctx.fillStyle = "#6B7280"

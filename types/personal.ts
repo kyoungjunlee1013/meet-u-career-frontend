@@ -24,6 +24,7 @@ export interface PersonalMyPageInfo {
   resumeViewCount: number;
   offerCount: number;
   bookmarkCount: number;
+  applicationCount: number; 
   profileCompleteness: number;
   recentApplications: {
     companyName: string;
@@ -35,6 +36,7 @@ export interface PersonalMyPageInfo {
     interview1st: number;
     finalAccepted: number;
     rejected: number;
+    applicationCount: number;
   };
   recommendedJobs: {
     companyName: string;

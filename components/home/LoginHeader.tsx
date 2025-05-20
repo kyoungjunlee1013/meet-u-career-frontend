@@ -11,6 +11,7 @@ import { useUserStore } from "@/store/useUserStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
 import { useSearchStore } from "@/hooks/useSearchStore";
 import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown";
+import { useChatRooms } from "@/hooks/useChatRooms";
 import { apiClient } from "@/api/apiClient";
 
 export const LoginHeader = () => {
@@ -41,6 +42,12 @@ export const LoginHeader = () => {
   // 읽지 않은 알림 여부
   const hasUnreadNotification =
     isLoaded && notifications.some((n) => n.isRead === 0);
+
+  const { chatRooms } = useChatRooms();
+  const unreadChatCount = chatRooms.reduce(
+    (acc, room) => acc + room.unreadCount,
+    0
+  );
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -150,6 +157,11 @@ export const LoginHeader = () => {
               aria-label="채팅"
             >
               <MessageSquare className="h-5 w-5 text-gray-600" />
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                  {unreadChatCount > 9 ? "9+" : unreadChatCount}
+                </span>
+              )}
             </button>
             {chatOpen && <ChatDropdown />}
           </div>

@@ -30,7 +30,7 @@ export function PersonalMyPageContent() {
   return (
     <div className="space-y-10">
       <ProfileCard
-        applicationCount={data.recentApplications?.length}
+        applicationCount={data.applicationCount}
         profileImageUrl={`https://meet-u-storage.s3.ap-northeast-2.amazonaws.com/${data.profile.profileImageUrl}`}
         name={data.account.name}
         experience={data.profile.experienceLevel}
@@ -45,10 +45,12 @@ export function PersonalMyPageContent() {
         completeness={data.profileCompleteness}
       />
 
-      { <RecentApplications
+      <RecentApplications
         applications={data.recentApplications}
         summary={data.summary}
-      /> }
+        applicationCount={data.applicationCount} // ✅ 추가
+      />
+
 
       <RecommendedJobs
         jobs={data.recommendedJobs.map((job) => ({

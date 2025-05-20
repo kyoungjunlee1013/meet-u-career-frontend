@@ -12,7 +12,7 @@ export const CompanyProfile = ({ data }: Props) => {
   const industry = data.industry || "산업 미제공";
   const address = data.address || "주소 미제공";
   const employeeScale = data.employeeScale || "직원 수 미제공";
-  const foundedDate = data.foundedDate || "설립일 미제공";
+  const foundedDate = data.foundedDate || "설립일 미제공";  
 
   return (
     <div className="bg-white rounded-md shadow-sm p-6 mb-6">

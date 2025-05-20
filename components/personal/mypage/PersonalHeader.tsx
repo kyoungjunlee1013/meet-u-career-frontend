@@ -9,6 +9,7 @@ import { ChatDropdown } from "@/components/personal/mypage/ChatDropdown";
 import { ProfileDropdown } from "./ProfileDropdown";
 import { useSidebar } from "./SidebarProvider";
 import { useNotificationStore } from "@/store/useNotificationStore";
+import { useChatRooms } from "@/hooks/useChatRooms"; // ✅ 추가
 import { apiClient } from "@/api/apiClient";
 
 export function PersonalHeader() {
@@ -20,6 +21,12 @@ export function PersonalHeader() {
   const { notifications, isLoaded, setNotifications } = useNotificationStore();
   const hasUnreadNotification =
     isLoaded && notifications.some((n) => n.isRead === 0);
+
+  const { chatRooms } = useChatRooms(); // ✅ 채팅방 데이터
+  const unreadChatCount = chatRooms.reduce(
+    (acc, room) => acc + room.unreadCount,
+    0
+  ); // ✅ 안 읽은 메시지 수 총합
 
   const notificationRef = useRef<HTMLDivElement>(null);
   const chatRef = useRef<HTMLDivElement>(null);
@@ -49,6 +56,7 @@ export function PersonalHeader() {
       ) {
         setIsNotificationOpen(false);
       }
+
       if (
         isChatOpen &&
         chatRef.current &&
@@ -56,6 +64,7 @@ export function PersonalHeader() {
       ) {
         setIsChatOpen(false);
       }
+
       if (
         isProfileOpen &&
         profileRef.current &&
@@ -64,9 +73,11 @@ export function PersonalHeader() {
         setIsProfileOpen(false);
       }
     };
+
     if (isNotificationOpen || isChatOpen || isProfileOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
+        
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -117,9 +128,11 @@ export function PersonalHeader() {
               aria-label="Messages"
             >
               <MessageSquare className="h-[18px] w-[18px] text-gray-700" />
-              <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-medium">
-                2
-              </span>
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-5 w-5 rounded-full bg-red-500 text-white text-xs font-medium">
+                  {unreadChatCount > 9 ? "9+" : unreadChatCount}
+                </span>
+              )}
             </Button>
             {isChatOpen && <ChatDropdown />}
           </div>

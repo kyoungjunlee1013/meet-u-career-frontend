@@ -17,12 +17,13 @@ import {
   MouseEvent as ReactMouseEvent,
 } from "react";
 import { NotificationDropdown } from "./NotificationDropdown";
-import { ChatDropdown } from "./ChatDropdown";
+import { ChatDropdown } from "./ChatDropdown"; // ✅ props 제거한 구조로 유지
 import Image from "next/image";
 import { useNotificationStore } from "@/store/useNotificationStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { apiClient } from "@/api/apiClient";
 import { useUserStore } from "@/store/useUserStore";
+import { useChatRooms } from "@/hooks/useChatRooms"; // ✅ 채팅 훅 추가
 
 interface NavItem {
   label: string;
@@ -33,15 +34,17 @@ export const BusinessHeader = () => {
   const pathname: string = usePathname();
   const router = useRouter();
 
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState<boolean>(false);
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { clearTokens } = useAuthStore();
   const { userInfo, clearUserInfo } = useUserStore();
-  const { clearNotifications } = useNotificationStore(); // 알림 초기화 추가
+  const { notifications, isLoaded, clearNotifications } = useNotificationStore();
 
-  const { notifications, isLoaded } = useNotificationStore();
+  const { chatRooms } = useChatRooms(); // ✅ useChatRooms 사용
+  const unreadChatCount = chatRooms.reduce((acc, room) => acc + room.unreadCount, 0); // ✅ 합계 계산
+
   const hasUnreadNotification =
     isLoaded && notifications.some((n) => n.isRead === 0);
 
@@ -58,24 +61,13 @@ export const BusinessHeader = () => {
 
   const handleLogout = async () => {
     try {
-      // 서버에 로그아웃 요청 (refreshToken 삭제)
-      await apiClient.post(
-        "/api/auth/logout",
-        {},
-        { withCredentials: true }
-      );
-
-      // 클라이언트에 저장된 토큰, 유저정보, 알림 초기화
+      await apiClient.post("/api/auth/logout", {}, { withCredentials: true });
       clearTokens();
       clearUserInfo();
-      clearNotifications(); // 알림 초기화 호출
-
-      // 로그인 페이지로 이동
+      clearNotifications();
       router.push("/login");
     } catch (error) {
       console.error("로그아웃 실패", error);
-
-      // 강제 클리어 후 이동
       clearTokens();
       clearUserInfo();
       clearNotifications();
@@ -128,7 +120,7 @@ export const BusinessHeader = () => {
           </Link>
           <nav>
             <ul className="flex space-x-6">
-              {navItems.map((item: NavItem) => (
+              {navItems.map((item) => (
                 <li key={item.href}>
                   <Link
                     href={item.href}
@@ -166,10 +158,12 @@ export const BusinessHeader = () => {
                 <span className="absolute -top-0.5 -right-0.5 block h-2 w-2 rounded-full bg-red-500" />
               )}
             </button>
-            <NotificationDropdown
-              isOpen={isNotificationOpen}
-              onClose={() => setIsNotificationOpen(false)}
-            />
+            {isNotificationOpen && (
+              <NotificationDropdown
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+              />
+            )}
           </div>
 
           {/* 채팅 */}
@@ -185,15 +179,13 @@ export const BusinessHeader = () => {
               aria-label="메시지"
             >
               <MessageSquare className="h-5 w-5 text-white/80" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                2
-              </span>
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                  {unreadChatCount > 9 ? "9+" : unreadChatCount}
+                </span>
+              )}
             </button>
-            <ChatDropdown
-              isOpen={isChatOpen}
-              onClose={() => setIsChatOpen(false)}
-              messageCount={2}
-            />
+            {isChatOpen && <ChatDropdown />} {/* ✅ 조건부 렌더링 방식 적용 */}
           </div>
 
           {/* 사용자 메뉴 */}

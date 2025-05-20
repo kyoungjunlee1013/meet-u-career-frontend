@@ -1,36 +1,32 @@
+"use client";
 
-"use client"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
+import { companyProfileSchema, type CompanyProfileFormData } from "./schema";
+import { FormField } from "./FormField";
+import { FormSection } from "./FormSection";
+import { LogoUpload } from "./LogoUpload";
+import { updateCompanyProfile } from "@/app/business/profile/actions";
+import { apiClient } from "@/api/apiClient";
 
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
-import { companyProfileSchema, type CompanyProfileFormData } from "./schema"
-import { FormField } from "./FormField"
-import { FormSection } from "./FormSection"
-import { LogoUpload } from "./LogoUpload"
-import { updateCompanyProfile } from "@/app/business/profile/actions"
 import {
   Building, MapPin, Phone, Mail, Globe, Calendar,
   Users, Briefcase, FileText
-} from "lucide-react"
+} from "lucide-react";
 
 export const ProfileForm = () => {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const companyId = searchParams.get("companyId")
-
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
   const [submitStatus, setSubmitStatus] = useState<{
-    type: "success" | "error" | null
-    message: string | null
-  }>({ type: null, message: null })
+    type: "success" | "error" | null;
+    message: string | null;
+  }>({ type: null, message: null });
 
   const {
     register,
     handleSubmit,
-    setValue,
+    reset, // ✅ 추가
     formState: { errors },
   } = useForm<CompanyProfileFormData>({
     resolver: zodResolver(companyProfileSchema),
@@ -48,63 +44,61 @@ export const ProfileForm = () => {
       industry: "",
       introduction: "",
     },
-  })
+  });
 
   useEffect(() => {
     const fetchCompany = async () => {
-      if (!companyId) return
       try {
-        const res = await fetch(`/api/business/dashboard/${companyId}`, {
-          credentials: "include",
-        })
-        const json = await res.json()
-        const data = json.data
+        const res = await apiClient.get<{ data: any }>(
+          "/api/business/dashboard/info/profile"
+        );
+        const data = res.data.data;
+        if (!data) return;
 
-        setValue("companyName", data.companyName)
-        setValue("industry", data.industry)
-        setValue("address", data.address)
-        setValue("establishmentDate", data.foundedDate)
-        setValue("companySize", data.employeeScale)
-        // 기본적으로 제공되지 않는 필드는 생략 가능 (선택사항)
+        // ✅ 전체 폼 초기화
+        reset({
+          companyName: data.companyName,
+          industry: data.industry,
+          address: data.address,
+          establishmentDate: data.foundedDate,
+          companySize: data.numEmployees ? `${data.numEmployees}명` : "",
+          ceoName: data.representativeName,
+          businessNumber: data.businessNumber,
+          phone: data.phone || "",
+          email: data.email || "",
+          website: data.website,
+          introduction: data.introduction || "",
+          detailAddress: data.detailAddress || "",
+        });
       } catch (error) {
-        console.error("기업 정보 불러오기 실패", error)
+        console.error("기업 정보 불러오기 실패", error);
       }
-    }
-    fetchCompany()
-  }, [companyId, setValue])
+    };
+    fetchCompany();
+  }, [reset]);
 
   const handleLogoChange = (file: File | null) => {
-    setLogoFile(file)
-  }
+    setLogoFile(file);
+  };
 
   const onSubmit = async (data: CompanyProfileFormData) => {
-    setIsSubmitting(true)
-    setSubmitStatus({ type: null, message: null })
-
-    const formData = new FormData()
-    if (logoFile) {
-      formData.append("logo", logoFile)
-    }
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && key !== "logo") {
-        formData.append(key, value as string)
-      }
-    })
+    setIsSubmitting(true); 
+    setSubmitStatus({ type: null, message: null });
 
     try {
-      const result = await updateCompanyProfile(data)
+      const result = await updateCompanyProfile(data);
 
       if (result.success) {
-        setSubmitStatus({ type: "success", message: "기업 정보가 성공적으로 업데이트되었습니다." })
+        setSubmitStatus({ type: "success", message: "기업 정보가 성공적으로 업데이트되었습니다." });
       } else {
-        setSubmitStatus({ type: "error", message: result.message || "기업 정보 업데이트에 실패했습니다." })
+        setSubmitStatus({ type: "error", message: result.message || "기업 정보 업데이트에 실패했습니다." });
       }
     } catch (error) {
-      setSubmitStatus({ type: "error", message: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요." })
+      setSubmitStatus({ type: "error", message: "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요." });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -118,6 +112,7 @@ export const ProfileForm = () => {
           {submitStatus.message}
         </div>
       )}
+
       <FormSection title="기본 정보" description="회사의 기본 정보를 입력해주세요.">
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/4 flex justify-center">
@@ -196,9 +191,28 @@ export const ProfileForm = () => {
 
       <FormSection title="회사 소개" description="회사에 대한 상세 정보를 입력해주세요.">
         <div className="space-y-4">
-          <FormField label="회사 소개" name="introduction" register={register} error={errors.introduction} required as="textarea" rows={6} description="1000자 이내" />
+          <FormField
+            label="회사 소개"
+            name="introduction"
+            register={register}
+            error={errors.introduction}
+            required
+            as="textarea"
+            rows={6}
+            description="1000자 이내"
+          />
         </div>
       </FormSection>
-  </form>
-)
-}
+      <div className="flex justify-end">
+        <button 
+          type="submit"
+          disabled={isSubmitting}
+          className="mt-8 px-6 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isSubmitting ? "저장 중..." : "저장"}
+        </button>
+      </div>
+
+    </form>
+  );
+};
