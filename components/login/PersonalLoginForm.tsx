@@ -12,6 +12,7 @@ export const PersonalLoginForm = () => {
   const [userId, setUserId] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [isPending, setIsPending] = useState(false);
   const [userIdError, setUserIdError] = useState<string>("");
   const [passwordError, setPasswordError] = useState<string>("");
   const [serverError, setServerError] = useState<string>("");
@@ -28,9 +29,6 @@ export const PersonalLoginForm = () => {
 
   const handleLogin = async () => {
     let hasError = false;
-    setUserIdError("");
-    setPasswordError("");
-    setServerError("");
 
     if (!userId) {
       setUserIdError("아이디를 입력해주세요.");
@@ -41,6 +39,11 @@ export const PersonalLoginForm = () => {
       hasError = true;
     }
     if (hasError) return;
+
+    setIsPending(true);
+    setUserIdError("");
+    setPasswordError("");
+    setServerError("");
 
     try {
       const response = await apiClient.post(
@@ -61,10 +64,8 @@ export const PersonalLoginForm = () => {
         const { accessToken, refreshToken } = response.data.data || {};
 
         if (accessToken && refreshToken) {
-          // ✅ Zustand 스토어에 저장
           setTokens(accessToken, refreshToken);
 
-          // ✅ 그리고 sessionStorage에도 저장 (여기가 핵심!!)
           sessionStorage.setItem("accessToken", accessToken);
           sessionStorage.setItem("refreshToken", refreshToken);
 
@@ -81,13 +82,15 @@ export const PersonalLoginForm = () => {
           // 메인 페이지로 이동
           router.push("/");
         } else {
-          setServerError("토큰 발급 실패. 다시 로그인 해주세요.");
+          setServerError("로그인 중 오류가 발생했습니다. (1)");
         }
       } else {
         setServerError(response.data.msg);
       }
     } catch (error: any) {
-      setServerError(error.response?.data?.msg || "로그인 실패");
+      setServerError(error.response?.data?.msg || "로그인 중 오류가 발생했습니다. (2)");
+    } finally {
+      setIsPending(false);
     }
   };
 
@@ -112,11 +115,9 @@ export const PersonalLoginForm = () => {
             setUserId(e.target.value);
             if (userIdError) setUserIdError("");
           }}
-          className={`w-full px-3 py-2.5 border ${
-            userIdError ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 ${
-            userIdError ? "focus:ring-red-500" : "focus:ring-blue-500"
-          }`}
+          className={`w-full px-3 py-2.5 border ${userIdError ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 ${userIdError ? "focus:ring-red-500" : "focus:ring-blue-500"
+            }`}
         />
         {userIdError && (
           <p className="text-red-500 text-xs mt-1">{userIdError}</p>
@@ -140,11 +141,9 @@ export const PersonalLoginForm = () => {
               handleLogin();
             }
           }}
-          className={`w-full px-3 py-2.5 border ${
-            passwordError ? "border-red-500" : "border-gray-300"
-          } rounded-md focus:outline-none focus:ring-1 ${
-            passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"
-          }`}
+          className={`w-full px-3 py-2.5 border ${passwordError ? "border-red-500" : "border-gray-300"
+            } rounded-md focus:outline-none focus:ring-1 ${passwordError ? "focus:ring-red-500" : "focus:ring-blue-500"
+            }`}
         />
         {passwordError && (
           <p className="text-red-500 text-xs mt-1">{passwordError}</p>
@@ -179,9 +178,14 @@ export const PersonalLoginForm = () => {
       <button
         type="button"
         onClick={handleLogin}
+        disabled={isPending}
         className="w-full py-2.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
       >
-        로그인
+        {isPending ? (
+          <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        ) : (
+          "로그인"
+        )}
       </button>
     </div>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import { fetchMyInfo } from "@/api/fetchMyInfo";
@@ -12,10 +11,10 @@ export const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [serverError, setServerError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const { setTokens } = useAuthStore();
 
   // 세션에 저장된 이메일 복구
@@ -28,9 +27,6 @@ export const LoginForm = () => {
   }, []);
 
   const handleLogin = async () => {
-    setEmailError("");
-    setPasswordError("");
-    setServerError("");
     let hasError = false;
 
     if (!email) {
@@ -43,18 +39,34 @@ export const LoginForm = () => {
     }
     if (hasError) return;
 
-    setIsLoading(true);
+    setIsPending(true);
+    setEmailError("");
+    setPasswordError("");
+    setServerError("");
+
     try {
-      const response = await apiClient.post("/api/admin/auth/login", {
-        userId: email,
-        password,
-      });
+      const response = await apiClient.post(
+        "/api/admin/auth/login",
+        {
+          userId: email,
+          password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
 
       if (response.data.msg === "success") {
         const { accessToken, refreshToken } = response.data.data || {};
 
         if (accessToken && refreshToken) {
           setTokens(accessToken, refreshToken);
+
+          sessionStorage.setItem("accessToken", accessToken);
+          sessionStorage.setItem("refreshToken", refreshToken);
 
           // 로그인 성공 후 아이디 저장
           if (rememberMe) {
@@ -63,30 +75,34 @@ export const LoginForm = () => {
             localStorage.removeItem("savedAdminId");
           }
 
+          // 사용자 정보 가져오기
           await fetchMyInfo();
 
           // 대시보드 페이지로 이동.
           router.push("/admin/dashboard");
         } else {
-          setServerError(response.data.msg);
+          setServerError("로그인 중 오류가 발생했습니다. (1)");
         }
       } else {
         setServerError(response.data.msg);
       }
     } catch (error: any) {
-      setServerError(error.response?.data?.msg);
+      setServerError(error.response?.data?.msg || "로그인 중 오류가 발생했습니다. (2)");
     } finally {
-      setIsLoading(false);
+      setIsPending(false);
     }
   };
 
   return (
     <div className="space-y-6">
+      {/* 서버 에러 메시지 (로그인 실패 시) */}
       {serverError && (
         <div className="w-full bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-md text-sm">
           {serverError}
         </div>
       )}
+
+      {/* 아이디 입력 */}
       <div>
         <label
           htmlFor="email"
@@ -105,18 +121,17 @@ export const LoginForm = () => {
             setEmail(e.target.value);
             if (emailError) setEmailError("");
           }}
-          className={`w-full px-3 py-2 border ${
-            emailError ? "border-red-500" : "border-gray-300"
-          } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+          className={`w-full px-3 py-2 border ${emailError ? "border-red-500" : "border-gray-300"
+            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           aria-invalid={!!emailError}
           aria-describedby={emailError ? "email-error" : undefined}
         />
         {emailError && (
-          <p id="email-error" className="mt-1 text-sm text-red-600">
-            {emailError}
-          </p>
+          <p id="email-error" className="mt-1 text-sm text-red-600">{emailError}</p>
         )}
       </div>
+
+      {/* 비밀번호 입력 */}
       <div>
         <label
           htmlFor="password"
@@ -135,18 +150,17 @@ export const LoginForm = () => {
             setPassword(e.target.value);
             if (passwordError) setPasswordError("");
           }}
-          className={`w-full px-3 py-2 border ${
-            passwordError ? "border-red-500" : "border-gray-300"
-          } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+          className={`w-full px-3 py-2 border ${passwordError ? "border-red-500" : "border-gray-300"
+            } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
           aria-invalid={!!passwordError}
           aria-describedby={passwordError ? "password-error" : undefined}
         />
         {passwordError && (
-          <p id="password-error" className="mt-1 text-sm text-red-600">
-            {passwordError}
-          </p>
+          <p id="password-error" className="mt-1 text-sm text-red-600">{passwordError}</p>
         )}
       </div>
+
+      {/* 아이디 저장 체크박스 + 링크 */}
       <div className="flex items-center">
         <input
           id="rememberMe"
@@ -167,14 +181,11 @@ export const LoginForm = () => {
         <button
           type="button"
           onClick={handleLogin}
-          disabled={isLoading}
+          disabled={isPending}
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#1a2233] hover:bg-[#2a3243] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-75"
         >
-          {isLoading ? (
-            <>
-              <Loader2 className="animate-spin mr-2 h-4 w-4" />
-              로그인 중...
-            </>
+          {isPending ? (
+            <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           ) : (
             "로그인"
           )}
