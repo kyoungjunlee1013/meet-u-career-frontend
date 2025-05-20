@@ -10,6 +10,7 @@ import { ProfileDropdown } from "./ProfileDropdown";
 import { useSidebar } from "./SidebarProvider";
 import { useNotificationStore } from "@/store/useNotificationStore";
 import { useChatRooms } from "@/hooks/useChatRooms"; // ✅ 추가
+import { apiClient } from "@/api/apiClient";
 
 export function PersonalHeader() {
   const { toggleSidebar } = useSidebar();
@@ -17,7 +18,7 @@ export function PersonalHeader() {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
 
-  const { notifications, isLoaded } = useNotificationStore();
+  const { notifications, isLoaded, setNotifications } = useNotificationStore();
   const hasUnreadNotification =
     isLoaded && notifications.some((n) => n.isRead === 0);
 
@@ -31,6 +32,21 @@ export function PersonalHeader() {
   const chatRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
+  // 헤더 마운트 시 알림 미리 불러오기
+  useEffect(() => {
+    if (!isLoaded) {
+      (async () => {
+        try {
+          const res = await apiClient.get("/api/notification/list");
+          setNotifications(res.data.data || []);
+        } catch (error) {
+          console.error("알림 미리 불러오기 실패:", error);
+        }
+      })();
+    }
+  }, [isLoaded, setNotifications]);
+
+  // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -61,7 +77,7 @@ export function PersonalHeader() {
     if (isNotificationOpen || isChatOpen || isProfileOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
+        
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -128,9 +144,7 @@ export function PersonalHeader() {
               className="p-0 rounded-full w-9 h-9 hover:bg-transparent"
               onClick={() => setIsProfileOpen(!isProfileOpen)}
             >
-              <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden">
-                {/* Profile image placeholder */}
-              </div>
+              <div className="h-9 w-9 rounded-full bg-gray-200 overflow-hidden" />
             </Button>
             {isProfileOpen && <ProfileDropdown />}
           </div>

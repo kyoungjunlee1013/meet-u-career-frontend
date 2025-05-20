@@ -69,9 +69,7 @@ export default function NotificationDropdown() {
               <li
                 key={notification.id}
                 onClick={() => handleRead(notification.id)}
-                className={`p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer ${
-                  notification.isRead === 0 ? "bg-white" : "bg-gray-50"
-                }`}
+                className={`p-3 border-b last:border-b-0 hover:bg-gray-50 cursor-pointer ${notification.isRead === 0 ? "bg-white" : "bg-gray-50"}`}
               >
                 <div className="flex justify-between items-start">
                   <div>

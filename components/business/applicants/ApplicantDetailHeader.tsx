@@ -47,10 +47,7 @@ export const ApplicantDetailHeader = ({ resumeId, resumeTitle }: ResumeDownloadB
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div className="flex items-center gap-2">
-        <Link href="/business/applicants" className="text-gray-500 hover:text-gray-700">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-2xl font-bold">지원자 상세 정보</h1>
+        <h1 className="text-3xl font-bold">{resumeTitle}</h1>
       </div>
       <div className="flex flex-wrap gap-2">
         <Button onClick={handleDownload} variant="outline" size="sm" className="flex items-center gap-1">

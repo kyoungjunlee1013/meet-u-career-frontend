@@ -6,10 +6,8 @@ function getAuthHeaders(): { [key: string]: string } {
     typeof window !== "undefined"
       ? sessionStorage.getItem("accessToken")
       : null;
-  const isLocalhost =
-    typeof window !== "undefined" && window.location.hostname === "localhost";
 
-  if (token && isLocalhost) {
+  if (token) {
     return {
       Authorization: `Bearer ${token}`,
     };
