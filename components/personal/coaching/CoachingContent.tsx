@@ -1,12 +1,9 @@
 'use client';
-import { apiClient } from "@/api/apiClient";
-
-import { ResumeHeader } from "./ResumeHeader";
-import { ResumeSettings } from "./ResumeSettings";
+import { useEffect, useState } from "react";
 import { NotificationBox } from "./NotificationBox";
 import { CoachingSectionEditor, CoachingSection } from "./CoachingSectionEditor";
-import { useState } from "react";
-
+import { apiClient } from "@/api/apiClient";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const initialSections: CoachingSection[] = [
   { sectionKey: "growth", sectionTitle: "성장 과정", content: "" },
@@ -17,8 +14,14 @@ const initialSections: CoachingSection[] = [
 
 export const CoachingContent = () => {
   const [sections, setSections] = useState<CoachingSection[]>(initialSections);
+  const { accessToken, isHydrated, restoreTokens } = useAuthStore();
 
-  // AI 피드백 요청 함수 (Spring Boot API 연동)
+  useEffect(() => {
+    restoreTokens(); // 토큰 복구
+  }, []);
+
+  const isLoggedIn = isHydrated && !!accessToken;
+
   const requestAIFeedback = async (index: number) => {
     setSections((prev) =>
       prev.map((s, i) =>
@@ -27,7 +30,7 @@ export const CoachingContent = () => {
     );
     try {
       const res = await apiClient.post("/api/personal/coverletter/coaching", {
-        contentId: null, // 비회원 연습이므로 null
+        contentId: null,
         sectionTitle: sections[index].sectionTitle,
         content: sections[index].content,
       });
@@ -56,24 +59,19 @@ export const CoachingContent = () => {
     }
   };
 
-
   const handleContentChange = (index: number, value: string) => {
     setSections((prev) =>
       prev.map((s, i) => (i === index ? { ...s, content: value } : s))
     );
   };
 
-  // TODO: 실제 로그인 연동 시 isLoggedIn 값을 교체하세요.
-  const isLoggedIn = false;
   const [activeTab, setActiveTab] = useState<string>(sections[0].sectionKey);
-
   const tabList = [
     { key: "growth", label: "성장 과정" },
     { key: "strengths", label: "성격의 장단점 및 보완 노력" },
     { key: "motivation", label: "지원 동기" },
     { key: "future", label: "입사 후 포부" },
   ];
-
   const activeIdx = sections.findIndex(s => s.sectionKey === activeTab);
 
   return (
@@ -106,5 +104,4 @@ export const CoachingContent = () => {
       )}
     </div>
   );
-}
-
+};
