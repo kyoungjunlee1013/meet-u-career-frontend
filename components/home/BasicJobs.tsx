@@ -20,7 +20,7 @@ export const BasicJobs = ({ premium }: BasicJobProps) => {
             key={index}
             index={job.id}
             title={job.title}
-            company={job.companyName}
+            company={job.name}
             dDay={calculateDday(job.expirationDate)}
             hasImage={true}
           />

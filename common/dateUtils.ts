@@ -9,6 +9,11 @@ export const calculateDday = (expirationDate: string): string => {
     const diffTime = expire.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+    // 상시채용 기준 (예: 365일 이상 남은 경우)
+    if (diffDays > 365) {
+        return "상시 채용";
+    }
+
     if (diffDays > 0) {
         return `D-${diffDays}`;
     } else if (diffDays === 0) {

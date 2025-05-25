@@ -63,15 +63,22 @@ export const JobDetailContent = ({
   }, []);
 
   // 마감일
-  const formatTime = (seconds: number) => {
-    const days = Math.floor(seconds / (24 * 60 * 60));
-    const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${days}일 ${String(hours).padStart(2, "0")}:${String(
-      minutes
-    ).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
-  };
+  const formatTime = (seconds: number): string => {
+  const maxSeconds = 365 * 24 * 60 * 60; // 1년 = 31,536,000초
+
+  if (seconds > maxSeconds) {
+    return "상시 채용";
+  }
+
+  const days = Math.floor(seconds / (24 * 60 * 60));
+  const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+
+  return `${days}일 ${String(hours).padStart(2, "0")}:${String(
+    minutes
+  ).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+};
 
   // 디데이
   const calculateDday = (expirationDate: string) => {
@@ -79,6 +86,10 @@ export const JobDetailContent = ({
     const deadline = new Date(expirationDate);
     const diffTime = deadline.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // 💡 일정 기간 이상인 경우 "상시채용"으로 대체
+    if (diffDays > 365) return "상시 채용";
+
     return diffDays > 0 ? `D-${diffDays}` : "마감";
   };
 

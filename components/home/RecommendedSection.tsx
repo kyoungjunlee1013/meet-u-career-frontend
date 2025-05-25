@@ -7,6 +7,7 @@ import { Search, ChevronLeft, ChevronRight, LucideSparkles } from "lucide-react"
 import Image from "next/image";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useUserStore } from "@/store/useUserStore";
+import { calculateDday } from "@/common/dateUtils";
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation } from "swiper/modules";
@@ -110,7 +111,7 @@ export const RecommendedSection = () => {
           <div className="text-xs text-gray-400 truncate pr-12">{job.company.address}</div>
 
           <div className="absolute bottom-2 right-2 text-[11px] px-2 py-1 text-red-700 font-semibold">
-            {isExpired ? "마감" : `D-${daysLeft}`}
+            {calculateDday(job.expirationDate.toString())}
           </div>
         </div>
       </Link>
