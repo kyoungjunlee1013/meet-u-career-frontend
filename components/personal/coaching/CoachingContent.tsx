@@ -22,6 +22,8 @@ export const CoachingContent = () => {
 
   const isLoggedIn = isHydrated && !!accessToken;
 
+  if (!isHydrated) return null;
+
   const requestAIFeedback = async (index: number) => {
     setSections((prev) =>
       prev.map((s, i) =>
