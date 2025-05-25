@@ -7,9 +7,9 @@ import { PersonalSidebar } from "@/components/personal/mypage/PersonalSidebar";
 export default function Loading() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <PersonalHeader toggleSidebar={() => {}} />
+      <PersonalHeader/>
       <div className="pt-16 md:pl-64">
-        <PersonalSidebar isOpen={false} activeItem="자기소개서 관리" />
+        <PersonalSidebar activeItem="자기소개서 관리" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Skeleton className="h-8 w-64 mb-6" />
           <Skeleton className="h-40 w-full mb-6" />

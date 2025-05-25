@@ -10,6 +10,8 @@ import { BusinessScheduleSidebar } from "../../business/schedule/BusinessSchedul
 import { PublicUpcomingEventsSidebar } from "../../public/schedule/PublicUpcomingEventsSidebar";
 // 앞으로 props로 API/헤더 등을 받을 예정
 import { ScheduleSidebar } from "../../personal/schedule/ScheduleSidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useUserStore } from "@/store/useUserStore";
 import { apiClient } from "@/api/apiClient";
 
 interface UnifiedScheduleContentProps {
@@ -31,6 +33,8 @@ export const UnifiedScheduleContent = ({
   mapDtoToScheduleItem,
   headerComponent,
 }: UnifiedScheduleContentProps) => {
+  const { userInfo } = useUserStore();
+  const isLoggedIn = !!userInfo; // 실제 로그인 여부 반영
   const [activeFilters, setActiveFilters] = useState<ScheduleEventType[]>([]);
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,18 +46,27 @@ export const UnifiedScheduleContent = ({
   // --- 기존 개인 일정 관리와 동일하게 동작 (임시 더미 API) ---
   useEffect(() => {
     const fetchSchedules = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data } = await apiClient.get<{ data: any[] }>(apiEndpoint);
-        const arr = Array.isArray(data) ? data : [];
-        setSchedules(arr.map(mapDtoToScheduleItem));
-      } catch (err: any) {
-        setError(err?.message || "데이터 로딩 오류");
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await apiClient.get("/api/personal/calendar/list");
+      const raw = response.data?.data;
+
+      const mapped = Array.isArray(raw)
+        ? raw.map((dto) => {
+            return mapDtoToScheduleItem(dto);
+          })
+        : [];
+
+      setSchedules(mapped);
+    } catch (err: any) {
+      console.error("[일정 로딩 실패]", err);
+      setError(err?.message || "데이터 로딩 오류");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
     fetchSchedules();
   }, [apiEndpoint, mapDtoToScheduleItem]);
@@ -108,14 +121,20 @@ export const UnifiedScheduleContent = ({
     );
   });
 
-  //const isLoggedIn = false;
-  const isLoggedIn = true; // 실제 연동 시 userStore에서 가져옴
 
   let content;
   if (loading) {
     content = (
-      <div className="text-center py-12 text-gray-500">
-        일정 데이터를 불러오는 중...
+      <div className="flex flex-col md:flex-row gap-6 mt-6">
+        <div className="flex-1 space-y-4">
+          <Skeleton className="h-10 w-1/2" />
+          <Skeleton className="h-[500px] w-full" />
+        </div>
+        <div className="w-full md:w-64 space-y-3">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-6 w-full" />
+          ))}
+        </div>
       </div>
     );
   } else if (error) {

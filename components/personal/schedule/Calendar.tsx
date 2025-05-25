@@ -4,6 +4,8 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { ScheduleModal } from "./ScheduleModal"
 
+
+
 // 엔티티 기반 일정 유형 상수(enum)
 export enum ScheduleEventType {
   APPLICATION_DEADLINE = 1,   // 지원 마감
@@ -219,6 +221,18 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSche
     setIsModalOpen(true)
   }
 
+  useEffect(() => {
+  console.log("📦 렌더링된 schedules 수:", schedules.length);
+  console.table(schedules.map(s => ({
+    id: s.id,
+    title: s.title,
+    startDateTime: s.startDateTime,
+    endDateTime: s.endDateTime
+  })));
+}, [schedules]);
+
+
+
   const openEditModal = (schedule: ScheduleItem) => {
     setSelectedSchedule(schedule)
     setIsEditing(true)
@@ -253,18 +267,18 @@ export const Calendar = ({ schedules, activeFilters, onScheduleUpdate, onAddSche
   }
 
   const getFilteredSchedules = (day: number, month: string) => {
-    return schedules.filter((event: ScheduleItem) => {
+    const filtered = schedules.filter((event: ScheduleItem) => {
       if (month !== "current") return false;
-      if (activeFilters.length > 0 && !activeFilters.includes(event.eventType)) return false;
-      // 기간 일정 연속 표시: 셀 날짜가 일정의 시작~종료 사이에 포함되는지 (날짜만 비교)
       const cellDate = new Date(currentYear, currentMonth, day, 0, 0, 0, 0);
       const start = new Date(event.startDateTime);
       const end = new Date(event.endDateTime);
+
       start.setHours(0, 0, 0, 0);
       end.setHours(0, 0, 0, 0);
-      // 셀 날짜가 기간 내에 포함되면 표시
+
       return start <= cellDate && cellDate <= end;
     });
+    return filtered;
   }
 
   return (
