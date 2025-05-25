@@ -78,7 +78,7 @@ export const CoachingContent = () => {
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-6">
-      {!isLoggedIn && <NotificationBox />}
+      {isHydrated && !isLoggedIn && <NotificationBox />}
       <div className="mb-6">
         <div className="flex gap-2 border-b">
           {tabList.map(tab => (
