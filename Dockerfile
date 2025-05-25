@@ -1,4 +1,3 @@
-
 # Node Alpine 베이스 이미지 사용
 FROM node:alpine
 
@@ -14,11 +13,12 @@ RUN npm install
 # 전체 소스 복사
 COPY . .
 
-# 프로덕션 빌드를 수행
+# 프로덕션 빌드 수행
 RUN npm run build
 
-# 3000 포트 오픈 (Next.js 기본 포트)
+# Next.js 기본 포트
 EXPOSE 3000
 
-# Next.js 프로덕션 서버 실행
-CMD ["npm", "run", "start"]
+# ENTRYPOINT와 CMD로 서버 실행
+ENTRYPOINT ["/bin/sh", "-c"]
+CMD ["npm run start"]
