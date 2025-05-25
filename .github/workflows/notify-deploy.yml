@@ -12,5 +12,5 @@ jobs:
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          repository: your-username/meet-u-career-backend
+          repository: dpdlcl01/meet-u-career-backend
           event-type: frontend-updated
