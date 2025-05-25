@@ -16,11 +16,18 @@ export const CoachingContent = () => {
   const [sections, setSections] = useState<CoachingSection[]>(initialSections);
   const { accessToken, isHydrated, restoreTokens } = useAuthStore();
 
+  // 클라이언트 측 로그인 여부를 별도 상태로 감지
+  const [isClientLoggedIn, setIsClientLoggedIn] = useState(false);
+
   useEffect(() => {
-    restoreTokens(); // 토큰 복구
+    restoreTokens();
   }, []);
 
-  const isLoggedIn = isHydrated && !!accessToken;
+  useEffect(() => {
+    if (isHydrated && accessToken) {
+      setIsClientLoggedIn(true);
+    }
+  }, [isHydrated, accessToken]);
 
   if (!isHydrated) return null;
 
@@ -78,7 +85,8 @@ export const CoachingContent = () => {
 
   return (
     <div className="max-w-[1200px] mx-auto px-4 py-6">
-      {isHydrated && !isLoggedIn && <NotificationBox />}
+      {/* 상태 기반으로 렌더링 */}
+      {!isClientLoggedIn && <NotificationBox />}
       <div className="mb-6">
         <div className="flex gap-2 border-b">
           {tabList.map(tab => (
