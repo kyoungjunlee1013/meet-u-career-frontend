@@ -1,3 +1,4 @@
+// next.config.mjs
 
 let userConfig = undefined
 try {
@@ -6,7 +7,7 @@ try {
 } catch (e) {
   try {
     // fallback to CJS import
-    userConfig = await import("./v0-user-next.config");
+    userConfig = await import('./v0-user-next.config')
   } catch (innerError) {
     // ignore error
   }
@@ -14,18 +15,24 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 로컬 빌드 산출물을 EC2에 그대로 올려 실행하기 위한 설정
+  output: 'standalone',
+
   async rewrites() {
     return [
+      // 개발/내부용 백엔드
       {
+        source: '/api/:path*',
         destination: 'http://localhost:8080/api/:path*',
-        source: '/api/:path*',
       },
+      // 배포용 API 게이트웨이
       {
-        destination: 'https://api.meet-u-career.com/api/:path*',
         source: '/api/:path*',
-      }
+        destination: 'https://api.meet-u-career.com/api/:path*',
+      },
     ]
   },
+
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -43,15 +50,11 @@ const nextConfig = {
   },
 }
 
+// 사용자 커스텀 설정 병합
 if (userConfig) {
-  // ESM imports will have a "default" property
   const config = userConfig.default || userConfig
-
   for (const key in config) {
-    if (
-      typeof nextConfig[key] === 'object' &&
-      !Array.isArray(nextConfig[key])
-    ) {
+    if (typeof nextConfig[key] === 'object' && !Array.isArray(nextConfig[key])) {
       nextConfig[key] = {
         ...nextConfig[key],
         ...config[key],
@@ -63,4 +66,3 @@ if (userConfig) {
 }
 
 export default nextConfig
-

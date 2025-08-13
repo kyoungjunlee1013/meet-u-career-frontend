@@ -1,24 +1,24 @@
-# Node Alpine 베이스 이미지 사용
-FROM node:alpine
-
-# 작업 디렉토리 설정
+# --- build stage ---
+FROM node:18-alpine AS build
 WORKDIR /app
 
-# package.json과 package-lock.json 복사
+# 의존성 설치 (캐시 최적화)
 COPY package*.json ./
+RUN npm ci
 
-# 의존성 설치
-RUN npm install
-
-# 전체 소스 복사
+# 소스 복사 및 빌드
 COPY . .
-
-# 프로덕션 빌드 수행
 RUN npm run build
 
-# Next.js 기본 포트
-EXPOSE 3000
+# --- run stage ---
+FROM node:18-alpine
+WORKDIR /app
+ENV NODE_ENV=production
 
-# ENTRYPOINT와 CMD로 서버 실행
-ENTRYPOINT ["/bin/sh", "-c"]
-CMD ["npm run start"]
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+COPY --from=build /app/package*.json ./
+RUN npm ci --omit=dev
+
+EXPOSE 3000
+CMD ["npm","start"]
