@@ -18,21 +18,6 @@ const nextConfig = {
   // 로컬 빌드 산출물을 EC2에 그대로 올려 실행하기 위한 설정
   output: 'standalone',
 
-  async rewrites() {
-    return [
-      // 개발/내부용 백엔드
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:8080/api/:path*',
-      },
-      // 배포용 API 게이트웨이
-      {
-        source: '/api/:path*',
-        destination: 'https://api.meet-u-career.com/api/:path*',
-      },
-    ]
-  },
-
   eslint: {
     ignoreDuringBuilds: true,
   },
