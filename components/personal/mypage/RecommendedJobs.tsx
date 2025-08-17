@@ -2,6 +2,7 @@ import Link from "next/link"
 import { ChevronRight, MapPin, Calendar, DollarSign, Bookmark } from "lucide-react"
 
 interface Job {
+  id: number;
   company: string
   title: string
   location: string
@@ -26,11 +27,18 @@ export function RecommendedJobs({ jobs }: Props) {
 
       <div className="p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {jobs.map((job, index) => (
+          {jobs.map((job) => (
             <div
-              key={index}
-              className="bg-white rounded-lg shadow-md hover:shadow-lg transition border border-gray-100 flex flex-col h-full p-6"
+              key={job.id}
+              className="relative bg-white rounded-lg shadow-md hover:shadow-lg transition border border-gray-100 flex flex-col h-full p-6"
             >
+              {/* 카드 전체를 클릭 가능하게 만드는 오버레이 링크 */}
+              <Link
+                href={`/personal/jobs/${job.id}`}
+                prefetch={false}
+                aria-label={`${job.company} ${job.title} 채용상세로 이동`}
+                className="absolute inset-0 z-10"
+              />
               {/* 상단: 회사명 및 포지션 */}
               <div className="flex items-center mb-2">
                 <div className="h-10 w-10 rounded-md overflow-hidden flex-shrink-0 border border-gray-200 mr-3 bg-gray-200" />
