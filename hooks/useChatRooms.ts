@@ -12,28 +12,40 @@ interface ChatRoom {
   unreadCount: number;
 }
 
-
 export function useChatRooms() {
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchChatRooms = async () => {
-      try {
-        const response = await apiClient.get<{ data: ChatRoom[] }>(
-          "/api/chat/rooms"
-        );
-        setChatRooms(response.data.data);
-      } catch (err) {
-        console.error("❌ 채팅방 리스트 가져오기 실패", err);
-        setError("채팅방을 불러오는데 실패했습니다.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  // [ADDED] 재조회 함수 (필요 시 목록 새로고침)
+  const refreshChatRooms = async () => {
+    setLoading(true); // [ADDED]
+    setError(null);   // [ADDED]
+    const ac = new AbortController(); // [ADDED]
+    try {
+      const response = await apiClient.get<{ data: ChatRoom[] }>(
+        "/api/chat/rooms",
+        { signal: ac.signal } as any // [ADDED] axios v1.x는 signal 지원
+      );
+      setChatRooms(response.data.data);
+    } catch (err) {
+      console.error("❌ 채팅방 리스트 가져오기 실패", err);
+      setError("채팅방을 불러오는데 실패했습니다.");
+    } finally {
+      setLoading(false);
+    }
+    return () => ac.abort(); // [ADDED]
+  };
 
-    fetchChatRooms();
+  useEffect(() => {
+    // [CHANGED] 초기 로딩도 refreshChatRooms 사용
+    let cleanup: any;
+    (async () => {
+      cleanup = await refreshChatRooms();
+    })();
+    return () => {
+      if (typeof cleanup === "function") cleanup(); // [ADDED]
+    };
   }, []);
 
   /**
@@ -58,5 +70,6 @@ export function useChatRooms() {
     loading,
     error,
     markRoomAsRead,
+    refreshChatRooms, // [ADDED]
   };
 }

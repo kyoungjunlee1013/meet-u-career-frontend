@@ -16,6 +16,7 @@ interface Props {
 }
 
 export function RecommendedJobs({ jobs }: Props) {
+  console.table(jobs.map((j) => ({ id: (j as any).id, keys: Object.keys(j) })));
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
