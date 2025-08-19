@@ -1,89 +1,89 @@
 // lib/chatSocket.ts
-import { Client, IMessage } from "@stomp/stompjs";
-import { useUserStore } from "@/store/useUserStore";
-import SockJS from "sockjs-client"; // [ADDED]
+import { Client, IMessage, StompSubscription } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
 let stompClient: Client | null = null;
+let connectPromise: Promise<void> | null = null; // 중복 연결 방지
 
-// [ADDED] 런타임 도메인/프로토콜 기반으로 소켓 URL 자동 결정
-// - 로컬(프론트 3000) → 백엔드 8080로 직결
-// - 배포(예: http://43.200.182.200) → 같은 호스트의 /ws-stomp (Nginx 프록시 전제)
+// 런타임 도메인/프로토콜 기반으로 소켓 URL 자동 결정
+// - 로컬: http://localhost:8080/ws-stomp
+// - 배포: (현재 호스트)/ws-stomp  (Nginx 프록시 전제)
 const getChatSockUrl = () => {
-  if (typeof window === "undefined") return "http://localhost:8080/ws-stomp"; // SSR 가드
+  if (typeof window === "undefined") return "http://localhost:8080/ws-stomp";
   const { protocol, hostname, host } = window.location;
 
-  // 로컬 개발 환경
   if (hostname === "localhost" || hostname === "127.0.0.1") {
     return "http://localhost:8080/ws-stomp";
   }
-
-  // 배포 환경 (예: http://43.200.182.200)
   const scheme = protocol === "https:" ? "https" : "http";
   return `${scheme}://${host}/ws-stomp`;
 };
 
-// ✅ 소켓 연결 (연결 완료되면 resolve)
-// [CHANGED] accountId를 선택적으로 인자로 받을 수 있게 확장 (기존 호출 방식도 그대로 동작)
-export async function connectSocket(accountIdParam?: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (stompClient && stompClient.connected) {
-      return resolve();
-    }
+// 연결 (accountId를 인자로 받음)
+export function connectSocket(accountId?: number): Promise<void> {
+  if (stompClient?.connected) return Promise.resolve();
+  if (connectPromise) return connectPromise;
 
-    // [CHANGED] 스토어 읽기 전에, 인자로 들어온 accountId가 있으면 그걸 우선 사용
-    const accountId = accountIdParam ?? useUserStore.getState().userInfo?.accountId;
+  connectPromise = new Promise((resolve, reject) => {
     if (!accountId) {
       console.error("❌ 사용자 정보 없음 - 소켓 연결 중단");
+      connectPromise = null;
       return reject("사용자 정보 없음");
     }
 
-    // [CHANGED] 순수 WS(brokerURL) 대신 SockJS 사용 → 프록시/HTTPS/HTTP2 환경에서도 안전
-    const sock = new SockJS(getChatSockUrl()); // [ADDED]
-
+    const sock = new SockJS(getChatSockUrl());
     stompClient = new Client({
-      webSocketFactory: () => sock, // [CHANGED]
-      connectHeaders: {
-        accountId: String(accountId),
-      },
+      webSocketFactory: () => sock,        // brokerURL 대신 SockJS
+      connectHeaders: { accountId: String(accountId) },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       onConnect: () => {
         console.log("✅ STOMP 연결 완료");
+        connectPromise = null;
         resolve();
       },
       onStompError: (frame) => {
         console.error("❌ STOMP 오류", frame);
+        connectPromise = null;
         reject(new Error("STOMP 연결 실패"));
       },
     });
 
     stompClient.activate();
   });
+
+  return connectPromise;
 }
 
-// ✅ 소켓 연결 해제
-export function disconnectSocket() {
-  stompClient?.deactivate();
+// 해제 (Promise 반환 — cleanup에서 .catch 사용 가능)
+export async function disconnectSocket(): Promise<void> {
+  if (!stompClient) return;
+  try {
+    await stompClient.deactivate(); // 비동기 종료 대기
+  } finally {
+    stompClient = null;
+    connectPromise = null;
+  }
 }
 
-// ✅ 채팅방 구독 (서버에서 /topic/chat/{roomId} 로 브로드캐스트)
-export function subscribeToRoom(roomId: string, callback: (message: IMessage) => void) {
+// 채팅방 구독
+export function subscribeToRoom(
+  roomId: string,
+  callback: (message: IMessage) => void
+): StompSubscription | null {
   console.log("📡 구독 시작: /topic/chat/" + roomId);
   return stompClient?.subscribe(`/topic/chat/${roomId}`, callback) ?? null;
 }
 
-// ✅ 메시지 전송 (/app/chat/message)
+// 송신
 export function sendSocketMessage(roomId: string, payload: any) {
   if (!stompClient || !stompClient.connected) {
     console.error("❌ STOMP 연결 안됨: 메시지 전송 실패");
     return;
   }
-
-  console.log("📤 메시지 전송:", payload);
-
   stompClient.publish({
-    destination: "/app/chat/message", // 서버 @MessageMapping("/chat/message") 와 일치
+    destination: "/app/chat/message",
     body: JSON.stringify(payload),
   });
 }
